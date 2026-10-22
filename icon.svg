@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f242d"/>
+      <stop offset="100%" stop-color="#0f1115"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Rounded App Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle border -->
+  <rect width="508" height="508" x="2" y="2" rx="110" fill="none" stroke="rgba(251, 191, 36, 0.15)" stroke-width="4"/>
+  
+  <!-- Cozy warm glowing circle in the back -->
+  <circle cx="256" cy="256" r="140" fill="#fbbf24" opacity="0.08" filter="url(#glow)"/>
+
+  <!-- Stylized Dumbbell / Kettlebell + Leaf Motif -->
+  <g transform="translate(256, 256) rotate(-25) translate(-256, -256)">
+    <!-- Dumbbell Bar -->
+    <rect x="156" y="240" width="200" height="32" rx="16" fill="url(#goldGrad)" filter="url(#glow)"/>
+    
+    <!-- Left Inner Plate -->
+    <rect x="180" y="180" width="30" height="152" rx="12" fill="url(#goldGrad)"/>
+    <!-- Left Outer Plate -->
+    <rect x="136" y="196" width="32" height="120" rx="10" fill="#f59e0b"/>
+    
+    <!-- Right Inner Plate -->
+    <rect x="302" y="180" width="30" height="152" rx="12" fill="url(#goldGrad)"/>
+    <!-- Right Outer Plate -->
+    <rect x="344" y="196" width="32" height="120" rx="10" fill="#f59e0b"/>
+  </g>
+
+  <!-- Cozy Leaf Accent symbolizing healthy balance & growth -->
+  <path d="M 285 140 C 340 135 380 180 375 235 C 330 240 280 200 285 140 Z" fill="url(#accentGrad)" opacity="0.95"/>
+  <path d="M 285 140 Q 330 190 375 235" stroke="#ecfdf5" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.7"/>
+
+  <!-- Small star/sparkle for cozy feel -->
+  <path d="M 170 140 Q 185 150 190 165 Q 195 150 210 140 Q 195 130 190 115 Q 185 130 170 140 Z" fill="#fbbf24" opacity="0.8"/>
+</svg>

@@ -75,7 +75,6 @@ body.light-theme {
 
 html {
   width: 100%;
-  /* Fixes iOS PWA black-translucent ~1cm bottom black bar bug by extending root over top+bottom safe areas */
   min-height: calc(100% + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
   height: -webkit-fill-available;
   background-color: var(--bg-main);
@@ -890,18 +889,19 @@ input[type=number] {
 }
 
 .stepper-btn {
-  width: 30px;
+  width: 26px;
   height: 100%;
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  flex-shrink: 0;
   user-select: none;
   -webkit-user-select: none;
   transition: background-color 0.15s, color 0.15s, transform 0.1s;
@@ -945,10 +945,10 @@ input[type=number] {
 }
 
 .set-input.is-bw {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--accent-gold);
-  letter-spacing: -0.2px;
+  letter-spacing: -0.4px;
 }
 
 .set-check-btn {

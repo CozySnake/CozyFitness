@@ -1,11 +1,13 @@
-const CACHE_NAME = 'cozy-fitness-v3';
+const CACHE_NAME = 'cozy-fitness-v6';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
+  './styles.css?v=1.5',
+  './app.js?v=1.5',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -28,12 +30,12 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Network-First strategy: always get latest version when online, fallback to offline cache in the gym
+// Network-First with cache: 'no-cache' revalidation: always get latest GitHub files when online, fallback to cache offline
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-cache' })
       .then((networkResponse) => {
         const responseClone = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
@@ -42,10 +44,10 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
+        return caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
           if (cachedResponse) return cachedResponse;
           if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
+            return caches.match('./index.html', { ignoreSearch: true });
           }
         });
       })

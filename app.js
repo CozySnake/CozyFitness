@@ -443,6 +443,10 @@
       }
     });
 
+    const mainContentEl = document.querySelector('.main-content');
+    if (mainContentEl) {
+      mainContentEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Render targeted view contents
@@ -2367,10 +2371,30 @@
   });
 
   // ==========================================================================
-  // 15. App Initialization & Service Worker
+  // 15. App Initialization, iOS Full-Screen Shell & Service Worker
   // ==========================================================================
 
+  function syncViewportHeight() {
+    const isStandalone = window.navigator.standalone === true ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    let targetHeight = window.innerHeight;
+
+    // Fix iOS PWA black-translucent ~1cm bottom bar:
+    // WebKit subtracts the top status bar (~59px) from window.innerHeight while the WebView is window.screen.height tall.
+    if (isStandalone && window.screen && window.screen.height > window.innerHeight) {
+      targetHeight = window.screen.height;
+    }
+
+    document.documentElement.style.setProperty('--app-shell-height', `${targetHeight}px`);
+  }
+
   function initApp() {
+    syncViewportHeight();
+    window.addEventListener('resize', syncViewportHeight);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(syncViewportHeight, 100);
+    });
+
     loadState();
     applySettingsUI();
     renderHome();
@@ -2382,7 +2406,9 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((err) => {
+        navigator.serviceWorker.register('./sw.js?v=1.5').then((reg) => {
+          if (reg && reg.update) reg.update();
+        }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);
         });
       });

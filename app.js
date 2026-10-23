@@ -229,10 +229,11 @@
   let profileData = {
     name: 'Александр',
     gender: 'male',
-    height: 180,
-    weight: 78.5,
+    goal: 'athletic',
+    height: 177,
+    weight: 79,
     weightLog: [
-      { date: new Date().toISOString(), weight: 78.5 }
+      { date: new Date().toISOString(), weight: 79 }
     ]
   };
 
@@ -244,9 +245,10 @@
     theme: 'dark'
   };
 
-  // State for template creator modal
+  // State for template creator/editor modal
   let templateBuilderExercises = [];
   let isSelectingForTemplateBuilder = false;
+  let editingTemplateId = null;
 
   // Calendar State
   let calendarMonth = new Date().getMonth();
@@ -644,6 +646,7 @@
   const createCustomTemplateBtn = document.getElementById('createCustomTemplateBtn');
 
   // Custom Template Modal elements
+  const modalTemplateHeaderTitle = document.getElementById('modalTemplateHeaderTitle');
   const newTemplateTitle = document.getElementById('newTemplateTitle');
   const newTemplateDesc = document.getElementById('newTemplateDesc');
   const addExToNewTemplateBtn = document.getElementById('addExToNewTemplateBtn');
@@ -688,6 +691,7 @@
             <button class="template-start-btn" data-tpl-id="${tpl.id}">
               Начать эту программу ➔
             </button>
+            <button class="template-edit-btn" data-tpl-id="${tpl.id}" title="Редактировать программу">✏️</button>
             <button class="template-delete-btn" data-tpl-id="${tpl.id}" title="Удалить программу">🗑</button>
           </div>
         `;
@@ -699,6 +703,21 @@
             }
           }
           startWorkoutFromTemplate(tpl);
+        };
+
+        card.querySelector('.template-edit-btn').onclick = () => {
+          editingTemplateId = tpl.id;
+          if (modalTemplateHeaderTitle) modalTemplateHeaderTitle.textContent = 'Редактировать программу';
+          newTemplateTitle.value = tpl.title || '';
+          newTemplateDesc.value = tpl.desc || '';
+          templateBuilderExercises = (tpl.exercises || []).map((ex) => ({
+            id: ex.id,
+            name: ex.name,
+            muscle: ex.muscle,
+            isBodyweight: !!ex.isBodyweight
+          }));
+          renderTemplateBuilderList();
+          openModal('modalCreateTemplate');
         };
 
         card.querySelector('.template-delete-btn').onclick = () => {
@@ -833,6 +852,8 @@
   }
 
   createCustomTemplateBtn.onclick = () => {
+    editingTemplateId = null;
+    if (modalTemplateHeaderTitle) modalTemplateHeaderTitle.textContent = 'Новая программа';
     newTemplateTitle.value = '';
     newTemplateDesc.value = '';
     templateBuilderExercises = [];
@@ -856,22 +877,34 @@
       return;
     }
 
-    const newTpl = {
-      id: 'custom_tpl_' + Date.now(),
-      title: title,
-      desc: newTemplateDesc.value.trim() || 'Пользовательская программа',
-      isCustom: true,
-      exercises: templateBuilderExercises.map((ex) => ({
-        id: ex.id,
-        name: ex.name,
-        muscle: ex.muscle,
-        isBodyweight: !!ex.isBodyweight,
-        defaultWeight: ex.isBodyweight ? 0 : 20,
-        defaultReps: 10
-      }))
-    };
+    const mappedExercises = templateBuilderExercises.map((ex) => ({
+      id: ex.id,
+      name: ex.name,
+      muscle: ex.muscle,
+      isBodyweight: !!ex.isBodyweight,
+      defaultWeight: ex.isBodyweight ? 0 : 20,
+      defaultReps: 10
+    }));
 
-    customTemplates.push(newTpl);
+    if (editingTemplateId) {
+      const idx = customTemplates.findIndex((t) => t.id === editingTemplateId);
+      if (idx !== -1) {
+        customTemplates[idx].title = title;
+        customTemplates[idx].desc = newTemplateDesc.value.trim() || 'Пользовательская программа';
+        customTemplates[idx].exercises = mappedExercises;
+      }
+      editingTemplateId = null;
+    } else {
+      const newTpl = {
+        id: 'custom_tpl_' + Date.now(),
+        title: title,
+        desc: newTemplateDesc.value.trim() || 'Пользовательская программа',
+        isCustom: true,
+        exercises: mappedExercises
+      };
+      customTemplates.push(newTpl);
+    }
+
     saveCustomTemplates();
     closeModal('modalCreateTemplate');
     renderWorkoutHub();
@@ -958,6 +991,7 @@
             <div>${exItem.isBodyweight ? 'Свой вес / Доп' : 'Вес (кг)'}</div>
             <div>Повт</div>
             <div>Готово</div>
+            <div></div>
           </div>
           <div class="sets-rows-container" id="setsContainer_${exIndex}">
             <!-- Sets rows will be rendered here -->
@@ -1025,6 +1059,9 @@
           <button type="button" class="set-check-btn" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Отметить подход">
             ${set.completed ? '✓' : '○'}
           </button>
+
+          <!-- Remove Set Button -->
+          <button type="button" class="remove-set-btn" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" title="Удалить подход" aria-label="Удалить подход">✕</button>
         `;
 
         setsContainer.appendChild(row);
@@ -1210,6 +1247,19 @@
           completed: false
         });
 
+        saveActiveWorkout();
+        renderActiveWorkout();
+      };
+    });
+
+    // Remove set button
+    document.querySelectorAll('.remove-set-btn').forEach((btn) => {
+      btn.onclick = () => {
+        const exIdx = parseInt(btn.dataset.exIdx, 10);
+        const setIdx = parseInt(btn.dataset.setIdx, 10);
+        const exercise = activeWorkout.exercises[exIdx];
+        if (!exercise) return;
+        exercise.sets.splice(setIdx, 1);
         saveActiveWorkout();
         renderActiveWorkout();
       };
@@ -1493,16 +1543,22 @@
       minute: '2-digit'
     });
 
-    const exercisesSummary = item.exercises
+    // Filter only exercises that have at least one completed set (or fallback if legacy)
+    const validExercises = (item.exercises || []).map((ex) => {
+      const completedOnly = (ex.sets || []).filter((s) => s.completed);
+      return Object.assign({}, ex, { sets: completedOnly });
+    }).filter((ex) => ex.sets.length > 0);
+
+    const exercisesSummary = validExercises
       .map((ex) => {
-        const completedSetsCount = ex.sets.filter((s) => s.completed).length;
+        const completedSetsCount = ex.sets.length;
         const bwTag = ex.isBodyweight ? ' (Свой вес)' : '';
         return `${ex.name} (${completedSetsCount}${bwTag})`;
       })
       .join(' • ');
 
-    // Detailed sets breakdown HTML for accordion
-    const drilldownBlocksHtml = item.exercises.map((ex) => {
+    // Detailed sets breakdown HTML for accordion (only completed sets!)
+    const drilldownBlocksHtml = validExercises.map((ex) => {
       const setsRowsHtml = ex.sets.map((s, sIdx) => {
         let weightStr = '';
         if (ex.isBodyweight) {
@@ -1515,7 +1571,7 @@
           <div class="drilldown-set-row">
             <span class="drilldown-set-badge">Сет ${sIdx + 1}</span>
             <span class="drilldown-set-val">${weightStr} × ${s.reps}</span>
-            <span>${s.completed ? '✓' : '○'}</span>
+            <span>✓</span>
           </div>
         `;
       }).join('');
@@ -1631,51 +1687,107 @@
 
   const profileNameInput = document.getElementById('profileNameInput');
   const profileGenderSelect = document.getElementById('profileGenderSelect');
+  const profileGoalSelect = document.getElementById('profileGoalSelect');
   const profileHeightInput = document.getElementById('profileHeightInput');
   const profileWeightInput = document.getElementById('profileWeightInput');
   const bmiValueDisplay = document.getElementById('bmiValueDisplay');
   const bmiStatusText = document.getElementById('bmiStatusText');
+  const bmiContextNote = document.getElementById('bmiContextNote');
   const recordWeightBtn = document.getElementById('recordWeightBtn');
   const weightLogChips = document.getElementById('weightLogChips');
 
-  function calculateBMI(weightKg, heightCm) {
-    if (!weightKg || !heightCm || heightCm <= 0) return { val: '—', status: 'Заполните данные' };
+  function calculateBMI(weightKg, heightCm, goal = 'athletic') {
+    if (!weightKg || !heightCm || heightCm <= 0) {
+      return { val: '—', status: 'Заполните данные', note: '' };
+    }
     const heightM = heightCm / 100;
     const bmi = weightKg / (heightM * heightM);
     const valFormatted = bmi.toFixed(1);
 
-    let status = 'Нормальный вес 👍';
-    if (bmi < 18.5) status = 'Дефицит массы';
-    else if (bmi >= 25 && bmi < 30) status = 'Избыточная масса';
-    else if (bmi >= 30) status = 'Ожирение';
+    let status = 'Отличная форма 👍';
+    let note = '💡 Классический медицинский ИМТ не отличает мышцы от жира. У тренирующихся в зале индекс 24.5–28.5 чаще всего отражает развитую мускулатуру.';
 
-    return { val: valFormatted, status };
+    if (goal === 'athletic') {
+      if (bmi < 19.5) {
+        status = 'Резерв для набора массы 🌱';
+        note = '💡 Отличная база для профицита калорий и силового прогресса!';
+      } else if (bmi < 24.5) {
+        status = 'Сухая атлетичная форма ⚡';
+        note = '💡 Отличное соотношение роста и веса. При желании можно плавно набирать качественную мышечную массу.';
+      } else if (bmi <= 28.5) {
+        status = 'Атлетическая мышечная форма 💪';
+        note = `💡 При росте ${heightCm} см и весе ${weightKg} кг обычный калькулятор показал бы «избыточный вес», но для силового атлета ИМТ ${valFormatted} — это плотная мышечная масса и крепкий каркас!`;
+      } else if (bmi <= 31.5) {
+        status = 'Мощная силовая масса 🐻';
+        note = '💡 Выраженная силовая комплекция (пауэрлифтинг / тяжелый силовой тренинг).';
+      } else {
+        status = 'Высокая масса тела';
+        note = '💡 Рекомендуется следить за комфортом суставов и кардио-выносливостью.';
+      }
+    } else if (goal === 'fitness') {
+      if (bmi < 18.5) status = 'Дефицит массы';
+      else if (bmi < 25.5) status = 'Оптимальный тонус 👍';
+      else if (bmi <= 27.5) status = 'Спортивное плотное сложение 💪';
+      else status = 'Выше среднего диапазона';
+    } else {
+      // cut / standard
+      if (bmi < 18.5) status = 'Дефицит массы';
+      else if (bmi < 25) status = 'Нормальный вес 👍';
+      else if (bmi < 28) status = 'Плотная форма / Сушка 🔥';
+      else status = 'Этап снижения веса';
+    }
+
+    return { val: valFormatted, status, note };
+  }
+
+  function updateBMIDisplay() {
+    const bmi = calculateBMI(profileData.weight, profileData.height, profileData.goal || 'athletic');
+    bmiValueDisplay.textContent = bmi.val;
+    bmiStatusText.textContent = bmi.status;
+    if (bmiContextNote && bmi.note) {
+      bmiContextNote.textContent = bmi.note;
+    }
   }
 
   function renderProfile() {
     profileNameInput.value = profileData.name || 'Александр';
     profileGenderSelect.value = profileData.gender || 'male';
-    profileHeightInput.value = profileData.height || 180;
-    profileWeightInput.value = profileData.weight || 78.5;
+    if (profileGoalSelect) {
+      profileGoalSelect.value = profileData.goal || 'athletic';
+    }
+    profileHeightInput.value = profileData.height || 177;
+    profileWeightInput.value = profileData.weight || 79;
 
-    const bmi = calculateBMI(profileData.weight, profileData.height);
-    bmiValueDisplay.textContent = bmi.val;
-    bmiStatusText.textContent = bmi.status;
+    updateBMIDisplay();
 
-    // Weight history chips
+    // Weight history chips with delete buttons
     weightLogChips.innerHTML = '';
     const logs = profileData.weightLog || [];
     if (logs.length === 0) {
       weightLogChips.innerHTML = `<span style="font-size:0.8rem; color:var(--text-dim);">Пока нет записей веса</span>`;
     } else {
-      logs.slice(-7).reverse().forEach((log) => {
+      // Map with original index so deleting removes the exact entry
+      const indexedLogs = logs.map((item, idx) => ({ item, idx })).slice(-10).reverse();
+      indexedLogs.forEach(({ item: log, idx: originalIdx }) => {
         const chip = document.createElement('div');
         chip.className = 'weight-chip';
         const d = new Date(log.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
         chip.innerHTML = `
           <span class="weight-chip-date">${d}</span>
           <span class="weight-chip-val">${log.weight} кг</span>
+          <button type="button" class="weight-chip-del" data-idx="${originalIdx}" title="Удалить этот замер">✕</button>
         `;
+
+        chip.querySelector('.weight-chip-del').onclick = (e) => {
+          e.stopPropagation();
+          profileData.weightLog.splice(originalIdx, 1);
+          if (profileData.weightLog.length > 0) {
+            profileData.weight = profileData.weightLog[profileData.weightLog.length - 1].weight;
+          }
+          saveProfile();
+          renderProfile();
+        };
+
         weightLogChips.appendChild(chip);
       });
     }
@@ -1691,20 +1803,24 @@
     saveProfile();
   };
 
+  if (profileGoalSelect) {
+    profileGoalSelect.onchange = (e) => {
+      profileData.goal = e.target.value;
+      saveProfile();
+      updateBMIDisplay();
+    };
+  }
+
   profileHeightInput.oninput = (e) => {
-    profileData.height = parseFloat(e.target.value) || 180;
+    profileData.height = parseFloat(e.target.value) || 177;
     saveProfile();
-    const bmi = calculateBMI(profileData.weight, profileData.height);
-    bmiValueDisplay.textContent = bmi.val;
-    bmiStatusText.textContent = bmi.status;
+    updateBMIDisplay();
   };
 
   profileWeightInput.oninput = (e) => {
-    profileData.weight = parseFloat(e.target.value) || 75;
+    profileData.weight = parseFloat(e.target.value) || 79;
     saveProfile();
-    const bmi = calculateBMI(profileData.weight, profileData.height);
-    bmiValueDisplay.textContent = bmi.val;
-    bmiStatusText.textContent = bmi.status;
+    updateBMIDisplay();
   };
 
   recordWeightBtn.onclick = () => {
@@ -2173,6 +2289,11 @@
       });
     });
 
+    if (totalCompletedSets === 0) {
+      alert('Отметьте галочкой (✓) хотя бы один выполненный подход перед сохранением тренировки.');
+      return;
+    }
+
     document.getElementById('finishTimeVal').textContent = formatTime(elapsedSec);
     document.getElementById('finishSetsVal').textContent = String(totalCompletedSets);
     document.getElementById('finishTonnageVal').textContent = `${Math.round(totalTonnage).toLocaleString('ru-RU')} кг`;
@@ -2190,14 +2311,23 @@
     let totalCompletedSets = 0;
     let totalTonnage = 0;
 
-    activeWorkout.exercises.forEach((ex) => {
-      ex.sets.forEach((set) => {
-        if (set.completed) {
+    // Keep ONLY completed sets when saving to history!
+    const cleanedExercises = activeWorkout.exercises
+      .map((ex) => {
+        const completedSets = (ex.sets || []).filter((set) => set.completed);
+        completedSets.forEach((set) => {
           totalCompletedSets += 1;
           totalTonnage += (set.weight || 0) * (set.reps || 0);
-        }
-      });
-    });
+        });
+        return {
+          id: ex.id,
+          name: ex.name,
+          muscle: ex.muscle,
+          isBodyweight: !!ex.isBodyweight,
+          sets: completedSets
+        };
+      })
+      .filter((ex) => ex.sets.length > 0);
 
     const finishedRecord = {
       id: activeWorkout.id,
@@ -2206,7 +2336,7 @@
       durationSec: elapsedSec,
       tonnage: Math.round(totalTonnage),
       totalSets: totalCompletedSets,
-      exercises: activeWorkout.exercises,
+      exercises: cleanedExercises,
       notes: document.getElementById('finishWorkoutNotes').value.trim()
     };
 

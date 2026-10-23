@@ -288,20 +288,30 @@
             </div>
             <div class="profile-field">
               <label class="p-label">Рост (см)</label>
-              <input type="number" id="profileHeightInput" class="profile-input" value="180" placeholder="180">
+              <input type="number" id="profileHeightInput" class="profile-input" value="177" placeholder="177">
             </div>
             <div class="profile-field">
               <label class="p-label">Вес тела (кг)</label>
-              <input type="number" step="0.1" id="profileWeightInput" class="profile-input" value="78.5" placeholder="78.5">
+              <input type="number" step="0.1" id="profileWeightInput" class="profile-input" value="79" placeholder="79">
             </div>
+          </div>
+
+          <div class="profile-goal-row">
+            <label class="p-label">Фитнес-цель и комплекция</label>
+            <select id="profileGoalSelect" class="profile-select" style="text-align: left; padding: 0 12px;">
+              <option value="athletic" selected>💪 Атлетическая / Набор мышечной массы</option>
+              <option value="fitness">🌿 Тонус и поддержание формы</option>
+              <option value="cut">🔥 Рельеф / Снижение веса</option>
+            </select>
           </div>
 
           <div class="bmi-banner" id="profileBmiBanner">
             <div class="bmi-left">
-              <span class="bmi-title">ИМТ (Индекс массы тела)</span>
-              <span class="bmi-status" id="bmiStatusText">Нормальный вес</span>
+              <span class="bmi-title">Оценка формы (ИМТ)</span>
+              <span class="bmi-status" id="bmiStatusText">Атлетическая форма 💪</span>
+              <span class="bmi-note" id="bmiContextNote">Стандартный ИМТ не отличает мышцы от жира. При силовых тренировках это показатель хорошей мышечной массы!</span>
             </div>
-            <div class="bmi-val" id="bmiValueDisplay">24.2</div>
+            <div class="bmi-val" id="bmiValueDisplay">25.2</div>
           </div>
 
           <div class="weight-log-actions">
@@ -501,7 +511,7 @@
     <div id="modalCreateTemplate" class="modal-overlay hidden">
       <div class="modal-card modal-large-card">
         <div class="sheet-header">
-          <h3>Новая программа</h3>
+          <h3 id="modalTemplateHeaderTitle">Новая программа</h3>
           <button class="close-modal-btn" data-close="modalCreateTemplate">✕</button>
         </div>
         <div class="modal-body">

@@ -180,7 +180,7 @@ input, textarea, select {
    ========================================================================== */
 .main-content {
   flex: 1;
-  padding: 18px 18px 110px 18px; /* space for bottom bar + timer */
+  padding: 18px 18px calc(160px + env(safe-area-inset-bottom, 16px)) 18px; /* ample space for bottom bar + floating rest timer */
   overflow-y: auto;
 }
 
@@ -604,6 +604,7 @@ button:active {
   align-items: center;
 }
 
+.template-edit-btn,
 .template-delete-btn {
   background: var(--bg-card-subtle);
   color: var(--text-dim);
@@ -614,6 +615,11 @@ button:active {
   font-size: 1rem;
   flex-shrink: 0;
   cursor: pointer;
+}
+
+.template-edit-btn:hover {
+  color: var(--accent-gold);
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 .template-delete-btn:hover {
@@ -815,9 +821,9 @@ input[type=number] {
 
 .sets-table-header {
   display: grid;
-  grid-template-columns: 38px 1fr 1fr 46px;
-  gap: 8px;
-  font-size: 0.75rem;
+  grid-template-columns: 32px 1fr 1fr 40px 28px;
+  gap: 6px;
+  font-size: 0.72rem;
   color: var(--text-muted);
   text-align: center;
   margin-bottom: 8px;
@@ -827,8 +833,8 @@ input[type=number] {
 
 .set-row {
   display: grid;
-  grid-template-columns: 38px 1fr 1fr 46px;
-  gap: 8px;
+  grid-template-columns: 32px 1fr 1fr 40px 28px;
+  gap: 6px;
   align-items: center;
   margin-bottom: 8px;
   transition: opacity 0.2s;
@@ -932,18 +938,39 @@ input[type=number] {
 }
 
 .set-check-btn {
-  width: 46px;
+  width: 40px;
   height: 40px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.remove-set-btn {
+  width: 28px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.remove-set-btn:hover,
+.remove-set-btn:active {
+  color: var(--accent-red);
+  background: var(--accent-red-light);
 }
 
 .set-row.completed .set-check-btn {
@@ -2041,6 +2068,13 @@ input[type="checkbox"]:checked::after {
   border-color: var(--accent-gold);
 }
 
+.profile-goal-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
 .bmi-banner {
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
@@ -2049,6 +2083,7 @@ input[type="checkbox"]:checked::after {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 14px;
 }
 
@@ -2066,9 +2101,16 @@ input[type="checkbox"]:checked::after {
 }
 
 .bmi-status {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--accent-green);
+}
+
+.bmi-note {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 2px;
 }
 
 .bmi-val {
@@ -2076,6 +2118,7 @@ input[type="checkbox"]:checked::after {
   font-weight: 800;
   color: var(--text-main);
   font-family: monospace;
+  flex-shrink: 0;
 }
 
 .weight-history-wrap {
@@ -2100,13 +2143,14 @@ input[type="checkbox"]:checked::after {
 }
 
 .weight-chip {
+  position: relative;
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
-  padding: 4px 10px;
+  padding: 6px 26px 6px 10px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   flex-shrink: 0;
 }
 
@@ -2119,6 +2163,30 @@ input[type="checkbox"]:checked::after {
   font-size: 0.9rem;
   font-weight: 800;
   color: var(--accent-gold);
+}
+
+.weight-chip-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.weight-chip-del:hover,
+.weight-chip-del:active {
+  color: var(--accent-red);
+  background: var(--accent-red-light);
 }
 
 /* ==========================================================================

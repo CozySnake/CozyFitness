@@ -227,14 +227,13 @@
   let activeWorkout = null;
 
   let profileData = {
-    name: 'Александр',
-    gender: 'male',
+    name: '',
+    gender: '',
     goal: 'athletic',
-    height: 177,
-    weight: 79,
-    weightLog: [
-      { date: new Date().toISOString(), weight: 79 }
-    ]
+    height: '',
+    weight: '',
+    weightLog: [],
+    onboarded: false
   };
 
   let settings = {
@@ -339,7 +338,20 @@
       if (tpls) customTemplates = JSON.parse(tpls);
 
       const prof = localStorage.getItem(STORAGE_KEYS.PROFILE);
-      if (prof) profileData = Object.assign(profileData, JSON.parse(prof));
+      if (prof) {
+        const parsedProf = JSON.parse(prof);
+        // Clean up legacy hardcoded defaults if user hasn't completed onboarding yet
+        if (!parsedProf.onboarded && parsedProf.name === 'Александр' && (parsedProf.height === 180 || parsedProf.height === 177)) {
+          parsedProf.name = '';
+          parsedProf.gender = '';
+          parsedProf.height = '';
+          parsedProf.weight = '';
+          if (parsedProf.weightLog && parsedProf.weightLog.length === 1 && (parsedProf.weightLog[0].weight === 78.5 || parsedProf.weightLog[0].weight === 79)) {
+            parsedProf.weightLog = [];
+          }
+        }
+        profileData = Object.assign(profileData, parsedProf);
+      }
 
       const sett = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (sett) settings = Object.assign(settings, JSON.parse(sett));
@@ -1686,9 +1698,10 @@
   }
 
   // ==========================================================================
-  // 10. Athlete Profile & Bodyweight Tracker
+  // 10. Athlete Profile, Onboarding & Bodyweight Tracker
   // ==========================================================================
 
+  const profileAvatarIcon = document.getElementById('profileAvatarIcon');
   const profileNameInput = document.getElementById('profileNameInput');
   const profileGenderSelect = document.getElementById('profileGenderSelect');
   const profileGoalSelect = document.getElementById('profileGoalSelect');
@@ -1700,12 +1713,67 @@
   const recordWeightBtn = document.getElementById('recordWeightBtn');
   const weightLogChips = document.getElementById('weightLogChips');
 
-  function calculateBMI(weightKg, heightCm, goal = 'athletic') {
-    if (!weightKg || !heightCm || heightCm <= 0) {
-      return { val: '—', status: 'Заполните данные', note: '' };
+  // Onboarding modal elements
+  const onboardNameInput = document.getElementById('onboardNameInput');
+  const onboardGenderSelect = document.getElementById('onboardGenderSelect');
+  const onboardHeightInput = document.getElementById('onboardHeightInput');
+  const onboardWeightInput = document.getElementById('onboardWeightInput');
+  const onboardGoalSelect = document.getElementById('onboardGoalSelect');
+  const skipOnboardingBtn = document.getElementById('skipOnboardingBtn');
+  const saveOnboardingBtn = document.getElementById('saveOnboardingBtn');
+
+  function updateAvatarAndGreeting() {
+    if (profileAvatarIcon) {
+      if (profileData.gender === 'female') {
+        profileAvatarIcon.textContent = '🏃‍♀️';
+      } else if (profileData.gender === 'male') {
+        profileAvatarIcon.textContent = '🏋️‍♂️';
+      } else {
+        profileAvatarIcon.textContent = '💪';
+      }
     }
-    const heightM = heightCm / 100;
-    const bmi = weightKg / (heightM * heightM);
+
+    const greetingTitle = document.getElementById('greetingTitle');
+    if (greetingTitle) {
+      const cleanName = (profileData.name || '').trim();
+      if (cleanName) {
+        greetingTitle.textContent = `Привет, ${cleanName}! 💪`;
+      } else if (profileData.gender === 'female') {
+        greetingTitle.textContent = 'Привет, чемпионка! 💪';
+      } else {
+        greetingTitle.textContent = 'Привет, чемпион! 💪';
+      }
+    }
+  }
+
+  function calculateBMI(weightKg, heightCm, goal = 'athletic') {
+    const w = parseFloat(weightKg);
+    const h = parseFloat(heightCm);
+
+    if ((!w || w <= 0) && (!h || h <= 0)) {
+      return {
+        val: '—',
+        status: 'Укажите рост и вес',
+        note: '💡 Если не знаете точный вес или рост прямо сейчас — можно оставить поля пустыми или указать примерно и поменять позже.'
+      };
+    }
+    if (!h || h <= 0) {
+      return {
+        val: '—',
+        status: 'Не указан рост',
+        note: '💡 Укажите рост в сантиметрах (хотя бы примерно), чтобы рассчитать спортивный ИМТ.'
+      };
+    }
+    if (!w || w <= 0) {
+      return {
+        val: '—',
+        status: 'Не указан вес',
+        note: '💡 Когда взвеситесь (или примерно), укажите вес тела выше для расчёта оценки формы.'
+      };
+    }
+
+    const heightM = h / 100;
+    const bmi = w / (heightM * heightM);
     const valFormatted = bmi.toFixed(1);
 
     let status = 'Отличная форма 👍';
@@ -1720,7 +1788,7 @@
         note = '💡 Отличное соотношение роста и веса. При желании можно плавно набирать качественную мышечную массу.';
       } else if (bmi <= 28.5) {
         status = 'Атлетическая мышечная форма 💪';
-        note = `💡 При росте ${heightCm} см и весе ${weightKg} кг обычный калькулятор показал бы «избыточный вес», но для силового атлета ИМТ ${valFormatted} — это плотная мышечная масса и крепкий каркас!`;
+        note = `💡 При росте ${h} см и весе ${w} кг обычный калькулятор показал бы «избыточный вес», но для силового атлета ИМТ ${valFormatted} — это плотная мышечная масса и крепкий каркас!`;
       } else if (bmi <= 31.5) {
         status = 'Мощная силовая масса 🐻';
         note = '💡 Выраженная силовая комплекция (пауэрлифтинг / тяжелый силовой тренинг).';
@@ -1754,14 +1822,15 @@
   }
 
   function renderProfile() {
-    profileNameInput.value = profileData.name || 'Александр';
-    profileGenderSelect.value = profileData.gender || 'male';
+    profileNameInput.value = profileData.name || '';
+    profileGenderSelect.value = profileData.gender || '';
     if (profileGoalSelect) {
       profileGoalSelect.value = profileData.goal || 'athletic';
     }
-    profileHeightInput.value = profileData.height || 177;
-    profileWeightInput.value = profileData.weight || 79;
+    profileHeightInput.value = (profileData.height !== undefined && profileData.height !== null && profileData.height !== '') ? profileData.height : '';
+    profileWeightInput.value = (profileData.weight !== undefined && profileData.weight !== null && profileData.weight !== '') ? profileData.weight : '';
 
+    updateAvatarAndGreeting();
     updateBMIDisplay();
 
     // Weight history chips with delete buttons
@@ -1770,7 +1839,6 @@
     if (logs.length === 0) {
       weightLogChips.innerHTML = `<span style="font-size:0.8rem; color:var(--text-dim);">Пока нет записей веса</span>`;
     } else {
-      // Map with original index so deleting removes the exact entry
       const indexedLogs = logs.map((item, idx) => ({ item, idx })).slice(-10).reverse();
       indexedLogs.forEach(({ item: log, idx: originalIdx }) => {
         const chip = document.createElement('div');
@@ -1797,14 +1865,16 @@
     }
   }
 
-  profileNameInput.onchange = (e) => {
-    profileData.name = e.target.value.trim() || 'Атлет';
+  profileNameInput.oninput = (e) => {
+    profileData.name = e.target.value.trim();
     saveProfile();
+    updateAvatarAndGreeting();
   };
 
   profileGenderSelect.onchange = (e) => {
     profileData.gender = e.target.value;
     saveProfile();
+    updateAvatarAndGreeting();
   };
 
   if (profileGoalSelect) {
@@ -1816,19 +1886,26 @@
   }
 
   profileHeightInput.oninput = (e) => {
-    profileData.height = parseFloat(e.target.value) || 177;
+    const raw = e.target.value.trim();
+    profileData.height = raw ? (parseFloat(raw) || '') : '';
     saveProfile();
     updateBMIDisplay();
   };
 
   profileWeightInput.oninput = (e) => {
-    profileData.weight = parseFloat(e.target.value) || 79;
+    const raw = e.target.value.trim();
+    profileData.weight = raw ? (parseFloat(raw) || '') : '';
     saveProfile();
     updateBMIDisplay();
   };
 
   recordWeightBtn.onclick = () => {
-    const currentWeight = parseFloat(profileWeightInput.value) || profileData.weight;
+    const currentWeight = parseFloat(profileWeightInput.value);
+    if (!currentWeight || currentWeight <= 0) {
+      alert('Пожалуйста, сначала укажите ваш вес (в кг) в поле «Вес тела» выше.');
+      profileWeightInput.focus();
+      return;
+    }
     if (!profileData.weightLog) profileData.weightLog = [];
     profileData.weightLog.push({
       date: new Date().toISOString(),
@@ -1839,6 +1916,54 @@
     renderProfile();
     alert(`Замер веса ${currentWeight} кг успешно сохранен! 📈`);
   };
+
+  // First-Launch Onboarding Handlers ("Давай познакомимся!")
+  function checkAndShowOnboarding() {
+    if (!profileData.onboarded) {
+      if (onboardNameInput) onboardNameInput.value = profileData.name || '';
+      if (onboardGenderSelect) onboardGenderSelect.value = profileData.gender || '';
+      if (onboardHeightInput) onboardHeightInput.value = profileData.height || '';
+      if (onboardWeightInput) onboardWeightInput.value = profileData.weight || '';
+      if (onboardGoalSelect) onboardGoalSelect.value = profileData.goal || 'athletic';
+      openModal('modalOnboarding');
+    }
+  }
+
+  if (skipOnboardingBtn) {
+    skipOnboardingBtn.onclick = () => {
+      profileData.onboarded = true;
+      saveProfile();
+      updateAvatarAndGreeting();
+      renderProfile();
+      closeModal('modalOnboarding');
+    };
+  }
+
+  if (saveOnboardingBtn) {
+    saveOnboardingBtn.onclick = () => {
+      const nameVal = onboardNameInput ? onboardNameInput.value.trim() : '';
+      const genderVal = onboardGenderSelect ? onboardGenderSelect.value : '';
+      const heightVal = onboardHeightInput && onboardHeightInput.value.trim() ? (parseFloat(onboardHeightInput.value.trim()) || '') : '';
+      const weightVal = onboardWeightInput && onboardWeightInput.value.trim() ? (parseFloat(onboardWeightInput.value.trim()) || '') : '';
+      const goalVal = onboardGoalSelect ? onboardGoalSelect.value : 'athletic';
+
+      profileData.name = nameVal;
+      profileData.gender = genderVal;
+      profileData.height = heightVal;
+      profileData.weight = weightVal;
+      profileData.goal = goalVal;
+      profileData.onboarded = true;
+
+      if (weightVal && (!profileData.weightLog || profileData.weightLog.length === 0)) {
+        profileData.weightLog = [{ date: new Date().toISOString(), weight: weightVal }];
+      }
+
+      saveProfile();
+      updateAvatarAndGreeting();
+      renderProfile();
+      closeModal('modalOnboarding');
+    };
+  }
 
   // ==========================================================================
   // 11. Home View & Stats
@@ -2106,11 +2231,13 @@
         customExercises = [];
         customTemplates = [];
         profileData = {
-          name: 'Александр',
-          gender: 'male',
-          height: 180,
-          weight: 78.5,
-          weightLog: []
+          name: '',
+          gender: '',
+          goal: 'athletic',
+          height: '',
+          weight: '',
+          weightLog: [],
+          onboarded: false
         };
         activeWorkout = null;
         settings = {
@@ -2128,6 +2255,7 @@
         renderWorkoutHub();
         renderProfile();
         alert('Все данные очищены.');
+        checkAndShowOnboarding();
       }
     }
   };
@@ -2397,7 +2525,9 @@
 
     loadState();
     applySettingsUI();
+    updateAvatarAndGreeting();
     renderHome();
+    checkAndShowOnboarding();
 
     if (activeWorkout) {
       activeDot.classList.remove('hidden');
@@ -2406,7 +2536,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=1.5').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=1.6').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=1.5">
+  <link rel="stylesheet" href="styles.css?v=1.6">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -272,9 +272,9 @@
         <!-- Profile Card -->
         <div class="profile-card">
           <div class="profile-header-row">
-            <div class="profile-avatar">🏋️‍♂️</div>
+            <div class="profile-avatar" id="profileAvatarIcon">💪</div>
             <div class="profile-name-wrap">
-              <input type="text" id="profileNameInput" class="profile-name-input" value="Александр" placeholder="Ваше имя">
+              <input type="text" id="profileNameInput" class="profile-name-input" value="" placeholder="Введите ваше имя">
               <span class="profile-status-badge">Cozy Athlete 🌿</span>
             </div>
           </div>
@@ -283,17 +283,18 @@
             <div class="profile-field">
               <label class="p-label">Пол</label>
               <select id="profileGenderSelect" class="profile-select">
-                <option value="male" selected>Мужской</option>
+                <option value="">Не указан</option>
+                <option value="male">Мужской</option>
                 <option value="female">Женский</option>
               </select>
             </div>
             <div class="profile-field">
               <label class="p-label">Рост (см)</label>
-              <input type="number" id="profileHeightInput" class="profile-input" value="177" placeholder="177">
+              <input type="number" id="profileHeightInput" class="profile-input" value="" placeholder="—">
             </div>
             <div class="profile-field">
               <label class="p-label">Вес тела (кг)</label>
-              <input type="number" step="0.1" id="profileWeightInput" class="profile-input" value="79" placeholder="79">
+              <input type="number" step="0.1" id="profileWeightInput" class="profile-input" value="" placeholder="—">
             </div>
           </div>
 
@@ -309,10 +310,10 @@
           <div class="bmi-banner" id="profileBmiBanner">
             <div class="bmi-left">
               <span class="bmi-title">Оценка формы (ИМТ)</span>
-              <span class="bmi-status" id="bmiStatusText">Атлетическая форма 💪</span>
-              <span class="bmi-note" id="bmiContextNote">Стандартный ИМТ не отличает мышцы от жира. При силовых тренировках это показатель хорошей мышечной массы!</span>
+              <span class="bmi-status" id="bmiStatusText">Укажите рост и вес</span>
+              <span class="bmi-note" id="bmiContextNote">💡 Укажите рост и вес (даже приблизительно), чтобы видеть спортивную оценку формы с учётом вашей цели.</span>
             </div>
-            <div class="bmi-val" id="bmiValueDisplay">25.2</div>
+            <div class="bmi-val" id="bmiValueDisplay">—</div>
           </div>
 
           <div class="weight-log-actions">
@@ -402,7 +403,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v1.5 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v1.6 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
         </div>
       </section>
@@ -675,8 +676,63 @@
       </div>
     </div>
 
+    <!-- MODAL: FIRST-LAUNCH ONBOARDING (Давай познакомимся!) -->
+    <div id="modalOnboarding" class="modal-overlay hidden">
+      <div class="modal-card modal-large-card">
+        <div class="sheet-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.75rem;">👋</span>
+            <div>
+              <h3 style="font-size:1.2rem; margin-bottom:2px;">Давай познакомимся!</h3>
+              <span style="font-size:0.78rem; color:var(--text-muted);">Настроим профиль под тебя за 15 секунд</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <p class="cozy-tip" style="margin-bottom: 14px; font-size: 0.82rem;">
+            💡 <strong>Не знаете точный вес или рост прямо сейчас?</strong> Ничего страшного! Заполните только то, что знаете, укажите примерно или нажмите «Пропустить» — всё можно поменять в любой момент во вкладке «Профиль».
+          </p>
+
+          <label class="form-label" style="margin-top:0;">Как вас зовут? <span style="font-weight:400; color:var(--text-dim);">(необязательно)</span></label>
+          <input type="text" id="onboardNameInput" class="form-input" placeholder="Например: Александр или Анна">
+
+          <div class="onboard-grid-row">
+            <div>
+              <label class="form-label">Пол</label>
+              <select id="onboardGenderSelect" class="form-input" style="padding: 0 10px;">
+                <option value="">Не указан</option>
+                <option value="male">Мужской 🏋️‍♂️</option>
+                <option value="female">Женский 🏃‍♀️</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Рост (см)</label>
+              <input type="number" id="onboardHeightInput" class="form-input" placeholder="Напр. 175">
+            </div>
+            <div>
+              <label class="form-label">Вес (кг)</label>
+              <input type="number" step="0.1" id="onboardWeightInput" class="form-input" placeholder="Напр. 70">
+            </div>
+          </div>
+
+          <label class="form-label">Какая у вас основная цель тренировок?</label>
+          <select id="onboardGoalSelect" class="form-input" style="padding: 0 12px;">
+            <option value="athletic" selected>💪 Набор мышечной массы и силы</option>
+            <option value="fitness">🌿 Тонус, здоровье и поддержание формы</option>
+            <option value="cut">🔥 Рельеф / Снижение веса</option>
+          </select>
+        </div>
+
+        <div class="modal-actions" style="justify-content: space-between; margin-top: 20px;">
+          <button type="button" id="skipOnboardingBtn" class="secondary-btn">Пропустить</button>
+          <button type="button" id="saveOnboardingBtn" class="primary-btn" style="flex: 1;">Сохранить и начать 🚀</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <script src="app.js?v=1.5"></script>
+  <script src="app.js?v=1.6"></script>
 </body>
 </html>

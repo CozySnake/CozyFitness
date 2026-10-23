@@ -2349,3 +2349,17 @@ input[type="checkbox"]:checked::after {
   line-height: 1.6;
   color: var(--text-main);
 }
+
+/* ==========================================================================
+   Onboarding Modal Grid
+   ========================================================================== */
+.onboard-grid-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.onboard-grid-row .form-label {
+  margin-top: 0;
+}

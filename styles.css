@@ -2363,3 +2363,254 @@ input[type="checkbox"]:checked::after {
 .onboard-grid-row .form-label {
   margin-top: 0;
 }
+
+/* ==========================================================================
+   v1.7 Enhancements: Sticky Header Timer, Live Calendar Icon, Bottom Finish,
+   Set-by-Set Progress, Animated Exercise Visuals & Weight Chart
+   ========================================================================== */
+
+/* 1. Sticky Header Live Workout Timer Chip */
+.header-timer-chip {
+  background: var(--accent-green-light);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: var(--accent-green);
+  padding: 6px 11px;
+  border-radius: 20px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.htc-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 6px var(--accent-green);
+  animation: pulseDot 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* 2. Dynamic Live Calendar Icon in Bottom Tab Bar (replaces static JUL 17) */
+.live-cal-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.live-cal-month {
+  width: 100%;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.42rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 0 1px 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.live-cal-day {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.15;
+  padding-bottom: 1px;
+}
+
+.tab-item.active .live-cal-icon {
+  border-color: var(--accent-gold);
+}
+
+/* 3. Bottom Finish Workout Actions in Active Workout */
+.active-bottom-finish-bar {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.big-finish-btn {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+}
+
+.active-bottom-sub-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.active-bottom-sub-actions button:first-child {
+  flex: 1;
+}
+
+/* 4. Set-by-Set Previous Hints & PR Badges */
+.exercise-prev-row {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  padding: 5px 10px;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.prev-sets-inline {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.pr-pill {
+  color: var(--accent-gold);
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.set-num-badge {
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
+}
+
+.set-prev-mini {
+  font-size: 0.56rem;
+  color: var(--accent-gold);
+  font-weight: 600;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.equip-badge-btn {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.equip-badge-btn.is-bw-mode {
+  background: var(--accent-gold-light);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+/* 5. Animated Exercise SVG Box & Progress Box inside Info Modal */
+.info-visual-box {
+  background: linear-gradient(145deg, var(--bg-card-subtle), var(--bg-input));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.info-anim-svg {
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+}
+
+.info-visual-caption {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.info-visual-caption strong {
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 3px;
+  font-size: 0.85rem;
+}
+
+@keyframes liftBarAnim {
+  0%, 100% { transform: translateY(10px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes pullBodyAnim {
+  0%, 100% { transform: translateY(10px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes squatBodyAnim {
+  0%, 100% { transform: translateY(-6px); }
+  50% { transform: translateY(12px); }
+}
+
+@keyframes pulseMuscleGlow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.anim-lift {
+  animation: liftBarAnim 2.2s infinite ease-in-out;
+}
+
+.anim-pull {
+  animation: pullBodyAnim 2.4s infinite ease-in-out;
+}
+
+.anim-squat {
+  animation: squatBodyAnim 2.4s infinite ease-in-out;
+}
+
+.anim-muscle-glow {
+  animation: pulseMuscleGlow 1.5s infinite ease-in-out;
+}
+
+.info-progress-box {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 0.84rem;
+}
+
+/* 6. Bodyweight Trend SVG Chart */
+.weight-chart-container {
+  margin-top: 8px;
+  margin-bottom: 6px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 12px 6px 12px;
+}
+
+.weight-chart-svg {
+  width: 100%;
+  height: 90px;
+  overflow: visible;
+}

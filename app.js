@@ -12,55 +12,55 @@
 
   const DEFAULT_EXERCISES = [
     // Грудь
-    { id: 'bench_press', name: 'Жим штанги лёжа', muscle: 'Грудь' },
-    { id: 'incline_dumbbell_press', name: 'Жим гантелей на наклонной', muscle: 'Грудь' },
-    { id: 'dips_chest', name: 'Отжимания на брусьях', muscle: 'Грудь', isBodyweight: true },
-    { id: 'cable_crossover', name: 'Сведение рук в кроссовере', muscle: 'Грудь' },
-    { id: 'dumbbell_flyes', name: 'Разводка гантелей лёжа', muscle: 'Грудь' },
-    { id: 'pushups', name: 'Отжимания от пола', muscle: 'Грудь', isBodyweight: true },
+    { id: 'bench_press', name: 'Жим штанги лёжа', muscle: 'Грудь', equip: 'barbell' },
+    { id: 'incline_dumbbell_press', name: 'Жим гантелей на наклонной', muscle: 'Грудь', equip: 'dumbbell_2' },
+    { id: 'dips_chest', name: 'Отжимания на брусьях', muscle: 'Грудь', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'cable_crossover', name: 'Сведение рук в кроссовере', muscle: 'Грудь', equip: 'machine' },
+    { id: 'dumbbell_flyes', name: 'Разводка гантелей лёжа', muscle: 'Грудь', equip: 'dumbbell_2' },
+    { id: 'pushups', name: 'Отжимания от пола', muscle: 'Грудь', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
 
     // Спина
-    { id: 'pullups', name: 'Подтягивания', muscle: 'Спина', isBodyweight: true },
-    { id: 'lat_pulldown', name: 'Тяга верхнего блока к груди', muscle: 'Спина' },
-    { id: 'barbell_row', name: 'Тяга штанги в наклоне', muscle: 'Спина' },
-    { id: 'seated_cable_row', name: 'Горизонтальная тяга блока', muscle: 'Спина' },
-    { id: 'dumbbell_row', name: 'Тяга гантели одной рукой', muscle: 'Спина' },
-    { id: 'hyperextension', name: 'Гиперэкстензия', muscle: 'Спина', isBodyweight: true },
-    { id: 'deadlift', name: 'Классическая становая тяга', muscle: 'Спина' },
+    { id: 'pullups', name: 'Подтягивания', muscle: 'Спина', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'lat_pulldown', name: 'Тяга верхнего блока к груди', muscle: 'Спина', equip: 'machine' },
+    { id: 'barbell_row', name: 'Тяга штанги в наклоне', muscle: 'Спина', equip: 'barbell' },
+    { id: 'seated_cable_row', name: 'Горизонтальная тяга блока', muscle: 'Спина', equip: 'machine' },
+    { id: 'dumbbell_row', name: 'Тяга гантели одной рукой', muscle: 'Спина', equip: 'dumbbell_1' },
+    { id: 'hyperextension', name: 'Гиперэкстензия', muscle: 'Спина', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'deadlift', name: 'Классическая становая тяга', muscle: 'Спина', equip: 'barbell' },
 
     // Ноги
-    { id: 'squats', name: 'Приседания со штангой', muscle: 'Ноги' },
-    { id: 'leg_press', name: 'Жим ногами в тренажере', muscle: 'Ноги' },
-    { id: 'romanian_deadlift', name: 'Румынская становая тяга', muscle: 'Ноги' },
-    { id: 'lunges', name: 'Выпады с гантелями', muscle: 'Ноги' },
-    { id: 'leg_extension', name: 'Разгибания ног в тренажере', muscle: 'Ноги' },
-    { id: 'leg_curl', name: 'Сгибания ног лёжа', muscle: 'Ноги' },
-    { id: 'calf_raises', name: 'Подъемы на носки (икры)', muscle: 'Ноги' },
+    { id: 'squats', name: 'Приседания со штангой', muscle: 'Ноги', equip: 'barbell', canBodyweight: true },
+    { id: 'leg_press', name: 'Жим ногами в тренажере', muscle: 'Ноги', equip: 'machine' },
+    { id: 'romanian_deadlift', name: 'Румынская становая тяга', muscle: 'Ноги', equip: 'barbell' },
+    { id: 'lunges', name: 'Выпады с гантелями', muscle: 'Ноги', equip: 'dumbbell_2', canBodyweight: true },
+    { id: 'leg_extension', name: 'Разгибания ног в тренажере', muscle: 'Ноги', equip: 'machine' },
+    { id: 'leg_curl', name: 'Сгибания ног лёжа', muscle: 'Ноги', equip: 'machine' },
+    { id: 'calf_raises', name: 'Подъемы на носки (икры)', muscle: 'Ноги', equip: 'machine', canBodyweight: true },
 
     // Плечи
-    { id: 'overhead_press', name: 'Армейский жим стоя', muscle: 'Плечи' },
-    { id: 'seated_dumbbell_press', name: 'Жим гантелей сидя', muscle: 'Плечи' },
-    { id: 'lateral_raises', name: 'Махи гантелями в стороны', muscle: 'Плечи' },
-    { id: 'upright_row', name: 'Тяга штанги к подбородку', muscle: 'Плечи' },
-    { id: 'rear_delt_fly', name: 'Махи на заднюю дельту в наклоне', muscle: 'Плечи' },
+    { id: 'overhead_press', name: 'Армейский жим стоя', muscle: 'Плечи', equip: 'barbell' },
+    { id: 'seated_dumbbell_press', name: 'Жим гантелей сидя', muscle: 'Плечи', equip: 'dumbbell_2' },
+    { id: 'lateral_raises', name: 'Махи гантелями в стороны', muscle: 'Плечи', equip: 'dumbbell_2' },
+    { id: 'upright_row', name: 'Тяга штанги к подбородку', muscle: 'Плечи', equip: 'barbell' },
+    { id: 'rear_delt_fly', name: 'Махи на заднюю дельту в наклоне', muscle: 'Плечи', equip: 'dumbbell_2' },
 
     // Руки
-    { id: 'barbell_curl', name: 'Подъем штанги на бицепс', muscle: 'Руки' },
-    { id: 'hammer_curls', name: 'Молотковые сгибания с гантелями', muscle: 'Руки' },
-    { id: 'french_press', name: 'Французский жим лёжа', muscle: 'Руки' },
-    { id: 'cable_tricep_pushdown', name: 'Разгибания на трицепс на блоке', muscle: 'Руки' },
-    { id: 'preacher_curl', name: 'Сгибания на скамье Скотта', muscle: 'Руки' },
+    { id: 'barbell_curl', name: 'Подъем штанги на бицепс', muscle: 'Руки', equip: 'barbell' },
+    { id: 'hammer_curls', name: 'Молотковые сгибания с гантелями', muscle: 'Руки', equip: 'dumbbell_2' },
+    { id: 'french_press', name: 'Французский жим лёжа', muscle: 'Руки', equip: 'barbell' },
+    { id: 'cable_tricep_pushdown', name: 'Разгибания на трицепс на блоке', muscle: 'Руки', equip: 'machine' },
+    { id: 'preacher_curl', name: 'Сгибания на скамье Скотта', muscle: 'Руки', equip: 'barbell' },
 
     // Пресс
-    { id: 'plank', name: 'Планка', muscle: 'Пресс', isBodyweight: true },
-    { id: 'crunches', name: 'Скручивания на коврике', muscle: 'Пресс', isBodyweight: true },
-    { id: 'hanging_leg_raises', name: 'Подъемы ног в висе', muscle: 'Пресс', isBodyweight: true },
-    { id: 'cable_crunch', name: 'Скручивания на блоке («Молитва»)', muscle: 'Пресс' },
+    { id: 'plank', name: 'Планка', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'crunches', name: 'Скручивания на коврике', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'hanging_leg_raises', name: 'Подъемы ног в висе', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'cable_crunch', name: 'Скручивания на блоке («Молитва»)', muscle: 'Пресс', equip: 'machine' },
 
     // Кардио
-    { id: 'treadmill', name: 'Беговая дорожка', muscle: 'Кардио' },
-    { id: 'stationary_bike', name: 'Велотренажер', muscle: 'Кардио' },
-    { id: 'rowing_machine', name: 'Гребной тренажер', muscle: 'Кардио' }
+    { id: 'treadmill', name: 'Беговая дорожка', muscle: 'Кардио', equip: 'machine' },
+    { id: 'stationary_bike', name: 'Велотренажер', muscle: 'Кардио', equip: 'machine' },
+    { id: 'rowing_machine', name: 'Гребной тренажер', muscle: 'Кардио', equip: 'machine' }
   ];
 
   // Pre-set Workout Programs (Базовые программы)
@@ -217,7 +217,8 @@
     CUSTOM_EXERCISES: 'cozy_fitness_custom_exercises',
     CUSTOM_TEMPLATES: 'cozy_fitness_custom_templates',
     PROFILE: 'cozy_fitness_profile',
-    SETTINGS: 'cozy_fitness_settings'
+    SETTINGS: 'cozy_fitness_settings',
+    REST_TIMER: 'cozy_fitness_rest_timer'
   };
 
   // State
@@ -240,6 +241,7 @@
     sound: true,
     vibrate: true,
     defaultRestSec: 90,
+    exerciseRestSec: 120,
     autoRest: true,
     theme: 'dark'
   };
@@ -261,51 +263,170 @@
     interval: null,
     totalSeconds: 90,
     remainingSeconds: 90,
+    endTime: 0,
+    label: 'Отдых',
     isRunning: false
   };
 
-  // Audio Context (Synthesizer Chime)
+  // Audio Context + HTML5 WAV Bell Player (works on iOS even over background music!)
   let audioCtx = null;
+  let alarmAudioEl = null;
+
+  function buildBellWavDataUri() {
+    try {
+      const sampleRate = 22050;
+      const durationSec = 1.65;
+      const numSamples = Math.floor(sampleRate * durationSec);
+      const buffer = new ArrayBuffer(44 + numSamples * 2);
+      const view = new DataView(buffer);
+
+      const writeStr = (offset, str) => {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i));
+        }
+      };
+
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + numSamples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, numSamples * 2, true);
+
+      // 3 bright harmonic bell strikes at t=0, t=0.25s, t=0.52s
+      const notes = [
+        { freq: 659.25, start: 0.0, dur: 0.45 },   // E5
+        { freq: 880.00, start: 0.24, dur: 0.45 },  // A5
+        { freq: 1046.50, start: 0.48, dur: 1.10 }  // C6
+      ];
+
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        let sample = 0;
+        for (const n of notes) {
+          if (t >= n.start && t <= n.start + n.dur) {
+            const localT = t - n.start;
+            const env = Math.exp(-localT * 4.2) * Math.min(1, localT / 0.008);
+            sample += env * (
+              0.65 * Math.sin(2 * Math.PI * n.freq * localT) +
+              0.25 * Math.sin(2 * Math.PI * (n.freq * 2) * localT) +
+              0.10 * Math.sin(2 * Math.PI * (n.freq * 3) * localT)
+            );
+          }
+        }
+        const clamped = Math.max(-1, Math.min(1, sample * 0.92));
+        view.setInt16(44 + i * 2, clamped * 32767, true);
+      }
+
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return 'data:audio/wav;base64,' + window.btoa(binary);
+    } catch (e) {
+      return null;
+    }
+  }
 
   function initAudio() {
-    if (!audioCtx) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (AudioContextClass) {
-        audioCtx = new AudioContextClass();
+    try {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
       }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      if (!alarmAudioEl) {
+        const uri = buildBellWavDataUri();
+        if (uri) {
+          alarmAudioEl = new Audio(uri);
+          alarmAudioEl.preload = 'auto';
+        }
+      }
+    } catch (e) {
+      // Ignore audio init errors
     }
-    if (audioCtx && audioCtx.state === 'suspended') {
-      audioCtx.resume();
+  }
+
+  // Unlock iOS Media playback channel on user tap when starting timer
+  function unlockAudioOnUserTap() {
+    initAudio();
+    if (alarmAudioEl) {
+      try {
+        alarmAudioEl.volume = 0.01;
+        const p = alarmAudioEl.play();
+        if (p && p.then) {
+          p.then(() => {
+            alarmAudioEl.pause();
+            alarmAudioEl.currentTime = 0;
+            alarmAudioEl.volume = 1.0;
+          }).catch(() => {});
+        }
+      } catch (e) {
+        // Ignore
+      }
     }
   }
 
   function playCozyChime() {
     if (!settings.sound) return;
+
+    // 1. Play HTML5 <audio> WAV (plays on iOS Media channel even over background music!)
     try {
       initAudio();
+      if (alarmAudioEl) {
+        alarmAudioEl.currentTime = 0;
+        alarmAudioEl.volume = 1.0;
+        alarmAudioEl.play().catch(() => {});
+      }
+    } catch (e) {
+      // Ignore
+    }
+
+    // 2. Also play Web Audio API synthesizer chime (after ensuring audioCtx is resumed)
+    try {
       if (!audioCtx) return;
+      const triggerSynth = () => {
+        const now = audioCtx.currentTime;
+        const playTone = (freq, start, duration) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
 
-      const now = audioCtx.currentTime;
-      const playTone = (freq, start, duration) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, start);
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.001, start);
+          gain.gain.exponentialRampToValueAtTime(0.8, start + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
 
-        gain.gain.setValueAtTime(0.001, start);
-        gain.gain.exponentialRampToValueAtTime(0.3, start + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
 
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+          osc.start(start);
+          osc.stop(start + duration);
+        };
 
-        osc.start(start);
-        osc.stop(start + duration);
+        playTone(659.25, now, 0.45);        // E5
+        playTone(880.00, now + 0.24, 0.45); // A5
+        playTone(1046.50, now + 0.48, 0.95);// C6
       };
 
-      playTone(587.33, now, 0.7);        // D5
-      playTone(880.00, now + 0.16, 0.9); // A5
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().then(triggerSynth).catch(() => {});
+      } else {
+        triggerSynth();
+      }
     } catch (e) {
       console.warn('Audio play error:', e);
     }
@@ -315,7 +436,7 @@
     if (!settings.vibrate) return;
     if ('vibrate' in navigator) {
       try {
-        navigator.vibrate([180, 80, 240]);
+        navigator.vibrate([300, 120, 300, 120, 450]);
       } catch (e) {
         // Ignored
       }
@@ -395,28 +516,184 @@
     return [...DEFAULT_EXERCISES, ...customExercises];
   }
 
-  function findPreviousPerformance(exerciseName) {
-    if (!historyData || historyData.length === 0) return null;
+  function getExerciseDefinition(nameOrId) {
+    if (!nameOrId) return null;
+    const all = getAllExercises();
+    const q = String(nameOrId).toLowerCase();
+    return all.find((e) => (e.id && e.id.toLowerCase() === q) || e.name.toLowerCase() === q) || null;
+  }
+
+  function canExerciseUseBodyweight(exItem) {
+    if (!exItem) return false;
+    if (exItem.canBodyweight === true) return true;
+    const def = getExerciseDefinition(exItem.id || exItem.name);
+    if (def && def.canBodyweight === true) return true;
+    const n = (exItem.name || '').toLowerCase();
+    return (
+      n.includes('подтяг') ||
+      n.includes('отжим') ||
+      n.includes('брусь') ||
+      n.includes('планк') ||
+      n.includes('скручив') ||
+      n.includes('пресс') ||
+      n.includes('висе') ||
+      n.includes('гиперэкст')
+    );
+  }
+
+  function getEquipInfo(exItem) {
+    const canBW = canExerciseUseBodyweight(exItem);
+    if (canBW && exItem.isBodyweight) {
+      return {
+        equip: 'bodyweight',
+        canBW: true,
+        isBW: true,
+        badgeText: '⚡ Свой вес / +Доп',
+        colTitle: 'СВОЙ ВЕС / ДОП',
+        multiplier: 1
+      };
+    }
+
+    const def = getExerciseDefinition(exItem.id || exItem.name);
+    const equip = exItem.equip || (def && def.equip) || 'barbell';
+
+    if (equip === 'dumbbell_2') {
+      return {
+        equip: 'dumbbell_2',
+        canBW,
+        isBW: false,
+        badgeText: '🏋️ 2 гантели (вес 1 шт)',
+        colTitle: '1 ГАНТЕЛЬ (КГ)',
+        multiplier: 2
+      };
+    }
+    if (equip === 'dumbbell_1') {
+      return {
+        equip: 'dumbbell_1',
+        canBW,
+        isBW: false,
+        badgeText: '🏋️ 1 гантель',
+        colTitle: 'ГАНТЕЛЬ (КГ)',
+        multiplier: 1
+      };
+    }
+    if (equip === 'machine') {
+      return {
+        equip: 'machine',
+        canBW,
+        isBW: false,
+        badgeText: '⚙️ Тренажёр / Блок',
+        colTitle: 'ВЕС (КГ)',
+        multiplier: 1
+      };
+    }
+    return {
+      equip: 'barbell',
+      canBW,
+      isBW: false,
+      badgeText: '🏋️ Штанга (общий вес)',
+      colTitle: 'ШТАНГА (КГ)',
+      multiplier: 1
+    };
+  }
+
+  // Returns detailed previous sets and personal record for an exercise
+  function findExerciseHistoryStats(exerciseName) {
+    if (!historyData || historyData.length === 0 || !exerciseName) return null;
+    const targetName = exerciseName.toLowerCase();
+
+    let lastSessionSets = null;
+    let lastSessionDate = null;
+    let bestSet = null;
+    const sessions = [];
+
     for (const workout of historyData) {
-      const foundEx = workout.exercises.find((e) => e.name.toLowerCase() === exerciseName.toLowerCase());
+      const foundEx = (workout.exercises || []).find((e) => e.name.toLowerCase() === targetName);
       if (foundEx && foundEx.sets && foundEx.sets.length > 0) {
         const completedSets = foundEx.sets.filter((s) => s.completed);
         if (completedSets.length > 0) {
-          const isBW = foundEx.isBodyweight || completedSets.some((s) => s.isBodyweight);
-          const heaviest = completedSets.reduce((max, s) => ((s.weight || 0) > (max.weight || 0) ? s : max), completedSets[0]);
+          const canBW = canExerciseUseBodyweight(foundEx);
+          const isBW = canBW && !!foundEx.isBodyweight;
 
-          if (isBW) {
-            if (!heaviest.weight || heaviest.weight === 0) {
-              return `Свой вес × ${heaviest.reps}`;
-            } else {
-              return `+${heaviest.weight} кг × ${heaviest.reps}`;
+          const formattedSets = completedSets.map((s) => {
+            if (isBW) {
+              return (!s.weight || s.weight === 0) ? `СВ×${s.reps}` : `+${s.weight}×${s.reps}`;
             }
+            return `${s.weight}×${s.reps}`;
+          });
+
+          if (!lastSessionSets) {
+            lastSessionSets = completedSets;
+            lastSessionDate = workout.date;
           }
-          return `${heaviest.weight} кг × ${heaviest.reps}`;
+
+          sessions.push({
+            date: workout.date,
+            setsText: formattedSets.join(', '),
+            isBW
+          });
+
+          completedSets.forEach((s) => {
+            const w = parseFloat(s.weight) || 0;
+            const r = parseInt(s.reps, 10) || 0;
+            if (!bestSet || w > bestSet.weight || (w === bestSet.weight && r > bestSet.reps)) {
+              bestSet = { weight: w, reps: r, isBW };
+            }
+          });
         }
       }
     }
-    return null;
+
+    if (!lastSessionSets) return null;
+
+    const lastIsBW = canExerciseUseBodyweight({ name: exerciseName }) &&
+      lastSessionSets.some((s) => s.isBodyweight || !s.weight);
+
+    const setStrings = lastSessionSets.map((s) => {
+      if (lastIsBW && (!s.weight || s.weight === 0)) {
+        return `СВ×${s.reps}`;
+      }
+      if (lastIsBW && s.weight > 0) {
+        return `+${s.weight}×${s.reps}`;
+      }
+      return `${s.weight}×${s.reps}`;
+    });
+
+    let prText = '';
+    if (bestSet) {
+      if (bestSet.isBW) {
+        prText = bestSet.weight > 0 ? `+${bestSet.weight} кг × ${bestSet.reps}` : `Свой вес × ${bestSet.reps}`;
+      } else {
+        prText = `${bestSet.weight} кг × ${bestSet.reps}`;
+      }
+    }
+
+    return {
+      lastSetsRaw: lastSessionSets,
+      lastSetsStrings: setStrings,
+      summaryInline: setStrings.map((str, i) => `${i + 1}) ${str}`).join(' • '),
+      prText,
+      lastDate: lastSessionDate,
+      sessions: sessions.slice(0, 5)
+    };
+  }
+
+  function findPreviousPerformance(exerciseName) {
+    const stats = findExerciseHistoryStats(exerciseName);
+    if (!stats) return null;
+    return stats.summaryInline;
+  }
+
+  // Blur any active text input to prevent iOS "Shake to Undo / Undo Typing" popup on lock/unlock
+  function blurActiveInput() {
+    try {
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')) {
+        el.blur();
+      }
+    } catch (e) {
+      // Ignore
+    }
   }
 
   // ==========================================================================
@@ -481,13 +758,25 @@
   });
 
   // ==========================================================================
-  // 4. Workout Stopwatch
+  // 4. Workout Stopwatch (with Always-Visible Sticky Header Chip)
   // ==========================================================================
 
+  const headerWorkoutTimerChip = document.getElementById('headerWorkoutTimerChip');
+  const headerTimerText = document.getElementById('headerTimerText');
+
+  if (headerWorkoutTimerChip) {
+    headerWorkoutTimerChip.addEventListener('click', () => {
+      if (activeWorkout) {
+        switchView('viewActive');
+      }
+    });
+  }
+
   function formatTime(totalSeconds) {
-    const hrs = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
+    const safeSec = Math.max(0, Math.floor(totalSeconds));
+    const hrs = Math.floor(safeSec / 3600);
+    const mins = Math.floor((safeSec % 3600) / 60);
+    const secs = safeSec % 60;
     const pad = (n) => String(n).padStart(2, '0');
     if (hrs > 0) {
       return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
@@ -500,9 +789,20 @@
     const timerDisplay = document.getElementById('workoutTimerDisplay');
 
     function update() {
-      if (!activeWorkout) return;
+      if (!activeWorkout) {
+        if (headerWorkoutTimerChip) headerWorkoutTimerChip.classList.add('hidden');
+        return;
+      }
       const elapsedSec = Math.floor((Date.now() - activeWorkout.startTime) / 1000);
-      if (timerDisplay) timerDisplay.textContent = formatTime(elapsedSec);
+      const formatted = formatTime(elapsedSec);
+      if (timerDisplay) timerDisplay.textContent = formatted;
+      if (headerWorkoutTimerChip && headerTimerText) {
+        headerWorkoutTimerChip.classList.remove('hidden');
+        headerTimerText.textContent = formatted;
+      }
+      if (hubActiveTimer && !hubActiveResumeBanner.classList.contains('hidden')) {
+        hubActiveTimer.textContent = formatted;
+      }
     }
 
     update();
@@ -514,13 +814,17 @@
       clearInterval(workoutTimerInterval);
       workoutTimerInterval = null;
     }
+    if (headerWorkoutTimerChip) {
+      headerWorkoutTimerChip.classList.add('hidden');
+    }
   }
 
   // ==========================================================================
-  // 5. Rest Timer Engine
+  // 5. Rest Timer Engine (Timestamp-based: works across lock/minimize!)
   // ==========================================================================
 
   const restTimerBar = document.getElementById('restTimerBar');
+  const timerTypeLabel = document.getElementById('timerTypeLabel');
   const timerDigits = document.getElementById('timerDigits');
   const timerProgressBg = document.getElementById('timerProgressBg');
   const timerPlayPauseBtn = document.getElementById('timerPlayPauseBtn');
@@ -537,13 +841,35 @@
 
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 44; // r = 44 in svg
 
+  function saveRestTimerState() {
+    try {
+      if (restTimer.isRunning || restTimer.remainingSeconds > 0) {
+        localStorage.setItem(STORAGE_KEYS.REST_TIMER, JSON.stringify({
+          totalSeconds: restTimer.totalSeconds,
+          remainingSeconds: restTimer.remainingSeconds,
+          endTime: restTimer.endTime,
+          label: restTimer.label || 'Отдых',
+          isRunning: restTimer.isRunning,
+          hidden: restTimerBar.classList.contains('hidden')
+        }));
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.REST_TIMER);
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
   function updateRestTimerUI() {
     const formatted = formatTime(restTimer.remainingSeconds);
     timerDigits.textContent = formatted;
     bigTimerText.textContent = formatted;
+    if (timerTypeLabel) {
+      timerTypeLabel.textContent = restTimer.label || 'Отдых';
+    }
 
     const progressPercent = restTimer.totalSeconds > 0
-      ? (restTimer.remainingSeconds / restTimer.totalSeconds)
+      ? Math.max(0, Math.min(1, restTimer.remainingSeconds / restTimer.totalSeconds))
       : 0;
 
     timerProgressBg.style.width = `${progressPercent * 100}%`;
@@ -555,62 +881,139 @@
     timerSheetToggle.textContent = restTimer.isRunning ? 'Пауза' : 'Продолжить';
   }
 
+  function finishRestTimerAlert() {
+    restTimer.remainingSeconds = 0;
+    restTimer.endTime = 0;
+    if (timerTypeLabel) timerTypeLabel.textContent = 'Отдых завершён! 🔔';
+    updateRestTimerUI();
+    stopRestTimer(false);
+    localStorage.removeItem(STORAGE_KEYS.REST_TIMER);
+
+    playCozyChime();
+    triggerVibration();
+
+    restTimerBar.style.boxShadow = '0 0 28px #10b981';
+    restTimerBar.style.borderColor = '#10b981';
+    setTimeout(() => {
+      restTimerBar.style.boxShadow = '';
+      restTimerBar.style.borderColor = '';
+    }, 4000);
+  }
+
   function tickRestTimer() {
-    if (restTimer.remainingSeconds > 1) {
-      restTimer.remainingSeconds -= 1;
+    if (!restTimer.isRunning) return;
+
+    const now = Date.now();
+    const remaining = Math.ceil((restTimer.endTime - now) / 1000);
+
+    if (remaining > 0) {
+      restTimer.remainingSeconds = remaining;
       updateRestTimerUI();
     } else {
-      restTimer.remainingSeconds = 0;
-      updateRestTimerUI();
-      stopRestTimer(false);
-
-      playCozyChime();
-      triggerVibration();
-
-      restTimerBar.style.boxShadow = '0 0 25px #10b981';
-      setTimeout(() => {
-        restTimerBar.style.boxShadow = '';
-      }, 3000);
+      finishRestTimerAlert();
     }
   }
 
-  function startRestTimer(seconds) {
-    initAudio();
+  function startRestTimer(seconds, customLabel = null) {
+    unlockAudioOnUserTap();
+    blurActiveInput();
+
     if (seconds) {
       restTimer.totalSeconds = seconds;
       restTimer.remainingSeconds = seconds;
+    } else if (restTimer.remainingSeconds <= 0) {
+      restTimer.remainingSeconds = restTimer.totalSeconds || settings.defaultRestSec || 90;
     }
+
+    if (customLabel) {
+      restTimer.label = customLabel;
+    } else if (!restTimer.label || restTimer.label.includes('завершён')) {
+      restTimer.label = 'Отдых';
+    }
+
+    restTimer.endTime = Date.now() + restTimer.remainingSeconds * 1000;
     if (restTimer.interval) clearInterval(restTimer.interval);
 
     restTimer.isRunning = true;
     restTimerBar.classList.remove('hidden');
     updateRestTimerUI();
+    saveRestTimerState();
 
-    restTimer.interval = setInterval(tickRestTimer, 1000);
+    restTimer.interval = setInterval(tickRestTimer, 500);
   }
 
   function pauseRestTimer() {
     if (restTimer.interval) clearInterval(restTimer.interval);
+    if (restTimer.isRunning && restTimer.endTime > Date.now()) {
+      restTimer.remainingSeconds = Math.max(1, Math.ceil((restTimer.endTime - Date.now()) / 1000));
+    }
     restTimer.isRunning = false;
+    restTimer.endTime = 0;
     updateRestTimerUI();
+    saveRestTimerState();
   }
 
   function stopRestTimer(hideBar = true) {
     if (restTimer.interval) clearInterval(restTimer.interval);
     restTimer.isRunning = false;
+    restTimer.endTime = 0;
     if (hideBar) {
       restTimerBar.classList.add('hidden');
       closeModal('modalRestTimer');
+      localStorage.removeItem(STORAGE_KEYS.REST_TIMER);
     }
     updateRestTimerUI();
   }
 
   function adjustRestTimer(secondsDelta) {
-    restTimer.remainingSeconds = Math.max(5, restTimer.remainingSeconds + secondsDelta);
+    if (restTimer.isRunning) {
+      const currentRem = Math.max(0, Math.ceil((restTimer.endTime - Date.now()) / 1000));
+      const nextRem = Math.max(5, currentRem + secondsDelta);
+      restTimer.remainingSeconds = nextRem;
+      restTimer.endTime = Date.now() + nextRem * 1000;
+    } else {
+      restTimer.remainingSeconds = Math.max(5, restTimer.remainingSeconds + secondsDelta);
+    }
     if (restTimer.remainingSeconds > restTimer.totalSeconds) {
       restTimer.totalSeconds = restTimer.remainingSeconds;
     }
     updateRestTimerUI();
+    saveRestTimerState();
+  }
+
+  function restoreRestTimerState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.REST_TIMER);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (!saved || saved.hidden) return;
+
+      restTimer.totalSeconds = saved.totalSeconds || 90;
+      restTimer.label = saved.label || 'Отдых';
+
+      if (saved.isRunning && saved.endTime) {
+        const rem = Math.ceil((saved.endTime - Date.now()) / 1000);
+        if (rem > 0) {
+          restTimer.remainingSeconds = rem;
+          restTimer.endTime = saved.endTime;
+          restTimer.isRunning = true;
+          restTimerBar.classList.remove('hidden');
+          updateRestTimerUI();
+          if (restTimer.interval) clearInterval(restTimer.interval);
+          restTimer.interval = setInterval(tickRestTimer, 500);
+        } else {
+          restTimerBar.classList.remove('hidden');
+          finishRestTimerAlert();
+        }
+      } else if (!saved.isRunning && saved.remainingSeconds > 0) {
+        restTimer.remainingSeconds = saved.remainingSeconds;
+        restTimer.isRunning = false;
+        restTimerBar.classList.remove('hidden');
+        updateRestTimerUI();
+      }
+    } catch (e) {
+      // Ignore
+    }
   }
 
   timerPlayPauseBtn.addEventListener('click', (e) => {
@@ -784,42 +1187,95 @@
     });
   }
 
+  function buildSetsFromPreviousOrDefaults(exMeta, defaultWeight = 20, defaultReps = 10) {
+    const canBW = canExerciseUseBodyweight(exMeta);
+    const isBW = canBW ? !!exMeta.isBodyweight : false;
+    const stats = findExerciseHistoryStats(exMeta.name);
+    const baseW = isBW ? 0 : (exMeta.defaultWeight !== undefined ? exMeta.defaultWeight : defaultWeight);
+    const baseR = exMeta.defaultReps || defaultReps;
+
+    if (stats && stats.lastSets && stats.lastSets.length > 0) {
+      const count = Math.max(3, stats.lastSets.length);
+      const resultSets = [];
+      for (let i = 0; i < count; i++) {
+        const prevSet = stats.lastSets[i] || stats.lastSets[stats.lastSets.length - 1];
+        const wVal = isBW ? (parseFloat(prevSet.weight) || 0) : (parseFloat(prevSet.weight) || baseW);
+        const rVal = parseInt(prevSet.reps, 10) || baseR;
+        resultSets.push({
+          weight: wVal,
+          reps: rVal,
+          isBodyweight: isBW,
+          completed: false
+        });
+      }
+      return resultSets;
+    }
+
+    return [
+      { weight: baseW, reps: baseR, isBodyweight: isBW, completed: false },
+      { weight: baseW, reps: baseR, isBodyweight: isBW, completed: false },
+      { weight: baseW, reps: baseR, isBodyweight: isBW, completed: false }
+    ];
+  }
+
   function startWorkoutFromTemplate(tpl) {
     const preloadedExercises = tpl.exercises.map((tplEx) => {
-      const isBW = !!tplEx.isBodyweight;
-      let w = isBW ? 0 : (tplEx.defaultWeight || 20);
-      let r = tplEx.defaultReps || 10;
-
-      const prevStr = findPreviousPerformance(tplEx.name);
-      if (prevStr) {
-        if (prevStr.includes('Свой вес')) {
-          const matchPlus = prevStr.match(/\+([0-9.]+)\s*кг/);
-          w = matchPlus ? parseFloat(matchPlus[1]) : 0;
-          const matchReps = prevStr.match(/×\s*([0-9]+)/);
-          r = matchReps ? parseInt(matchReps[1], 10) : r;
-        } else {
-          const match = prevStr.match(/([0-9.]+)\s*кг\s*×\s*([0-9]+)/);
-          if (match) {
-            w = parseFloat(match[1]);
-            r = parseInt(match[2], 10);
-          }
-        }
-      }
+      const catalogEx = getExerciseMeta(tplEx.name);
+      const canBW = canExerciseUseBodyweight(tplEx);
+      const isBW = canBW ? !!tplEx.isBodyweight : false;
+      const equip = tplEx.equip || (catalogEx && catalogEx.equip) || (isBW ? 'bodyweight' : 'barbell');
 
       return {
         id: tplEx.id || ('ex_' + Date.now() + Math.random()),
         name: tplEx.name,
         muscle: tplEx.muscle,
+        equip: equip,
+        canBodyweight: canBW,
         isBodyweight: isBW,
-        sets: [
-          { weight: w, reps: r, isBodyweight: isBW, completed: false },
-          { weight: w, reps: r, isBodyweight: isBW, completed: false },
-          { weight: w, reps: r, isBodyweight: isBW, completed: false }
-        ]
+        sets: buildSetsFromPreviousOrDefaults(tplEx, tplEx.defaultWeight || 20, tplEx.defaultReps || 10)
       };
     });
 
     startNewWorkout(tpl.title, preloadedExercises);
+  }
+
+  function saveExercisesListAsCustomTemplate(defaultTitle, exercisesList) {
+    if (!exercisesList || exercisesList.length === 0) {
+      alert('В тренировке пока нет упражнений для сохранения в программу.');
+      return;
+    }
+    const cleanDefault = (defaultTitle || 'Моя тренировка').trim();
+    const chosenTitle = prompt('Введите название для сохранения в «Мои программы»:', cleanDefault);
+    if (!chosenTitle || !chosenTitle.trim()) return;
+
+    const mappedExercises = exercisesList.map((ex) => {
+      const canBW = canExerciseUseBodyweight(ex);
+      const isBW = canBW ? !!ex.isBodyweight : false;
+      const firstSet = (ex.sets && ex.sets[0]) ? ex.sets[0] : null;
+      return {
+        id: ex.id || ('ex_' + Date.now() + Math.random()),
+        name: ex.name,
+        muscle: ex.muscle || 'Другое',
+        equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
+        canBodyweight: canBW,
+        isBodyweight: isBW,
+        defaultWeight: isBW ? 0 : (firstSet && firstSet.weight ? firstSet.weight : 20),
+        defaultReps: (firstSet && firstSet.reps) ? firstSet.reps : 10
+      };
+    });
+
+    const newTpl = {
+      id: 'custom_tpl_' + Date.now(),
+      title: chosenTitle.trim(),
+      desc: `Сохранено из тренировки (${mappedExercises.length} упр.)`,
+      isCustom: true,
+      exercises: mappedExercises
+    };
+
+    customTemplates.push(newTpl);
+    saveCustomTemplates();
+    renderWorkoutHub();
+    alert(`Программа «${newTpl.title}» сохранена в раздел «Мои программы»! 📌`);
   }
 
   startFreeWorkoutBtn.onclick = () => {
@@ -848,12 +1304,13 @@
     }
 
     templateBuilderExercises.forEach((ex, idx) => {
+      const equipInfo = getEquipInfo(ex);
       const item = document.createElement('div');
       item.className = 'template-builder-item';
       item.innerHTML = `
         <div>
           <span class="template-builder-item-name">${ex.name}</span>
-          <span class="template-builder-item-tag">${ex.muscle}${ex.isBodyweight ? ' • Свой вес' : ''}</span>
+          <span class="template-builder-item-tag">${ex.muscle} • ${equipInfo.badge}</span>
         </div>
         <button type="button" class="template-builder-remove" data-idx="${idx}" title="Удалить из программы">✕</button>
       `;
@@ -893,14 +1350,20 @@
       return;
     }
 
-    const mappedExercises = templateBuilderExercises.map((ex) => ({
-      id: ex.id,
-      name: ex.name,
-      muscle: ex.muscle,
-      isBodyweight: !!ex.isBodyweight,
-      defaultWeight: ex.isBodyweight ? 0 : 20,
-      defaultReps: 10
-    }));
+    const mappedExercises = templateBuilderExercises.map((ex) => {
+      const canBW = canExerciseUseBodyweight(ex);
+      const isBW = canBW ? !!ex.isBodyweight : false;
+      return {
+        id: ex.id,
+        name: ex.name,
+        muscle: ex.muscle,
+        equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
+        canBodyweight: canBW,
+        isBodyweight: isBW,
+        defaultWeight: isBW ? 0 : 20,
+        defaultReps: 10
+      };
+    });
 
     if (editingTemplateId) {
       const idx = customTemplates.findIndex((t) => t.id === editingTemplateId);
@@ -934,7 +1397,11 @@
   const activeExercisesList = document.getElementById('activeExercisesList');
   const startWorkoutBtn = document.getElementById('startWorkoutBtn');
   const finishWorkoutBtn = document.getElementById('finishWorkoutBtn');
+  const bottomFinishWorkoutBtn = document.getElementById('bottomFinishWorkoutBtn');
   const cancelWorkoutBtn = document.getElementById('cancelWorkoutBtn');
+  const bottomCancelWorkoutBtn = document.getElementById('bottomCancelWorkoutBtn');
+  const activeSaveAsTemplateBtn = document.getElementById('activeSaveAsTemplateBtn');
+  const finishSaveTemplateBtn = document.getElementById('finishSaveTemplateBtn');
   const addExerciseBtn = document.getElementById('addExerciseBtn');
   const bottomAddExerciseBtn = document.getElementById('bottomAddExerciseBtn');
 
@@ -977,26 +1444,67 @@
     }
 
     activeWorkout.exercises.forEach((exItem, exIndex) => {
+      // Fix #1: Strict check — weighted exercises (barbell/dumbbell/machine) can NEVER be set to "Свой вес"
+      const canBW = canExerciseUseBodyweight(exItem);
+      if (!canBW && exItem.isBodyweight) {
+        exItem.isBodyweight = false;
+        (exItem.sets || []).forEach((s) => {
+          s.isBodyweight = false;
+        });
+      }
+
+      const equipInfo = getEquipInfo(exItem);
+      const histStats = findExerciseHistoryStats(exItem.name);
+
+      // Fix #3: Detailed set-by-set previous workout summary + all-time PR badge
+      let prevSummaryHtml = '';
+      if (histStats && histStats.lastSets && histStats.lastSets.length > 0) {
+        const setsChips = histStats.lastSets.map((s, idx) => {
+          if (exItem.isBodyweight) {
+            const wTxt = (!s.weight || s.weight === 0) ? 'СВ' : `+${s.weight}`;
+            return `${idx + 1}) ${wTxt}×${s.reps}`;
+          }
+          return `${idx + 1}) ${s.weight}×${s.reps}`;
+        }).join(' • ');
+
+        const prBadgeHtml = histStats.prText
+          ? `<span class="exercise-pr-badge" title="Личный рекорд в этом упражнении">🏆 Рекорд: ${histStats.prText}</span>`
+          : '';
+
+        prevSummaryHtml = `
+          <div class="exercise-prev-row">
+            <span class="exercise-prev-sets">📊 Прошлый раз: <strong>${setsChips}</strong></span>
+            ${prBadgeHtml}
+          </div>
+        `;
+      }
+
+      // Equipment / Bodyweight control button:
+      // - For bodyweight-capable exercises (pull-ups, dips, push-ups): toggles "⚡ Свой вес" <-> "🏋️ + Доп. вес"
+      // - For weighted exercises (bench press, curls, etc.): cycles equipment type ("🏋️ Штанга" / "🏋️ 2 гантели (вес 1 шт)" / "🏋️ 1 гантель" / "⚙️ Тренажёр")
+      const equipControlHtml = canBW
+        ? `<button type="button" class="bw-toggle-btn ${exItem.isBodyweight ? 'active' : ''}" data-ex-idx="${exIndex}" title="Переключить: свой вес или доп. отягощение">
+             ${exItem.isBodyweight ? '⚡ Свой вес' : '🏋️ + Доп. вес'}
+           </button>`
+        : `<button type="button" class="equip-badge-btn" data-ex-idx="${exIndex}" title="Нажмите, чтобы уточнить снаряд (Штанга / 2 гантели / 1 гантель / Тренажёр)">
+             ${equipInfo.badge} ▾
+           </button>`;
+
       const card = document.createElement('div');
       card.className = 'exercise-card';
-
-      const prevHint = findPreviousPerformance(exItem.name);
-      const prevHintHtml = prevHint ? `<span class="exercise-prev-hint">Пред: ${prevHint}</span>` : '';
 
       card.innerHTML = `
         <div class="exercise-header">
           <div class="exercise-title-wrap">
             <div style="display:flex; align-items:center; gap:6px;">
               <span class="exercise-name">${exItem.name}</span>
-              <button type="button" class="exercise-info-btn" data-ex-name="${exItem.name}" data-ex-muscle="${exItem.muscle}" title="Техника и подсказки">ℹ️</button>
+              <button type="button" class="exercise-info-btn" data-ex-name="${exItem.name}" data-ex-muscle="${exItem.muscle}" title="Анимация техники и история">ℹ️</button>
             </div>
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px;">
               <span class="exercise-muscle-tag">${exItem.muscle}</span>
-              <button type="button" class="bw-toggle-btn ${exItem.isBodyweight ? 'active' : ''}" data-ex-idx="${exIndex}" title="Переключить режим веса">
-                ${exItem.isBodyweight ? '⚡ Свой вес' : '🏋️ С отягощением'}
-              </button>
-              ${prevHintHtml}
+              ${equipControlHtml}
             </div>
+            ${prevSummaryHtml}
           </div>
           <button class="remove-exercise-btn" data-ex-idx="${exIndex}" title="Удалить упражнение">✕</button>
         </div>
@@ -1004,7 +1512,7 @@
         <div class="sets-table">
           <div class="sets-table-header">
             <div>Сет</div>
-            <div>${exItem.isBodyweight ? 'Свой вес / Доп' : 'Вес (кг)'}</div>
+            <div>${equipInfo.colHeader}</div>
             <div>Повт</div>
             <div>Готово</div>
             <div></div>
@@ -1023,7 +1531,7 @@
         let weightDisplay = '';
         let isBwClass = '';
 
-        if (exItem.isBodyweight) {
+        if (canBW && exItem.isBodyweight) {
           if (!set.weight || set.weight === 0) {
             weightDisplay = 'Свой вес';
             isBwClass = 'is-bw';
@@ -1037,22 +1545,36 @@
 
         const repsDisplay = (set.reps !== undefined && set.reps !== null && set.reps !== '') ? set.reps : '';
 
+        // Previous performance specifically for this set number (e.g. Set 1 vs Set 2 vs Set 3)
+        let perSetPrevHtml = '';
+        if (histStats && histStats.lastSets && histStats.lastSets[setIndex]) {
+          const ps = histStats.lastSets[setIndex];
+          const psText = (canBW && exItem.isBodyweight)
+            ? ((!ps.weight || ps.weight === 0) ? `СВ×${ps.reps}` : `+${ps.weight}×${ps.reps}`)
+            : `${ps.weight}×${ps.reps}`;
+          perSetPrevHtml = `<span class="set-prev-mini" title="Прошлый результат в ${setIndex + 1}-м подходе">${psText}</span>`;
+        }
+
         const row = document.createElement('div');
         row.className = `set-row ${set.completed ? 'completed' : ''}`;
         row.dataset.exIdx = exIndex;
         row.dataset.setIdx = setIndex;
 
         row.innerHTML = `
-          <div class="set-num-badge">${setIndex + 1}</div>
+          <div class="set-num-badge">
+            <span>${setIndex + 1}</span>
+            ${perSetPrevHtml}
+          </div>
 
           <!-- Weight Stepper Cell -->
           <div class="stepper-cell weight-cell">
             <div class="stepper-box">
               <button type="button" class="stepper-btn minus-btn" data-action="minus" data-type="weight" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Уменьшить вес">−</button>
               <div class="stepper-input-wrap">
-                <input type="text" inputmode="decimal" class="set-input set-weight-input ${isBwClass}" 
+                <input type="text" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false"
+                       class="set-input set-weight-input ${isBwClass}" 
                        data-ex-idx="${exIndex}" data-set-idx="${setIndex}" 
-                       value="${weightDisplay}" placeholder="${exItem.isBodyweight ? 'Свой вес' : '0'}">
+                       value="${weightDisplay}" placeholder="${canBW && exItem.isBodyweight ? 'Свой вес' : '0'}">
               </div>
               <button type="button" class="stepper-btn plus-btn" data-action="plus" data-type="weight" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Увеличить вес">+</button>
             </div>
@@ -1063,7 +1585,8 @@
             <div class="stepper-box">
               <button type="button" class="stepper-btn minus-btn" data-action="minus" data-type="reps" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Уменьшить повторения">−</button>
               <div class="stepper-input-wrap">
-                <input type="number" inputmode="numeric" class="set-input set-reps-input" 
+                <input type="number" inputmode="numeric" autocomplete="off"
+                       class="set-input set-reps-input" 
                        data-ex-idx="${exIndex}" data-set-idx="${setIndex}" 
                        value="${repsDisplay}" placeholder="0">
               </div>
@@ -1101,17 +1624,20 @@
     document.querySelectorAll('.exercise-info-btn').forEach((btn) => {
       btn.onclick = (e) => {
         e.stopPropagation();
+        blurActiveInput();
         openExerciseInfoModal(btn.dataset.exName, btn.dataset.exMuscle);
       };
     });
 
-    // Bodyweight toggle
+    // Bodyweight toggle (ONLY rendered on bodyweight-capable exercises!)
     document.querySelectorAll('.bw-toggle-btn').forEach((btn) => {
       btn.onclick = () => {
+        blurActiveInput();
         const exIdx = parseInt(btn.dataset.exIdx, 10);
         const ex = activeWorkout.exercises[exIdx];
-        ex.isBodyweight = !ex.isBodyweight;
+        if (!canExerciseUseBodyweight(ex)) return;
 
+        ex.isBodyweight = !ex.isBodyweight;
         ex.sets.forEach((s) => {
           s.isBodyweight = ex.isBodyweight;
           if (ex.isBodyweight && (!s.weight || s.weight <= 0)) {
@@ -1124,10 +1650,26 @@
       };
     });
 
+    // Equipment mode selector (cycles: Штанга -> 2 гантели (вес 1 шт) -> 1 гантель -> Тренажёр)
+    document.querySelectorAll('.equip-badge-btn').forEach((btn) => {
+      btn.onclick = () => {
+        blurActiveInput();
+        const exIdx = parseInt(btn.dataset.exIdx, 10);
+        const ex = activeWorkout.exercises[exIdx];
+        const order = ['barbell', 'dumbbell_2', 'dumbbell_1', 'machine'];
+        const currentEquip = getEquipInfo(ex).type;
+        const nextIdx = (order.indexOf(currentEquip) + 1) % order.length;
+        ex.equip = order[nextIdx];
+        saveActiveWorkout();
+        renderActiveWorkout();
+      };
+    });
+
     // Steppers
     document.querySelectorAll('.stepper-btn').forEach((btn) => {
       btn.onclick = (e) => {
         e.preventDefault();
+        blurActiveInput(); // Fix #10: prevent iOS Undo Typing history buildup
         const action = btn.dataset.action;
         const type = btn.dataset.type;
         const exIdx = parseInt(btn.dataset.exIdx, 10);
@@ -1137,18 +1679,15 @@
         const row = btn.closest('.set-row');
 
         if (type === 'weight') {
-          const isBW = !!exercise.isBodyweight;
+          const canBW = canExerciseUseBodyweight(exercise);
+          const isBW = canBW && !!exercise.isBodyweight;
           let currentWeight = parseFloat(targetSet.weight) || 0;
 
           if (isBW) {
             if (action === 'plus') {
               currentWeight = Math.round((currentWeight + 2.5) * 10) / 10;
             } else {
-              if (currentWeight <= 2.5) {
-                currentWeight = 0;
-              } else {
-                currentWeight = Math.round((currentWeight - 2.5) * 10) / 10;
-              }
+              currentWeight = currentWeight <= 2.5 ? 0 : Math.round((currentWeight - 2.5) * 10) / 10;
             }
             targetSet.weight = currentWeight;
             const input = row.querySelector('.set-weight-input');
@@ -1183,22 +1722,33 @@
 
     // Direct Weight input
     document.querySelectorAll('.set-weight-input').forEach((input) => {
+      input.onfocus = (e) => {
+        const exIdx = parseInt(e.target.dataset.exIdx, 10);
+        const exercise = activeWorkout.exercises[exIdx];
+        if (canExerciseUseBodyweight(exercise) && exercise.isBodyweight && e.target.value === 'Свой вес') {
+          e.target.value = '';
+        }
+      };
+
       input.oninput = (e) => {
         const exIdx = parseInt(e.target.dataset.exIdx, 10);
         const setIdx = parseInt(e.target.dataset.setIdx, 10);
         const exercise = activeWorkout.exercises[exIdx];
         const targetSet = exercise.sets[setIdx];
         const raw = e.target.value.trim().toLowerCase();
+        const canBW = canExerciseUseBodyweight(exercise);
 
-        if (exercise.isBodyweight) {
+        if (canBW && exercise.isBodyweight) {
           if (raw.includes('свой') || raw.includes('вес') || raw === 'св' || raw === 'cb' || raw === '0' || raw === '') {
             targetSet.weight = 0;
           } else {
-            const cleaned = raw.replace('+', '').replace('кг', '').trim();
-            targetSet.weight = parseFloat(cleaned) || 0;
+            const cleaned = raw.replace('+', '').replace('кг', '').replace(',', '.').trim();
+            targetSet.weight = Math.max(0, parseFloat(cleaned) || 0);
           }
         } else {
-          targetSet.weight = parseFloat(raw) || 0;
+          // Strictly numeric weight for barbell / dumbbell / machine exercises
+          const cleaned = raw.replace(/[^0-9.,]/g, '').replace(',', '.');
+          targetSet.weight = Math.max(0, parseFloat(cleaned) || 0);
         }
         saveActiveWorkout();
       };
@@ -1207,11 +1757,16 @@
         const exIdx = parseInt(e.target.dataset.exIdx, 10);
         const setIdx = parseInt(e.target.dataset.setIdx, 10);
         const exercise = activeWorkout.exercises[exIdx];
+        if (!exercise || !exercise.sets[setIdx]) return;
         const targetSet = exercise.sets[setIdx];
+        const canBW = canExerciseUseBodyweight(exercise);
 
-        if (exercise.isBodyweight) {
+        if (canBW && exercise.isBodyweight) {
           e.target.value = (!targetSet.weight || targetSet.weight === 0) ? 'Свой вес' : `+${targetSet.weight}`;
           e.target.classList.toggle('is-bw', true);
+        } else {
+          e.target.value = targetSet.weight || 0;
+          e.target.classList.toggle('is-bw', false);
         }
       };
     });
@@ -1221,7 +1776,7 @@
       input.oninput = (e) => {
         const exIdx = parseInt(e.target.dataset.exIdx, 10);
         const setIdx = parseInt(e.target.dataset.setIdx, 10);
-        const val = parseInt(e.target.value, 10) || 0;
+        const val = Math.max(0, parseInt(e.target.value, 10) || 0);
         if (activeWorkout && activeWorkout.exercises[exIdx] && activeWorkout.exercises[exIdx].sets[setIdx]) {
           activeWorkout.exercises[exIdx].sets[setIdx].reps = val;
           saveActiveWorkout();
@@ -1229,19 +1784,28 @@
       };
     });
 
-    // Check set button
+    // Check set button (Fix #8: Separate rest timer for set vs exercise completion)
     document.querySelectorAll('.set-check-btn').forEach((btn) => {
       btn.onclick = () => {
+        blurActiveInput();
         const exIdx = parseInt(btn.dataset.exIdx, 10);
         const setIdx = parseInt(btn.dataset.setIdx, 10);
-        const targetSet = activeWorkout.exercises[exIdx].sets[setIdx];
+        const exercise = activeWorkout.exercises[exIdx];
+        const targetSet = exercise.sets[setIdx];
 
         targetSet.completed = !targetSet.completed;
         saveActiveWorkout();
         renderActiveWorkout();
 
         if (targetSet.completed && settings.autoRest) {
-          startRestTimer(settings.defaultRestSec);
+          const allSetsDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed);
+          if (allSetsDone) {
+            const exRest = parseInt(settings.exerciseRestSec, 10) || 120;
+            startRestTimer(exRest, 'Отдых (след. упр.)');
+          } else {
+            const setRest = parseInt(settings.defaultRestSec, 10) || 90;
+            startRestTimer(setRest, 'Отдых (подход)');
+          }
         }
       };
     });
@@ -1249,17 +1813,25 @@
     // Add set button
     document.querySelectorAll('.add-set-btn').forEach((btn) => {
       btn.onclick = () => {
+        blurActiveInput();
         const exIdx = parseInt(btn.dataset.exIdx, 10);
         const exercise = activeWorkout.exercises[exIdx];
+        const nextSetIdx = exercise.sets.length;
         const lastSet = exercise.sets[exercise.sets.length - 1];
+        const histStats = findExerciseHistoryStats(exercise.name);
 
-        const newWeight = lastSet ? lastSet.weight : (exercise.isBodyweight ? 0 : 20);
-        const newReps = lastSet ? lastSet.reps : 10;
+        let newWeight = lastSet ? lastSet.weight : (exercise.isBodyweight ? 0 : 20);
+        let newReps = lastSet ? lastSet.reps : 10;
+
+        if (histStats && histStats.lastSets && histStats.lastSets[nextSetIdx]) {
+          newWeight = parseFloat(histStats.lastSets[nextSetIdx].weight) || newWeight;
+          newReps = parseInt(histStats.lastSets[nextSetIdx].reps, 10) || newReps;
+        }
 
         exercise.sets.push({
           weight: newWeight,
           reps: newReps,
-          isBodyweight: !!exercise.isBodyweight,
+          isBodyweight: canExerciseUseBodyweight(exercise) && !!exercise.isBodyweight,
           completed: false
         });
 
@@ -1271,6 +1843,7 @@
     // Remove set button
     document.querySelectorAll('.remove-set-btn').forEach((btn) => {
       btn.onclick = () => {
+        blurActiveInput();
         const exIdx = parseInt(btn.dataset.exIdx, 10);
         const setIdx = parseInt(btn.dataset.setIdx, 10);
         const exercise = activeWorkout.exercises[exIdx];
@@ -1284,6 +1857,7 @@
     // Remove exercise button
     document.querySelectorAll('.remove-exercise-btn').forEach((btn) => {
       btn.onclick = () => {
+        blurActiveInput();
         const exIdx = parseInt(btn.dataset.exIdx, 10);
         if (confirm(`Удалить упражнение «${activeWorkout.exercises[exIdx].name}» из тренировки?`)) {
           activeWorkout.exercises.splice(exIdx, 1);
@@ -1297,36 +1871,18 @@
   function addExerciseToActiveWorkout(exercise) {
     if (!activeWorkout) return;
 
-    const isBW = !!exercise.isBodyweight;
-    let defaultWeight = isBW ? 0 : 20;
-    let defaultReps = 10;
-
-    const prevStr = findPreviousPerformance(exercise.name);
-    if (prevStr) {
-      if (prevStr.includes('Свой вес')) {
-        const matchPlus = prevStr.match(/\+([0-9.]+)\s*кг/);
-        defaultWeight = matchPlus ? parseFloat(matchPlus[1]) : 0;
-        const matchReps = prevStr.match(/×\s*([0-9]+)/);
-        defaultReps = matchReps ? parseInt(matchReps[1], 10) : defaultReps;
-      } else {
-        const match = prevStr.match(/([0-9.]+)\s*кг\s*×\s*([0-9]+)/);
-        if (match) {
-          defaultWeight = parseFloat(match[1]);
-          defaultReps = parseInt(match[2], 10);
-        }
-      }
-    }
+    const canBW = canExerciseUseBodyweight(exercise);
+    const isBW = canBW ? !!exercise.isBodyweight : false;
+    const equip = exercise.equip || (isBW ? 'bodyweight' : 'barbell');
 
     activeWorkout.exercises.push({
       id: exercise.id,
       name: exercise.name,
       muscle: exercise.muscle,
+      equip: equip,
+      canBodyweight: canBW,
       isBodyweight: isBW,
-      sets: [
-        { weight: defaultWeight, reps: defaultReps, isBodyweight: isBW, completed: false },
-        { weight: defaultWeight, reps: defaultReps, isBodyweight: isBW, completed: false },
-        { weight: defaultWeight, reps: defaultReps, isBodyweight: isBW, completed: false }
-      ]
+      sets: buildSetsFromPreviousOrDefaults(exercise, isBW ? 0 : 20, 10)
     });
 
     saveActiveWorkout();
@@ -1335,21 +1891,180 @@
   }
 
   // ==========================================================================
-  // 8. Exercise Info Modal Logic
+  // 8. Exercise Info Modal Logic (Animated SVG Biomechanics + Progress Box)
   // ==========================================================================
 
   const infoModalExName = document.getElementById('infoModalExName');
   const infoModalMuscleTag = document.getElementById('infoModalMuscleTag');
+  const infoModalVisual = document.getElementById('infoModalVisual');
+  const infoModalProgressBox = document.getElementById('infoModalProgressBox');
   const infoModalMuscles = document.getElementById('infoModalMuscles');
   const infoModalTechnique = document.getElementById('infoModalTechnique');
   const infoModalTips = document.getElementById('infoModalTips');
+
+  function buildExerciseAnimationSvg(name, muscle, equipInfo) {
+    const n = (name || '').toLowerCase();
+    const m = (muscle || '').toLowerCase();
+
+    let svgMotion = '';
+    let caption = `${muscle || 'Мышцы'} • ${equipInfo.badge}`;
+
+    if (n.includes('жим') && (n.includes('лёжа') || n.includes('лежа') || n.includes('наклон') || m === 'грудь')) {
+      // Bench Press / Chest Press animation
+      svgMotion = `
+        <svg viewBox="0 0 220 125" class="ex-anim-svg" aria-label="Анимация жима">
+          <!-- Bench -->
+          <rect x="45" y="84" width="130" height="8" rx="4" fill="#3a2e25"/>
+          <rect x="65" y="92" width="10" height="22" rx="3" fill="#2a211b"/>
+          <rect x="145" y="92" width="10" height="22" rx="3" fill="#2a211b"/>
+          <!-- Athlete Torso & Head on Bench -->
+          <circle cx="68" cy="72" r="10" fill="#e2b49a"/>
+          <rect x="80" y="70" width="62" height="14" rx="7" fill="#f5a623" opacity="0.9"/>
+          <!-- Legs -->
+          <path d="M142 76 L168 78 L175 108" stroke="#9b8d82" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <!-- Animated Arms & Barbell/Dumbbells pressing up and down -->
+          <g class="anim-press-vertical">
+            <line x1="96" y1="74" x2="96" y2="36" stroke="#f5a623" stroke-width="6" stroke-linecap="round"/>
+            <line x1="118" y1="74" x2="118" y2="36" stroke="#f5a623" stroke-width="6" stroke-linecap="round"/>
+            <line x1="56" y1="34" x2="158" y2="34" stroke="#e8dfd5" stroke-width="4" stroke-linecap="round"/>
+            <rect x="62" y="21" width="9" height="26" rx="3" fill="#5ec28f"/>
+            <rect x="143" y="21" width="9" height="26" rx="3" fill="#5ec28f"/>
+          </g>
+        </svg>
+      `;
+    } else if (n.includes('присед') || n.includes('выпад') || n.includes('жим ногами') || m === 'ноги') {
+      // Squat / Legs animation
+      svgMotion = `
+        <svg viewBox="0 0 220 125" class="ex-anim-svg" aria-label="Анимация упражнения на ноги">
+          <!-- Floor -->
+          <line x1="40" y1="112" x2="180" y2="112" stroke="#3a2e25" stroke-width="4" stroke-linecap="round"/>
+          <!-- Animated Upper Body + Barbell -->
+          <g class="anim-squat-body">
+            <circle cx="110" cy="30" r="9" fill="#e2b49a"/>
+            <!-- Barbell across shoulders -->
+            <line x1="66" y1="42" x2="154" y2="42" stroke="#e8dfd5" stroke-width="4" stroke-linecap="round"/>
+            <rect x="70" y="31" width="8" height="22" rx="3" fill="#5ec28f"/>
+            <rect x="142" y="31" width="8" height="22" rx="3" fill="#5ec28f"/>
+            <!-- Torso -->
+            <line x1="110" y1="40" x2="104" y2="74" stroke="#e2b49a" stroke-width="9" stroke-linecap="round"/>
+            <!-- Highlighted Quads/Glutes -->
+            <line x1="104" y1="74" x2="124" y2="90" stroke="#f5a623" stroke-width="9" stroke-linecap="round"/>
+          </g>
+          <!-- Lower Leg anchored to floor -->
+          <line x1="120" y1="88" x2="112" y2="110" stroke="#9b8d82" stroke-width="7" stroke-linecap="round"/>
+        </svg>
+      `;
+    } else if (n.includes('подтяг') || n.includes('тяга верхнего') || n.includes('тяга') || m === 'спина') {
+      // Pull-up / Lat Pulldown / Back row animation
+      svgMotion = `
+        <svg viewBox="0 0 220 125" class="ex-anim-svg" aria-label="Анимация тяги на спину">
+          <!-- Pull-up Bar -->
+          <line x1="50" y1="18" x2="170" y2="18" stroke="#e8dfd5" stroke-width="5" stroke-linecap="round"/>
+          <!-- Animated Pulling Body -->
+          <g class="anim-pullup-body">
+            <!-- Arms holding bar -->
+            <path d="M84 20 L95 48" stroke="#e2b49a" stroke-width="6" stroke-linecap="round"/>
+            <path d="M136 20 L125 48" stroke="#e2b49a" stroke-width="6" stroke-linecap="round"/>
+            <!-- Head -->
+            <circle cx="110" cy="38" r="9" fill="#e2b49a"/>
+            <!-- V-Taper Back (highlighted target muscle) -->
+            <polygon points="92,48 128,48 118,84 102,84" fill="#f5a623" opacity="0.9"/>
+            <!-- Legs -->
+            <line x1="105" y1="84" x2="105" y2="114" stroke="#9b8d82" stroke-width="6" stroke-linecap="round"/>
+            <line x1="115" y1="84" x2="115" y2="114" stroke="#9b8d82" stroke-width="6" stroke-linecap="round"/>
+          </g>
+        </svg>
+      `;
+    } else if (m === 'руки' || n.includes('бицепс') || n.includes('трицепс') || n.includes('французский') || n.includes('молот')) {
+      // Arm Curl / Triceps Extension animation
+      svgMotion = `
+        <svg viewBox="0 0 220 125" class="ex-anim-svg" aria-label="Анимация работы рук">
+          <!-- Torso & Shoulder -->
+          <circle cx="95" cy="26" r="10" fill="#e2b49a"/>
+          <rect x="83" y="38" width="24" height="58" rx="10" fill="#3a2e25"/>
+          <!-- Upper Arm (Highlighted Bicep/Tricep) -->
+          <line x1="102" y1="45" x2="106" y2="76" stroke="#f5a623" stroke-width="10" stroke-linecap="round"/>
+          <!-- Animated Forearm + Dumbbell/Barbell pivoting at elbow (106, 76) -->
+          <g class="anim-curl-forearm" style="transform-origin: 106px 76px;">
+            <line x1="106" y1="76" x2="142" y2="74" stroke="#e2b49a" stroke-width="7" stroke-linecap="round"/>
+            <rect x="138" y="61" width="10" height="26" rx="3" fill="#5ec28f"/>
+          </g>
+        </svg>
+      `;
+    } else {
+      // Shoulders / Core / General Athletic animation
+      svgMotion = `
+        <svg viewBox="0 0 220 125" class="ex-anim-svg" aria-label="Анимация упражнения">
+          <circle cx="110" cy="48" r="10" fill="#e2b49a"/>
+          <rect x="96" y="60" width="28" height="46" rx="9" fill="#3a2e25"/>
+          <!-- Highlighted Delts / Core -->
+          <circle cx="93" cy="65" r="7" fill="#f5a623"/>
+          <circle cx="127" cy="65" r="7" fill="#f5a623"/>
+          <!-- Animated Overhead Press / Raise -->
+          <g class="anim-press-vertical">
+            <line x1="92" y1="65" x2="82" y2="30" stroke="#f5a623" stroke-width="6" stroke-linecap="round"/>
+            <line x1="128" y1="65" x2="138" y2="30" stroke="#f5a623" stroke-width="6" stroke-linecap="round"/>
+            <line x1="62" y1="28" x2="158" y2="28" stroke="#e8dfd5" stroke-width="4" stroke-linecap="round"/>
+            <rect x="66" y="17" width="8" height="22" rx="3" fill="#5ec28f"/>
+            <rect x="146" y="17" width="8" height="22" rx="3" fill="#5ec28f"/>
+          </g>
+        </svg>
+      `;
+    }
+
+    return `
+      <div class="ex-visual-inner">
+        ${svgMotion}
+        <div class="ex-visual-caption">${caption}</div>
+      </div>
+    `;
+  }
 
   function openExerciseInfoModal(name, muscle) {
     infoModalExName.textContent = name;
     infoModalMuscleTag.textContent = muscle || 'Мышцы';
 
-    const all = getAllExercises();
-    const found = all.find((e) => e.name.toLowerCase() === name.toLowerCase());
+    const found = getExerciseMeta(name);
+    const equipInfo = getEquipInfo(found || { name, muscle });
+
+    if (infoModalVisual) {
+      infoModalVisual.innerHTML = buildExerciseAnimationSvg(name, muscle, equipInfo);
+    }
+
+    // Fix #3: Personal progress & PR history box inside the exercise modal
+    if (infoModalProgressBox) {
+      const stats = findExerciseHistoryStats(name);
+      if (stats && stats.recentSessions.length > 0) {
+        const rowsHtml = stats.recentSessions.map((sess) => {
+          const dStr = new Date(sess.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+          const setsStr = sess.sets.map((s, idx) => {
+            if (found && found.isBodyweight) {
+              return (!s.weight || s.weight === 0) ? `${idx + 1}) СВ×${s.reps}` : `${idx + 1}) +${s.weight}×${s.reps}`;
+            }
+            return `${idx + 1}) ${s.weight}×${s.reps}`;
+          }).join(' • ');
+          return `
+            <div class="info-progress-row">
+              <span class="info-progress-date">${dStr}</span>
+              <span class="info-progress-sets">${setsStr}</span>
+            </div>
+          `;
+        }).join('');
+
+        infoModalProgressBox.classList.remove('hidden');
+        infoModalProgressBox.innerHTML = `
+          <div class="info-progress-header">
+            <span>📈 Ваш прогресс (${stats.totalSessions} трен.)</span>
+            ${stats.prText ? `<span class="exercise-pr-badge">🏆 Рекорд: ${stats.prText}</span>` : ''}
+          </div>
+          <div class="info-progress-list">${rowsHtml}</div>
+        `;
+      } else {
+        infoModalProgressBox.classList.add('hidden');
+        infoModalProgressBox.innerHTML = '';
+      }
+    }
+
     const guideKey = found ? found.id : null;
     const guide = EXERCISE_GUIDES[guideKey];
 
@@ -1568,17 +2283,21 @@
     const exercisesSummary = validExercises
       .map((ex) => {
         const completedSetsCount = ex.sets.length;
-        const bwTag = ex.isBodyweight ? ' (Свой вес)' : '';
+        const bwTag = (canExerciseUseBodyweight(ex) && ex.isBodyweight) ? ' (Свой вес)' : '';
         return `${ex.name} (${completedSetsCount}${bwTag})`;
       })
       .join(' • ');
 
     // Detailed sets breakdown HTML for accordion (only completed sets!)
     const drilldownBlocksHtml = validExercises.map((ex) => {
+      const canBW = canExerciseUseBodyweight(ex);
+      const equipInfo = getEquipInfo(ex);
       const setsRowsHtml = ex.sets.map((s, sIdx) => {
         let weightStr = '';
-        if (ex.isBodyweight) {
+        if (canBW && ex.isBodyweight) {
           weightStr = (!s.weight || s.weight === 0) ? 'Свой вес' : `+${s.weight} кг`;
+        } else if (equipInfo.type === 'dumbbell_2') {
+          weightStr = `2 × ${s.weight} кг`;
         } else {
           weightStr = `${s.weight} кг`;
         }
@@ -1637,8 +2356,9 @@
           📋 Подробный журнал подходов:
         </div>
         ${drilldownBlocksHtml}
-        <div class="history-card-actions" style="margin-top:12px;">
-          <button class="secondary-btn small-btn repeat-workout-btn" data-id="${item.id}">Повторить тренировку ⚡</button>
+        <div class="history-card-actions" style="margin-top:12px; flex-wrap:wrap;">
+          <button class="secondary-btn small-btn repeat-workout-btn" data-id="${item.id}">Повторить ⚡</button>
+          <button class="secondary-btn small-btn save-tpl-history-btn" data-id="${item.id}">📌 В программы</button>
           <button class="danger-icon-btn delete-workout-btn" data-id="${item.id}" title="Удалить из истории">🗑</button>
         </div>
       </div>
@@ -1667,20 +2387,32 @@
         if (!confirm('Сейчас активна другая тренировка. Заменить её этой программой?')) return;
       }
 
-      const clonedExercises = item.exercises.map((ex) => ({
-        id: ex.id,
-        name: ex.name,
-        muscle: ex.muscle,
-        isBodyweight: !!ex.isBodyweight,
-        sets: ex.sets.map((s) => ({
-          weight: s.weight,
-          reps: s.reps,
-          isBodyweight: !!s.isBodyweight,
-          completed: false
-        }))
-      }));
+      const clonedExercises = item.exercises.map((ex) => {
+        const canBW = canExerciseUseBodyweight(ex);
+        const isBW = canBW ? !!ex.isBodyweight : false;
+        return {
+          id: ex.id,
+          name: ex.name,
+          muscle: ex.muscle,
+          equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
+          canBodyweight: canBW,
+          isBodyweight: isBW,
+          sets: ex.sets.map((s) => ({
+            weight: s.weight,
+            reps: s.reps,
+            isBodyweight: isBW,
+            completed: false
+          }))
+        };
+      });
 
       startNewWorkout(item.title, clonedExercises);
+    };
+
+    // Fix #7: Save past workout to "My Programs"
+    card.querySelector('.save-tpl-history-btn').onclick = (e) => {
+      e.stopPropagation();
+      saveExercisesListAsCustomTemplate(item.title, validExercises);
     };
 
     // Delete workout
@@ -1698,7 +2430,7 @@
   }
 
   // ==========================================================================
-  // 10. Athlete Profile, Onboarding & Bodyweight Tracker
+  // 10. Athlete Profile, Onboarding & Bodyweight Tracker + SVG Chart
   // ==========================================================================
 
   const profileAvatarIcon = document.getElementById('profileAvatarIcon');
@@ -1712,6 +2444,8 @@
   const bmiContextNote = document.getElementById('bmiContextNote');
   const recordWeightBtn = document.getElementById('recordWeightBtn');
   const weightLogChips = document.getElementById('weightLogChips');
+  const weightChartContainer = document.getElementById('weightChartContainer');
+  const weightTrendBadge = document.getElementById('weightTrendBadge');
 
   // Onboarding modal elements
   const onboardNameInput = document.getElementById('onboardNameInput');
@@ -1821,6 +2555,89 @@
     }
   }
 
+  // Fix #12: Render clean SVG Bodyweight Line Chart
+  function renderWeightChart() {
+    if (!weightChartContainer) return;
+    const logs = (profileData.weightLog || []).slice(-10);
+
+    if (weightTrendBadge) {
+      if (logs.length >= 2) {
+        const firstW = parseFloat(logs[0].weight);
+        const lastW = parseFloat(logs[logs.length - 1].weight);
+        const diff = Math.round((lastW - firstW) * 10) / 10;
+        const sign = diff > 0 ? '+' : '';
+        weightTrendBadge.textContent = `${sign}${diff} кг`;
+      } else if (logs.length === 1) {
+        weightTrendBadge.textContent = `${logs[0].weight} кг`;
+      } else {
+        weightTrendBadge.textContent = '';
+      }
+    }
+
+    if (logs.length === 0) {
+      weightChartContainer.innerHTML = `<div class="weight-chart-empty">Нажмите «Сохранить параметры и записать вес», чтобы построить график динамики веса 📈</div>`;
+      return;
+    }
+
+    const width = 320;
+    const height = 128;
+    const padLeft = 28;
+    const padRight = 28;
+    const padTop = 26;
+    const padBottom = 26;
+    const plotW = width - padLeft - padRight;
+    const plotH = height - padTop - padBottom;
+
+    const weights = logs.map((l) => parseFloat(l.weight));
+    let minW = Math.min(...weights);
+    let maxW = Math.max(...weights);
+    if (minW === maxW) {
+      minW -= 2;
+      maxW += 2;
+    } else {
+      const rangePad = (maxW - minW) * 0.2;
+      minW -= rangePad;
+      maxW += rangePad;
+    }
+
+    const points = logs.map((log, i) => {
+      const x = logs.length === 1
+        ? width / 2
+        : padLeft + (i / (logs.length - 1)) * plotW;
+      const y = padTop + plotH - ((parseFloat(log.weight) - minW) / (maxW - minW)) * plotH;
+      const dStr = new Date(log.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+      return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, w: log.weight, dStr };
+    });
+
+    const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
+    const areaPoints = points.length > 1
+      ? `${points[0].x},${height - padBottom} ${polylinePoints} ${points[points.length - 1].x},${height - padBottom}`
+      : '';
+
+    const dotsSvg = points.map((p) => `
+      <g>
+        <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#f5a623" stroke="#181310" stroke-width="2"/>
+        <text x="${p.x}" y="${p.y - 9}" text-anchor="middle" fill="#f5ebe1" font-size="10" font-weight="700">${p.w}</text>
+        <text x="${p.x}" y="${height - 8}" text-anchor="middle" fill="#a8988a" font-size="9">${p.dStr}</text>
+      </g>
+    `).join('');
+
+    weightChartContainer.innerHTML = `
+      <svg viewBox="0 0 ${width} ${height}" class="weight-chart-svg" aria-label="График веса">
+        <defs>
+          <linearGradient id="weightAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f5a623" stop-opacity="0.32"/>
+            <stop offset="100%" stop-color="#f5a623" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <line x1="${padLeft}" y1="${height - padBottom}" x2="${width - padRight}" y2="${height - padBottom}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        ${points.length > 1 ? `<polygon points="${areaPoints}" fill="url(#weightAreaGrad)"/>` : ''}
+        ${points.length > 1 ? `<polyline points="${polylinePoints}" fill="none" stroke="#f5a623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+        ${dotsSvg}
+      </svg>
+    `;
+  }
+
   function renderProfile() {
     profileNameInput.value = profileData.name || '';
     profileGenderSelect.value = profileData.gender || '';
@@ -1832,6 +2649,7 @@
 
     updateAvatarAndGreeting();
     updateBMIDisplay();
+    renderWeightChart();
 
     // Weight history chips with delete buttons
     weightLogChips.innerHTML = '';
@@ -1899,22 +2717,47 @@
     updateBMIDisplay();
   };
 
+  // Fix #12: Consistent saving of all body parameters + logging weight entry
   recordWeightBtn.onclick = () => {
-    const currentWeight = parseFloat(profileWeightInput.value);
-    if (!currentWeight || currentWeight <= 0) {
-      alert('Пожалуйста, сначала укажите ваш вес (в кг) в поле «Вес тела» выше.');
-      profileWeightInput.focus();
-      return;
+    blurActiveInput();
+    profileData.name = profileNameInput.value.trim();
+    profileData.gender = profileGenderSelect.value;
+    if (profileGoalSelect) {
+      profileData.goal = profileGoalSelect.value;
     }
-    if (!profileData.weightLog) profileData.weightLog = [];
-    profileData.weightLog.push({
-      date: new Date().toISOString(),
-      weight: currentWeight
-    });
-    profileData.weight = currentWeight;
+
+    const rawHeight = profileHeightInput.value.trim().replace(',', '.');
+    profileData.height = rawHeight ? (parseFloat(rawHeight) || '') : '';
+
+    const rawWeight = profileWeightInput.value.trim().replace(',', '.');
+    const currentWeight = rawWeight ? parseFloat(rawWeight) : 0;
+
+    if (currentWeight && currentWeight > 0) {
+      profileData.weight = currentWeight;
+      if (!profileData.weightLog) profileData.weightLog = [];
+
+      // If last weight entry was already logged today, update it or add a new point if weight changed
+      const todayKey = new Date().toISOString().slice(0, 10);
+      const lastEntry = profileData.weightLog[profileData.weightLog.length - 1];
+      if (lastEntry && lastEntry.date && lastEntry.date.slice(0, 10) === todayKey) {
+        lastEntry.weight = currentWeight;
+        lastEntry.date = new Date().toISOString();
+      } else {
+        profileData.weightLog.push({
+          date: new Date().toISOString(),
+          weight: currentWeight
+        });
+      }
+    }
+
     saveProfile();
     renderProfile();
-    alert(`Замер веса ${currentWeight} кг успешно сохранен! 📈`);
+
+    const origText = recordWeightBtn.textContent;
+    recordWeightBtn.textContent = '✓ Сохранено!';
+    setTimeout(() => {
+      recordWeightBtn.textContent = origText;
+    }, 1800);
   };
 
   // First-Launch Onboarding Handlers ("Давай познакомимся!")
@@ -2052,20 +2895,27 @@
     }
 
     filtered.forEach((ex) => {
+      const equipInfo = getEquipInfo(ex);
+      const stats = findExerciseHistoryStats(ex.name);
+      const prLine = (stats && stats.prText) ? ` • 🏆 ${stats.prText}` : '';
       const item = document.createElement('div');
       item.className = 'library-item';
       item.innerHTML = `
         <div>
           <div style="display:flex; align-items:center; gap:6px;">
-            <span class="library-item-title">${ex.name}${ex.isBodyweight ? ' ⚡' : ''}</span>
-            <button type="button" class="exercise-info-btn" data-ex-name="${ex.name}" data-ex-muscle="${ex.muscle}" title="Техника">ℹ️</button>
+            <span class="library-item-title">${ex.name}</span>
+            <button type="button" class="exercise-info-btn" data-ex-name="${ex.name}" data-ex-muscle="${ex.muscle}" title="Анимация и прогресс">ℹ️</button>
           </div>
-          <div class="library-item-muscle">${ex.muscle}${ex.isBodyweight ? ' • Свой вес' : ''}</div>
+          <div class="library-item-muscle">${ex.muscle} • ${equipInfo.badge}${prLine}</div>
         </div>
       `;
 
       item.querySelector('.exercise-info-btn').onclick = (e) => {
         e.stopPropagation();
+        openExerciseInfoModal(ex.name, ex.muscle);
+      };
+
+      item.onclick = () => {
         openExerciseInfoModal(ex.name, ex.muscle);
       };
 
@@ -2091,6 +2941,7 @@
   const settingSoundToggle = document.getElementById('settingSoundToggle');
   const settingVibrateToggle = document.getElementById('settingVibrateToggle');
   const settingDefaultRest = document.getElementById('settingDefaultRest');
+  const settingExerciseRest = document.getElementById('settingExerciseRest');
   const settingAutoRestToggle = document.getElementById('settingAutoRestToggle');
   const testSoundBtn = document.getElementById('testSoundBtn');
   const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -2104,7 +2955,10 @@
   function applySettingsUI() {
     settingSoundToggle.checked = settings.sound;
     settingVibrateToggle.checked = settings.vibrate;
-    settingDefaultRest.value = String(settings.defaultRestSec);
+    settingDefaultRest.value = String(settings.defaultRestSec || 90);
+    if (settingExerciseRest) {
+      settingExerciseRest.value = String(settings.exerciseRestSec || 120);
+    }
     settingAutoRestToggle.checked = settings.autoRest;
 
     if (settings.theme === 'light') {
@@ -2129,9 +2983,16 @@
   };
 
   settingDefaultRest.onchange = (e) => {
-    settings.defaultRestSec = parseInt(e.target.value, 10);
+    settings.defaultRestSec = parseInt(e.target.value, 10) || 90;
     saveSettings();
   };
+
+  if (settingExerciseRest) {
+    settingExerciseRest.onchange = (e) => {
+      settings.exerciseRestSec = parseInt(e.target.value, 10) || 120;
+      saveSettings();
+    };
+  }
 
   settingAutoRestToggle.onchange = (e) => {
     settings.autoRest = e.target.checked;
@@ -2244,6 +3105,7 @@
           sound: true,
           vibrate: true,
           defaultRestSec: 90,
+          exerciseRestSec: 120,
           autoRest: true,
           theme: 'dark'
         };
@@ -2312,11 +3174,12 @@
     }
 
     filtered.forEach((ex) => {
+      const equipInfo = getEquipInfo(ex);
       const btn = document.createElement('button');
       btn.className = 'sheet-exercise-btn';
       btn.innerHTML = `
-        <span class="sheet-exercise-name">${ex.name}${ex.isBodyweight ? ' ⚡' : ''}</span>
-        <span class="sheet-exercise-tag">${ex.muscle}${ex.isBodyweight ? ' • Свой вес' : ''}</span>
+        <span class="sheet-exercise-name">${ex.name}</span>
+        <span class="sheet-exercise-tag">${ex.muscle} • ${equipInfo.badge}</span>
       `;
 
       btn.onclick = () => {
@@ -2325,7 +3188,9 @@
             id: ex.id,
             name: ex.name,
             muscle: ex.muscle,
-            isBodyweight: !!ex.isBodyweight
+            equip: ex.equip || (ex.isBodyweight ? 'bodyweight' : 'barbell'),
+            canBodyweight: canExerciseUseBodyweight(ex),
+            isBodyweight: canExerciseUseBodyweight(ex) && !!ex.isBodyweight
           });
           isSelectingForTemplateBuilder = false;
           closeModal('modalSelectExercise');
@@ -2401,8 +3266,9 @@
     renderExercisesLibrary();
   });
 
-  // Finish Workout Modal
-  finishWorkoutBtn.addEventListener('click', () => {
+  // Finish Workout Modal (triggered from top OR bottom finish button)
+  function triggerFinishWorkoutModal() {
+    blurActiveInput();
     if (!activeWorkout || activeWorkout.exercises.length === 0) {
       alert('Добавьте хотя бы одно упражнение перед завершением.');
       return;
@@ -2413,10 +3279,12 @@
     let totalTonnage = 0;
 
     activeWorkout.exercises.forEach((ex) => {
+      const equipInfo = getEquipInfo(ex);
+      const mult = equipInfo.multiplier || 1;
       ex.sets.forEach((set) => {
         if (set.completed) {
           totalCompletedSets += 1;
-          totalTonnage += (set.weight || 0) * (set.reps || 0);
+          totalTonnage += (parseFloat(set.weight) || 0) * mult * (parseInt(set.reps, 10) || 0);
         }
       });
     });
@@ -2432,7 +3300,27 @@
     document.getElementById('finishWorkoutNotes').value = '';
 
     openModal('modalFinishWorkout');
-  });
+  }
+
+  finishWorkoutBtn.addEventListener('click', triggerFinishWorkoutModal);
+  if (bottomFinishWorkoutBtn) {
+    bottomFinishWorkoutBtn.addEventListener('click', triggerFinishWorkoutModal);
+  }
+
+  // Fix #7: Save active or finishing workout to "Мои программы"
+  if (activeSaveAsTemplateBtn) {
+    activeSaveAsTemplateBtn.addEventListener('click', () => {
+      if (!activeWorkout) return;
+      saveExercisesListAsCustomTemplate(activeWorkout.title, activeWorkout.exercises);
+    });
+  }
+
+  if (finishSaveTemplateBtn) {
+    finishSaveTemplateBtn.addEventListener('click', () => {
+      if (!activeWorkout) return;
+      saveExercisesListAsCustomTemplate(activeWorkout.title, activeWorkout.exercises);
+    });
+  }
 
   document.getElementById('backToWorkoutBtn').addEventListener('click', () => {
     closeModal('modalFinishWorkout');
@@ -2446,16 +3334,22 @@
     // Keep ONLY completed sets when saving to history!
     const cleanedExercises = activeWorkout.exercises
       .map((ex) => {
+        const canBW = canExerciseUseBodyweight(ex);
+        const isBW = canBW && !!ex.isBodyweight;
+        const equipInfo = getEquipInfo(ex);
+        const mult = equipInfo.multiplier || 1;
         const completedSets = (ex.sets || []).filter((set) => set.completed);
         completedSets.forEach((set) => {
           totalCompletedSets += 1;
-          totalTonnage += (set.weight || 0) * (set.reps || 0);
+          totalTonnage += (parseFloat(set.weight) || 0) * mult * (parseInt(set.reps, 10) || 0);
         });
         return {
           id: ex.id,
           name: ex.name,
           muscle: ex.muscle,
-          isBodyweight: !!ex.isBodyweight,
+          equip: equipInfo.type,
+          canBodyweight: canBW,
+          isBodyweight: isBW,
           sets: completedSets
         };
       })
@@ -2486,7 +3380,8 @@
     switchView('viewHistory');
   });
 
-  cancelWorkoutBtn.addEventListener('click', () => {
+  function triggerCancelWorkout() {
+    blurActiveInput();
     if (confirm('Вы уверены, что хотите сбросить текущую тренировку? Все несохраненные подходы будут удалены.')) {
       activeWorkout = null;
       saveActiveWorkout();
@@ -2496,19 +3391,48 @@
       document.getElementById('startBtnText').textContent = 'Выбрать тренировку';
       switchView('viewHome');
     }
-  });
+  }
+
+  cancelWorkoutBtn.addEventListener('click', triggerCancelWorkout);
+  if (bottomCancelWorkoutBtn) {
+    bottomCancelWorkoutBtn.addEventListener('click', triggerCancelWorkout);
+  }
 
   // ==========================================================================
-  // 15. App Initialization, iOS Full-Screen Shell & Service Worker
+  // 15. App Initialization, Live Calendar Tab, Wake Lock & Service Worker
   // ==========================================================================
+
+  function updateLiveCalendarTabIcon() {
+    const tabCalMonth = document.getElementById('tabCalMonth');
+    const tabCalDay = document.getElementById('tabCalDay');
+    const now = new Date();
+    const shortMonths = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
+    if (tabCalMonth) tabCalMonth.textContent = shortMonths[now.getMonth()];
+    if (tabCalDay) tabCalDay.textContent = String(now.getDate());
+  }
+
+  let wakeLockSentinel = null;
+  async function requestWakeLockIfNeeded() {
+    if (!('wakeLock' in navigator)) return;
+    if (document.visibilityState !== 'visible') return;
+    if (!activeWorkout && !restTimer.active) return;
+    try {
+      if (!wakeLockSentinel) {
+        wakeLockSentinel = await navigator.wakeLock.request('screen');
+        wakeLockSentinel.addEventListener('release', () => {
+          wakeLockSentinel = null;
+        });
+      }
+    } catch (e) {
+      // WakeLock may fail on low battery or unsupported browser; ignore silently
+    }
+  }
 
   function syncViewportHeight() {
     const isStandalone = window.navigator.standalone === true ||
       (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
     let targetHeight = window.innerHeight;
 
-    // Fix iOS PWA black-translucent ~1cm bottom bar:
-    // WebKit subtracts the top status bar (~59px) from window.innerHeight while the WebView is window.screen.height tall.
     if (isStandalone && window.screen && window.screen.height > window.innerHeight) {
       targetHeight = window.screen.height;
     }
@@ -2518,9 +3442,42 @@
 
   function initApp() {
     syncViewportHeight();
+    updateLiveCalendarTabIcon();
+
     window.addEventListener('resize', syncViewportHeight);
     window.addEventListener('orientationchange', () => {
       setTimeout(syncViewportHeight, 100);
+    });
+
+    // Fix #10: Suppress iOS "Undo Typing" popup when locking/unlocking or shaking phone
+    window.addEventListener('beforeinput', (e) => {
+      if (e.inputType === 'historyUndo' || e.inputType === 'historyRedo') {
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener('pagehide', blurActiveInput);
+    window.addEventListener('blur', blurActiveInput);
+
+    // Fix #10 & #11: On lock/unlock or app switch, blur inputs and immediately recalculate timers from real timestamps
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        blurActiveInput();
+      } else if (document.visibilityState === 'visible') {
+        updateLiveCalendarTabIcon();
+        if (activeWorkout) {
+          startWorkoutStopwatch();
+        }
+        if (restTimer.active) {
+          tickRestTimer();
+        }
+        requestWakeLockIfNeeded();
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      if (activeWorkout) startWorkoutStopwatch();
+      if (restTimer.active) tickRestTimer();
     });
 
     loadState();
@@ -2528,15 +3485,18 @@
     updateAvatarAndGreeting();
     renderHome();
     checkAndShowOnboarding();
+    restoreRestTimerState();
 
     if (activeWorkout) {
       activeDot.classList.remove('hidden');
       document.getElementById('startBtnText').textContent = 'Продолжить текущую тренировку';
+      startWorkoutStopwatch();
+      requestWakeLockIfNeeded();
     }
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=1.6').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=1.7').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

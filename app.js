@@ -523,6 +523,9 @@
     return all.find((e) => (e.id && e.id.toLowerCase() === q) || e.name.toLowerCase() === q) || null;
   }
 
+  // Alias so both names work everywhere
+  const getExerciseMeta = getExerciseDefinition;
+
   function canExerciseUseBodyweight(exItem) {
     if (!exItem) return false;
     if (exItem.canBodyweight === true) return true;
@@ -543,55 +546,82 @@
 
   function getEquipInfo(exItem) {
     const canBW = canExerciseUseBodyweight(exItem);
-    if (canBW && exItem.isBodyweight) {
+    if (canBW) {
       return {
+        type: 'bodyweight',
         equip: 'bodyweight',
         canBW: true,
         isBW: true,
-        badgeText: '⚡ Свой вес / +Доп',
-        colTitle: 'СВОЙ ВЕС / ДОП',
+        badge: '⚡ 0 кг = свой вес (можно +доп. вес)',
+        badgeText: '⚡ 0 кг = свой вес (можно +доп. вес)',
+        colHeader: 'ДОП. ВЕС (КГ)',
+        colTitle: 'ДОП. ВЕС (КГ)',
         multiplier: 1
       };
     }
 
-    const def = getExerciseDefinition(exItem.id || exItem.name);
-    const equip = exItem.equip || (def && def.equip) || 'barbell';
+    const def = getExerciseDefinition(exItem && (exItem.id || exItem.name));
+    let equip = (exItem && exItem.equip) || (def && def.equip) || '';
+
+    // Auto-detect equipment from exercise name if not explicitly stored
+    if (!equip || equip === 'bodyweight') {
+      const n = ((exItem && exItem.name) || '').toLowerCase();
+      if (n.includes('гантел')) {
+        equip = 'dumbbell_2';
+      } else if (n.includes('блок') || n.includes('тренаж') || n.includes('ногами') || n.includes('икр')) {
+        equip = 'machine';
+      } else {
+        equip = 'barbell';
+      }
+    }
 
     if (equip === 'dumbbell_2') {
       return {
+        type: 'dumbbell_2',
         equip: 'dumbbell_2',
-        canBW,
+        canBW: false,
         isBW: false,
+        badge: '🏋️ 2 гантели (вес 1 шт)',
         badgeText: '🏋️ 2 гантели (вес 1 шт)',
+        colHeader: '1 ГАНТЕЛЬ (КГ)',
         colTitle: '1 ГАНТЕЛЬ (КГ)',
         multiplier: 2
       };
     }
     if (equip === 'dumbbell_1') {
       return {
+        type: 'dumbbell_1',
         equip: 'dumbbell_1',
-        canBW,
+        canBW: false,
         isBW: false,
+        badge: '🏋️ 1 гантель',
         badgeText: '🏋️ 1 гантель',
+        colHeader: 'ГАНТЕЛЬ (КГ)',
         colTitle: 'ГАНТЕЛЬ (КГ)',
         multiplier: 1
       };
     }
     if (equip === 'machine') {
       return {
+        type: 'machine',
         equip: 'machine',
-        canBW,
+        canBW: false,
         isBW: false,
+        badge: '⚙️ Тренажёр / Блок',
         badgeText: '⚙️ Тренажёр / Блок',
+        colHeader: 'ВЕС (КГ)',
         colTitle: 'ВЕС (КГ)',
         multiplier: 1
       };
     }
     return {
+      type: 'barbell',
       equip: 'barbell',
-      canBW,
+      canBW: false,
       isBW: false,
+      badge: '🏋️ Штанга (общий вес)',
       badgeText: '🏋️ Штанга (общий вес)',
+      colHeader: 'ШТАНГА (КГ)',
       colTitle: 'ШТАНГА (КГ)',
       multiplier: 1
     };
@@ -612,14 +642,9 @@
       if (foundEx && foundEx.sets && foundEx.sets.length > 0) {
         const completedSets = foundEx.sets.filter((s) => s.completed);
         if (completedSets.length > 0) {
-          const canBW = canExerciseUseBodyweight(foundEx);
-          const isBW = canBW && !!foundEx.isBodyweight;
-
           const formattedSets = completedSets.map((s) => {
-            if (isBW) {
-              return (!s.weight || s.weight === 0) ? `СВ×${s.reps}` : `+${s.weight}×${s.reps}`;
-            }
-            return `${s.weight}×${s.reps}`;
+            const w = parseFloat(s.weight) || 0;
+            return `${w}×${s.reps}`;
           });
 
           if (!lastSessionSets) {
@@ -629,15 +654,15 @@
 
           sessions.push({
             date: workout.date,
-            setsText: formattedSets.join(', '),
-            isBW
+            sets: completedSets,
+            setsText: formattedSets.join(', ')
           });
 
           completedSets.forEach((s) => {
             const w = parseFloat(s.weight) || 0;
             const r = parseInt(s.reps, 10) || 0;
             if (!bestSet || w > bestSet.weight || (w === bestSet.weight && r > bestSet.reps)) {
-              bestSet = { weight: w, reps: r, isBW };
+              bestSet = { weight: w, reps: r };
             }
           });
         }
@@ -646,34 +671,25 @@
 
     if (!lastSessionSets) return null;
 
-    const lastIsBW = canExerciseUseBodyweight({ name: exerciseName }) &&
-      lastSessionSets.some((s) => s.isBodyweight || !s.weight);
-
     const setStrings = lastSessionSets.map((s) => {
-      if (lastIsBW && (!s.weight || s.weight === 0)) {
-        return `СВ×${s.reps}`;
-      }
-      if (lastIsBW && s.weight > 0) {
-        return `+${s.weight}×${s.reps}`;
-      }
-      return `${s.weight}×${s.reps}`;
+      const w = parseFloat(s.weight) || 0;
+      return `${w}×${s.reps}`;
     });
 
     let prText = '';
     if (bestSet) {
-      if (bestSet.isBW) {
-        prText = bestSet.weight > 0 ? `+${bestSet.weight} кг × ${bestSet.reps}` : `Свой вес × ${bestSet.reps}`;
-      } else {
-        prText = `${bestSet.weight} кг × ${bestSet.reps}`;
-      }
+      prText = `${bestSet.weight} кг × ${bestSet.reps}`;
     }
 
     return {
+      lastSets: lastSessionSets,
       lastSetsRaw: lastSessionSets,
       lastSetsStrings: setStrings,
       summaryInline: setStrings.map((str, i) => `${i + 1}) ${str}`).join(' • '),
       prText,
       lastDate: lastSessionDate,
+      totalSessions: sessions.length,
+      recentSessions: sessions.slice(0, 5),
       sessions: sessions.slice(0, 5)
     };
   }
@@ -1444,27 +1460,16 @@
     }
 
     activeWorkout.exercises.forEach((exItem, exIndex) => {
-      // Fix #1: Strict check — weighted exercises (barbell/dumbbell/machine) can NEVER be set to "Свой вес"
       const canBW = canExerciseUseBodyweight(exItem);
-      if (!canBW && exItem.isBodyweight) {
-        exItem.isBodyweight = false;
-        (exItem.sets || []).forEach((s) => {
-          s.isBodyweight = false;
-        });
-      }
-
       const equipInfo = getEquipInfo(exItem);
       const histStats = findExerciseHistoryStats(exItem.name);
 
-      // Fix #3: Detailed set-by-set previous workout summary + all-time PR badge
+      // Detailed set-by-set previous workout summary + all-time PR badge
       let prevSummaryHtml = '';
       if (histStats && histStats.lastSets && histStats.lastSets.length > 0) {
         const setsChips = histStats.lastSets.map((s, idx) => {
-          if (exItem.isBodyweight) {
-            const wTxt = (!s.weight || s.weight === 0) ? 'СВ' : `+${s.weight}`;
-            return `${idx + 1}) ${wTxt}×${s.reps}`;
-          }
-          return `${idx + 1}) ${s.weight}×${s.reps}`;
+          const w = parseFloat(s.weight) || 0;
+          return `${idx + 1}) ${w}×${s.reps}`;
         }).join(' • ');
 
         const prBadgeHtml = histStats.prText
@@ -1479,13 +1484,13 @@
         `;
       }
 
-      // Equipment / Bodyweight control button:
-      // - For bodyweight-capable exercises (pull-ups, dips, push-ups): toggles "⚡ Свой вес" <-> "🏋️ + Доп. вес"
-      // - For weighted exercises (bench press, curls, etc.): cycles equipment type ("🏋️ Штанга" / "🏋️ 2 гантели (вес 1 шт)" / "🏋️ 1 гантель" / "⚙️ Тренажёр")
+      // Equipment badge:
+      // - Bodyweight-capable exercises show a simple note ("⚡ 0 кг = свой вес (можно +доп. вес)") without any mode toggle
+      // - Weighted exercises show a clickable equipment selector ("🏋️ Штанга" / "🏋️ 2 гантели (вес 1 шт)" / "🏋️ 1 гантель" / "⚙️ Тренажёр")
       const equipControlHtml = canBW
-        ? `<button type="button" class="bw-toggle-btn ${exItem.isBodyweight ? 'active' : ''}" data-ex-idx="${exIndex}" title="Переключить: свой вес или доп. отягощение">
-             ${exItem.isBodyweight ? '⚡ Свой вес' : '🏋️ + Доп. вес'}
-           </button>`
+        ? `<span class="exercise-muscle-tag" style="background:rgba(16,185,129,0.12); color:var(--accent-green); border-color:rgba(16,185,129,0.28);">
+             ${equipInfo.badge}
+           </span>`
         : `<button type="button" class="equip-badge-btn" data-ex-idx="${exIndex}" title="Нажмите, чтобы уточнить снаряд (Штанга / 2 гантели / 1 гантель / Тренажёр)">
              ${equipInfo.badge} ▾
            </button>`;
@@ -1512,7 +1517,7 @@
         <div class="sets-table">
           <div class="sets-table-header">
             <div>Сет</div>
-            <div>${equipInfo.colHeader}</div>
+            <div>${equipInfo.colHeader || 'ВЕС (КГ)'}</div>
             <div>Повт</div>
             <div>Готово</div>
             <div></div>
@@ -1528,31 +1533,17 @@
       const setsContainer = card.querySelector(`#setsContainer_${exIndex}`);
 
       exItem.sets.forEach((set, setIndex) => {
-        let weightDisplay = '';
-        let isBwClass = '';
-
-        if (canBW && exItem.isBodyweight) {
-          if (!set.weight || set.weight === 0) {
-            weightDisplay = 'Свой вес';
-            isBwClass = 'is-bw';
-          } else {
-            weightDisplay = `+${set.weight}`;
-            isBwClass = 'is-bw';
-          }
-        } else {
-          weightDisplay = (set.weight !== undefined && set.weight !== null && set.weight !== '') ? set.weight : '';
-        }
-
+        const numericWeight = (set.weight !== undefined && set.weight !== null && set.weight !== '')
+          ? (parseFloat(set.weight) || 0)
+          : (canBW ? 0 : '');
         const repsDisplay = (set.reps !== undefined && set.reps !== null && set.reps !== '') ? set.reps : '';
 
         // Previous performance specifically for this set number (e.g. Set 1 vs Set 2 vs Set 3)
         let perSetPrevHtml = '';
         if (histStats && histStats.lastSets && histStats.lastSets[setIndex]) {
           const ps = histStats.lastSets[setIndex];
-          const psText = (canBW && exItem.isBodyweight)
-            ? ((!ps.weight || ps.weight === 0) ? `СВ×${ps.reps}` : `+${ps.weight}×${ps.reps}`)
-            : `${ps.weight}×${ps.reps}`;
-          perSetPrevHtml = `<span class="set-prev-mini" title="Прошлый результат в ${setIndex + 1}-м подходе">${psText}</span>`;
+          const psW = parseFloat(ps.weight) || 0;
+          perSetPrevHtml = `<span class="set-prev-mini" title="Прошлый результат в ${setIndex + 1}-м подходе">${psW}×${ps.reps}</span>`;
         }
 
         const row = document.createElement('div');
@@ -1572,9 +1563,9 @@
               <button type="button" class="stepper-btn minus-btn" data-action="minus" data-type="weight" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Уменьшить вес">−</button>
               <div class="stepper-input-wrap">
                 <input type="text" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false"
-                       class="set-input set-weight-input ${isBwClass}" 
+                       class="set-input set-weight-input" 
                        data-ex-idx="${exIndex}" data-set-idx="${setIndex}" 
-                       value="${weightDisplay}" placeholder="${canBW && exItem.isBodyweight ? 'Свой вес' : '0'}">
+                       value="${numericWeight}" placeholder="0">
               </div>
               <button type="button" class="stepper-btn plus-btn" data-action="plus" data-type="weight" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Увеличить вес">+</button>
             </div>
@@ -1629,27 +1620,6 @@
       };
     });
 
-    // Bodyweight toggle (ONLY rendered on bodyweight-capable exercises!)
-    document.querySelectorAll('.bw-toggle-btn').forEach((btn) => {
-      btn.onclick = () => {
-        blurActiveInput();
-        const exIdx = parseInt(btn.dataset.exIdx, 10);
-        const ex = activeWorkout.exercises[exIdx];
-        if (!canExerciseUseBodyweight(ex)) return;
-
-        ex.isBodyweight = !ex.isBodyweight;
-        ex.sets.forEach((s) => {
-          s.isBodyweight = ex.isBodyweight;
-          if (ex.isBodyweight && (!s.weight || s.weight <= 0)) {
-            s.weight = 0;
-          }
-        });
-
-        saveActiveWorkout();
-        renderActiveWorkout();
-      };
-    });
-
     // Equipment mode selector (cycles: Штанга -> 2 гантели (вес 1 шт) -> 1 гантель -> Тренажёр)
     document.querySelectorAll('.equip-badge-btn').forEach((btn) => {
       btn.onclick = () => {
@@ -1665,7 +1635,7 @@
       };
     });
 
-    // Steppers
+    // Steppers (clean numeric weight 0+ kg and reps 0+)
     document.querySelectorAll('.stepper-btn').forEach((btn) => {
       btn.onclick = (e) => {
         e.preventDefault();
@@ -1679,31 +1649,15 @@
         const row = btn.closest('.set-row');
 
         if (type === 'weight') {
-          const canBW = canExerciseUseBodyweight(exercise);
-          const isBW = canBW && !!exercise.isBodyweight;
           let currentWeight = parseFloat(targetSet.weight) || 0;
-
-          if (isBW) {
-            if (action === 'plus') {
-              currentWeight = Math.round((currentWeight + 2.5) * 10) / 10;
-            } else {
-              currentWeight = currentWeight <= 2.5 ? 0 : Math.round((currentWeight - 2.5) * 10) / 10;
-            }
-            targetSet.weight = currentWeight;
-            const input = row.querySelector('.set-weight-input');
-            input.value = currentWeight === 0 ? 'Свой вес' : `+${currentWeight}`;
-            input.classList.toggle('is-bw', true);
+          if (action === 'plus') {
+            currentWeight = Math.round((currentWeight + 2.5) * 10) / 10;
           } else {
-            if (action === 'plus') {
-              currentWeight = Math.round((currentWeight + 2.5) * 10) / 10;
-            } else {
-              currentWeight = Math.max(0, Math.round((currentWeight - 2.5) * 10) / 10);
-            }
-            targetSet.weight = currentWeight;
-            const input = row.querySelector('.set-weight-input');
-            input.value = currentWeight;
-            input.classList.toggle('is-bw', false);
+            currentWeight = Math.max(0, Math.round((currentWeight - 2.5) * 10) / 10);
           }
+          targetSet.weight = currentWeight;
+          const input = row.querySelector('.set-weight-input');
+          input.value = currentWeight;
           saveActiveWorkout();
         } else if (type === 'reps') {
           let currentReps = parseInt(targetSet.reps, 10) || 0;
@@ -1720,36 +1674,16 @@
       };
     });
 
-    // Direct Weight input
+    // Direct Weight input (clean numeric input; empty or 0 = 0 kg)
     document.querySelectorAll('.set-weight-input').forEach((input) => {
-      input.onfocus = (e) => {
-        const exIdx = parseInt(e.target.dataset.exIdx, 10);
-        const exercise = activeWorkout.exercises[exIdx];
-        if (canExerciseUseBodyweight(exercise) && exercise.isBodyweight && e.target.value === 'Свой вес') {
-          e.target.value = '';
-        }
-      };
-
       input.oninput = (e) => {
         const exIdx = parseInt(e.target.dataset.exIdx, 10);
         const setIdx = parseInt(e.target.dataset.setIdx, 10);
         const exercise = activeWorkout.exercises[exIdx];
         const targetSet = exercise.sets[setIdx];
-        const raw = e.target.value.trim().toLowerCase();
-        const canBW = canExerciseUseBodyweight(exercise);
-
-        if (canBW && exercise.isBodyweight) {
-          if (raw.includes('свой') || raw.includes('вес') || raw === 'св' || raw === 'cb' || raw === '0' || raw === '') {
-            targetSet.weight = 0;
-          } else {
-            const cleaned = raw.replace('+', '').replace('кг', '').replace(',', '.').trim();
-            targetSet.weight = Math.max(0, parseFloat(cleaned) || 0);
-          }
-        } else {
-          // Strictly numeric weight for barbell / dumbbell / machine exercises
-          const cleaned = raw.replace(/[^0-9.,]/g, '').replace(',', '.');
-          targetSet.weight = Math.max(0, parseFloat(cleaned) || 0);
-        }
+        const raw = e.target.value.trim();
+        const cleaned = raw.replace(/[^0-9.,]/g, '').replace(',', '.');
+        targetSet.weight = cleaned === '' ? 0 : Math.max(0, parseFloat(cleaned) || 0);
         saveActiveWorkout();
       };
 
@@ -1759,14 +1693,12 @@
         const exercise = activeWorkout.exercises[exIdx];
         if (!exercise || !exercise.sets[setIdx]) return;
         const targetSet = exercise.sets[setIdx];
-        const canBW = canExerciseUseBodyweight(exercise);
-
-        if (canBW && exercise.isBodyweight) {
-          e.target.value = (!targetSet.weight || targetSet.weight === 0) ? 'Свой вес' : `+${targetSet.weight}`;
-          e.target.classList.toggle('is-bw', true);
+        if (e.target.value.trim() === '') {
+          targetSet.weight = 0;
+          e.target.value = '0';
+          saveActiveWorkout();
         } else {
           e.target.value = targetSet.weight || 0;
-          e.target.classList.toggle('is-bw', false);
         }
       };
     });
@@ -2350,17 +2282,23 @@
 
       ${item.notes ? `<div style="margin-top:8px; font-size:0.85rem; color:var(--accent-gold);">💬 ${item.notes}</div>` : ''}
 
+      <!-- Quick Action Bar visible immediately without opening Details -->
+      <div class="history-card-quick-actions">
+        <button class="secondary-btn small-btn repeat-workout-btn" data-id="${item.id}" type="button">
+          🔄 Повторить тренировку
+        </button>
+        <button class="secondary-btn small-btn save-tpl-history-btn" data-id="${item.id}" type="button" title="Сохранить в Мои программы">
+          📌 В программы
+        </button>
+        <button class="danger-icon-btn delete-workout-btn" data-id="${item.id}" type="button" title="Удалить из истории">🗑</button>
+      </div>
+
       <!-- Expandable Accordion Drill-Down -->
       <div class="history-drilldown hidden">
         <div style="font-size:0.8rem; font-weight:700; color:var(--accent-gold); text-transform:uppercase; margin-bottom:4px;">
           📋 Подробный журнал подходов:
         </div>
         ${drilldownBlocksHtml}
-        <div class="history-card-actions" style="margin-top:12px; flex-wrap:wrap;">
-          <button class="secondary-btn small-btn repeat-workout-btn" data-id="${item.id}">Повторить ⚡</button>
-          <button class="secondary-btn small-btn save-tpl-history-btn" data-id="${item.id}">📌 В программы</button>
-          <button class="danger-icon-btn delete-workout-btn" data-id="${item.id}" title="Удалить из истории">🗑</button>
-        </div>
       </div>
     `;
 
@@ -3496,7 +3434,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=1.7').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=1.8').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

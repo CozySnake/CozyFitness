@@ -715,19 +715,24 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 14px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .workout-title-input {
-  flex: 1;
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100%;
   background: transparent;
   border: none;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-main);
   padding: 4px 0;
   border-bottom: 2px solid transparent;
+  text-overflow: ellipsis;
 }
 
 .workout-title-input:focus {
@@ -736,15 +741,17 @@ button:active {
 }
 
 .workout-timer-badge {
+  flex-shrink: 0;
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
   color: var(--accent-gold);
   font-family: monospace;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .active-quick-actions {
@@ -1115,6 +1122,28 @@ input[type=number] {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 12px;
+}
+
+.history-card-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.history-card-quick-actions .repeat-workout-btn {
+  flex: 1;
+  color: var(--accent-gold);
+  border-color: rgba(245, 166, 35, 0.35);
+  background: var(--accent-gold-light);
+  font-weight: 700;
+}
+
+.history-card-quick-actions .repeat-workout-btn:active {
+  background: var(--accent-gold);
+  color: #181310;
 }
 
 /* ==========================================================================

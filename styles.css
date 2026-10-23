@@ -2553,71 +2553,181 @@ input[type="checkbox"]:checked::after {
   color: var(--accent-gold);
 }
 
-/* 5. Animated Exercise SVG Box & Progress Box inside Info Modal */
+/* 5. Realistic Exercise Photo + Anatomical Muscle Map & Progress Box inside Info Modal */
 .info-visual-box {
   background: linear-gradient(145deg, var(--bg-card-subtle), var(--bg-input));
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 12px;
+  display: block;
 }
 
-.info-anim-svg {
-  width: 110px;
-  height: 110px;
+.ex-rich-visual-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.ex-photo-showcase {
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f1218;
+}
+
+.ex-photo-frame-wrap {
+  position: relative;
+  width: 100%;
+  height: 185px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  background: #0f1218;
+}
+
+.ex-real-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.35s ease-in-out;
+}
+
+.ex-real-photo.active-frame {
+  opacity: 1;
+}
+
+.ex-photo-phase-pill {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(15, 18, 24, 0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  z-index: 2;
+}
+
+.anatomy-map-container {
+  background: rgba(15, 18, 24, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 10px 10px 8px 10px;
+}
+
+.anatomy-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.anatomy-map-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.anatomy-equip-tag {
+  font-size: 0.7rem;
+  color: var(--accent-gold);
+  background: var(--accent-gold-light);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.anatomy-map-svg {
+  width: 100%;
+  max-height: 215px;
+  display: block;
+  margin: 0 auto;
+}
+
+.anatomy-view-label {
+  fill: #94a3b8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.muscle-group path,
+.muscle-group rect {
+  transition: fill 0.25s ease;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.muscle-group.is-inactive path,
+.muscle-group.is-inactive rect {
+  fill: url(#gradInactiveMuscle);
+  stroke: #3b4456;
+  stroke-width: 0.85;
+}
+
+.muscle-group.is-primary path,
+.muscle-group.is-primary rect {
+  fill: url(#gradPrimaryMuscle);
+  stroke: #fda4af;
+  stroke-width: 1.05;
+  filter: url(#glowPrimary);
+}
+
+.muscle-group.is-secondary path,
+.muscle-group.is-secondary rect {
+  fill: url(#gradSecondaryMuscle);
+  stroke: #fde68a;
+  stroke-width: 0.95;
+}
+
+.anatomy-legend-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.anatomy-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.35;
+}
+
+.anatomy-legend-item strong {
+  color: var(--text-main);
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
-.info-visual-caption {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  line-height: 1.4;
+.legend-dot.primary-dot {
+  background: #f43f5e;
+  box-shadow: 0 0 6px rgba(244, 63, 94, 0.7);
 }
 
-.info-visual-caption strong {
-  color: var(--accent-gold);
-  display: block;
-  margin-bottom: 3px;
-  font-size: 0.85rem;
-}
-
-@keyframes liftBarAnim {
-  0%, 100% { transform: translateY(10px); }
-  50% { transform: translateY(-12px); }
-}
-
-@keyframes pullBodyAnim {
-  0%, 100% { transform: translateY(10px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes squatBodyAnim {
-  0%, 100% { transform: translateY(-6px); }
-  50% { transform: translateY(12px); }
-}
-
-@keyframes pulseMuscleGlow {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
-}
-
-.anim-lift {
-  animation: liftBarAnim 2.2s infinite ease-in-out;
-}
-
-.anim-pull {
-  animation: pullBodyAnim 2.4s infinite ease-in-out;
-}
-
-.anim-squat {
-  animation: squatBodyAnim 2.4s infinite ease-in-out;
-}
-
-.anim-muscle-glow {
-  animation: pulseMuscleGlow 1.5s infinite ease-in-out;
+.legend-dot.secondary-dot {
+  background: #f59e0b;
 }
 
 .info-progress-box {
@@ -2625,7 +2735,40 @@ input[type="checkbox"]:checked::after {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 10px 12px;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
+}
+
+.info-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.info-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-progress-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  border-top: 1px dashed rgba(255, 255, 255, 0.06);
+  padding-top: 4px;
+}
+
+.info-progress-date {
+  color: var(--accent-gold);
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 /* 6. Bodyweight Trend SVG Chart */

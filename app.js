@@ -1495,6 +1495,213 @@
   const newTemplateExercisesList = document.getElementById('newTemplateExercisesList');
   const saveCustomTemplateBtn = document.getElementById('saveCustomTemplateBtn');
 
+  function createProgramCardElement(tpl, isCustom = false) {
+    const card = document.createElement('div');
+    card.className = 'template-card';
+
+    const exList = tpl.exercises || [];
+
+    // Interactive chips: tapping any exercise chip opens its photo & anatomy guide!
+    const chipsHtml = exList
+      .map((ex) => `
+        <button type="button" class="template-ex-chip interactive-ex-chip" data-ex-name="${ex.name}" data-ex-muscle="${ex.muscle || ''}" title="Нажмите, чтобы посмотреть технику и мышцы">
+          <span>${ex.name}</span>
+          <span class="chip-info-dot">ℹ️</span>
+        </button>
+      `)
+      .join('');
+
+    // Detailed exercise-by-exercise breakdown inside the expandable "Состав ▾" block
+    const drilldownRowsHtml = exList
+      .map((ex, idx) => {
+        const def = getExerciseDefinition(ex.id || ex.name) || ex;
+        const muscleName = ex.muscle || def.muscle || 'Мышцы';
+        const equipInfo = getEquipInfo(Object.assign({}, def, ex));
+        const canBW = canExerciseUseBodyweight(ex);
+        const histStats = findExerciseHistoryStats(ex.name);
+
+        const defaultR = ex.defaultReps || 10;
+        const defaultW = canBW ? 0 : (ex.defaultWeight !== undefined ? ex.defaultWeight : 20);
+
+        let planLine = '';
+        if (histStats && histStats.summaryInline) {
+          planLine = `<span class="tpl-ex-prev">📊 Ваш прошлый раз: <strong>${histStats.summaryInline}</strong></span>`;
+        } else {
+          const wLabel = canBW
+            ? (defaultW > 0 ? `+${defaultW} кг` : '0 кг (свой вес)')
+            : `${defaultW} кг`;
+          planLine = `<span class="tpl-ex-plan">🎯 План: <strong>3 подхода × ${defaultR} повт.</strong> • Ориентир: <strong>${wLabel}</strong></span>`;
+        }
+
+        return `
+          <div class="tpl-drilldown-row">
+            <div class="tpl-drilldown-main">
+              <div class="tpl-drilldown-title-line">
+                <span class="tpl-drilldown-num">${idx + 1}.</span>
+                <span class="tpl-drilldown-name">${ex.name}</span>
+                <button type="button" class="exercise-info-btn tpl-ex-info-btn" data-ex-name="${ex.name}" data-ex-muscle="${muscleName}" title="Фото и техника выполнения">ℹ️</button>
+              </div>
+              <div class="tpl-drilldown-tags">
+                <span class="exercise-muscle-tag">${muscleName}</span>
+                <span class="tpl-equip-mini">${equipInfo.badge}</span>
+              </div>
+              <div class="tpl-drilldown-meta">
+                ${planLine}
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+
+    const copyToCustomBtnHtml = !isCustom
+      ? `<button type="button" class="secondary-btn small-btn copy-builtin-tpl-btn" style="width:100%; margin-top:10px;">
+           📋 Скопировать в «Мои программы» (подстроить под себя)
+         </button>`
+      : '';
+
+    const footerActionsHtml = isCustom
+      ? `
+        <button class="template-start-btn" data-tpl-id="${tpl.id}" type="button">
+          Начать эту программу ➔
+        </button>
+        <button class="template-edit-btn" data-tpl-id="${tpl.id}" type="button" title="Редактировать программу">✏️</button>
+        <button class="template-delete-btn" data-tpl-id="${tpl.id}" type="button" title="Удалить программу">🗑</button>
+      `
+      : `
+        <button class="template-start-btn" data-tpl-id="${tpl.id}" type="button">
+          Начать эту программу ➔
+        </button>
+      `;
+
+    card.innerHTML = `
+      <div class="template-card-header tpl-toggle-header" title="Нажмите, чтобы раскрыть подробный состав программы">
+        <div>
+          <h3 class="template-title">${tpl.title}</h3>
+          ${isCustom ? `<span class="badge" style="font-size:0.7rem; margin-top:4px; display:inline-block;">Моя программа</span>` : ''}
+        </div>
+        <button class="toggle-drilldown-btn tpl-toggle-btn" type="button">
+          <span>Состав (${exList.length})</span>
+          <span class="drilldown-arrow">▾</span>
+        </button>
+      </div>
+      <p class="template-desc">${tpl.desc}</p>
+      <div class="template-exercises-chips">${chipsHtml}</div>
+
+      <!-- Expandable Program Composition Breakdown -->
+      <div class="template-drilldown hidden">
+        <div class="tpl-drilldown-heading">
+          📋 Подробный план программы (нажмите ℹ️ для фото и техники):
+        </div>
+        <div class="tpl-drilldown-list">
+          ${drilldownRowsHtml}
+        </div>
+        ${copyToCustomBtnHtml}
+      </div>
+
+      <div class="template-card-footer">
+        ${footerActionsHtml}
+      </div>
+    `;
+
+    // Toggle accordion on header or "Состав ▾" button click
+    const toggleHeader = card.querySelector('.tpl-toggle-header');
+    const drilldown = card.querySelector('.template-drilldown');
+    const arrow = card.querySelector('.drilldown-arrow');
+
+    toggleHeader.onclick = () => {
+      const isHidden = drilldown.classList.contains('hidden');
+      if (isHidden) {
+        drilldown.classList.remove('hidden');
+        arrow.textContent = '▴';
+      } else {
+        drilldown.classList.add('hidden');
+        arrow.textContent = '▾';
+      }
+    };
+
+    // Interactive exercise chips & info buttons inside the card
+    card.querySelectorAll('.interactive-ex-chip, .tpl-ex-info-btn').forEach((btn) => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const exName = btn.dataset.exName;
+        const def = getExerciseDefinition(exName);
+        const exMuscle = btn.dataset.exMuscle || (def && def.muscle) || 'Мышцы';
+        openExerciseInfoModal(exName, exMuscle);
+      };
+    });
+
+    // Start workout button
+    card.querySelector('.template-start-btn').onclick = () => {
+      if (activeWorkout) {
+        if (!confirm('Сейчас активна другая тренировка. Сбросить её и начать выбранную программу?')) {
+          return;
+        }
+      }
+      startWorkoutFromTemplate(tpl);
+    };
+
+    // Copy built-in program to "Мои программы" and open editor
+    const copyBtn = card.querySelector('.copy-builtin-tpl-btn');
+    if (copyBtn) {
+      copyBtn.onclick = (e) => {
+        e.stopPropagation();
+        editingTemplateId = null;
+        if (modalTemplateHeaderTitle) modalTemplateHeaderTitle.textContent = 'Настроить программу под себя';
+        newTemplateTitle.value = `${tpl.title} (моя)`;
+        newTemplateDesc.value = tpl.desc || '';
+        templateBuilderExercises = exList.map((ex) => {
+          const def = getExerciseDefinition(ex.id || ex.name) || ex;
+          return {
+            id: ex.id || def.id,
+            name: ex.name,
+            muscle: ex.muscle || def.muscle || 'Другое',
+            equip: ex.equip || def.equip,
+            canBodyweight: canExerciseUseBodyweight(ex),
+            isBodyweight: !!ex.isBodyweight
+          };
+        });
+        renderTemplateBuilderList();
+        openModal('modalCreateTemplate');
+      };
+    }
+
+    if (isCustom) {
+      const editBtn = card.querySelector('.template-edit-btn');
+      if (editBtn) {
+        editBtn.onclick = () => {
+          editingTemplateId = tpl.id;
+          if (modalTemplateHeaderTitle) modalTemplateHeaderTitle.textContent = 'Редактировать программу';
+          newTemplateTitle.value = tpl.title || '';
+          newTemplateDesc.value = tpl.desc || '';
+          templateBuilderExercises = exList.map((ex) => ({
+            id: ex.id,
+            name: ex.name,
+            muscle: ex.muscle,
+            equip: ex.equip,
+            canBodyweight: canExerciseUseBodyweight(ex),
+            isBodyweight: !!ex.isBodyweight
+          }));
+          renderTemplateBuilderList();
+          openModal('modalCreateTemplate');
+        };
+      }
+
+      const delBtn = card.querySelector('.template-delete-btn');
+      if (delBtn) {
+        delBtn.onclick = () => {
+          if (confirm(`Удалить программу «${tpl.title}»?`)) {
+            customTemplates = customTemplates.filter((t) => t.id !== tpl.id);
+            saveCustomTemplates();
+            renderWorkoutHub();
+          }
+        };
+      }
+    }
+
+    return card;
+  }
+
   function renderWorkoutHub() {
     if (activeWorkout) {
       hubActiveResumeBanner.classList.remove('hidden');
@@ -1515,98 +1722,14 @@
       `;
     } else {
       customTemplates.forEach((tpl) => {
-        const card = document.createElement('div');
-        card.className = 'template-card';
-
-        const chipsHtml = tpl.exercises
-          .map((ex) => `<span class="template-ex-chip">${ex.name}${ex.isBodyweight ? ' (Свой вес)' : ''}</span>`)
-          .join('');
-
-        card.innerHTML = `
-          <div class="template-card-header">
-            <h3 class="template-title">${tpl.title}</h3>
-            <span class="badge" style="font-size:0.75rem;">Моя программа</span>
-          </div>
-          <p class="template-desc">${tpl.desc}</p>
-          <div class="template-exercises-chips">${chipsHtml}</div>
-          <div class="template-card-footer">
-            <button class="template-start-btn" data-tpl-id="${tpl.id}">
-              Начать эту программу ➔
-            </button>
-            <button class="template-edit-btn" data-tpl-id="${tpl.id}" title="Редактировать программу">✏️</button>
-            <button class="template-delete-btn" data-tpl-id="${tpl.id}" title="Удалить программу">🗑</button>
-          </div>
-        `;
-
-        card.querySelector('.template-start-btn').onclick = () => {
-          if (activeWorkout) {
-            if (!confirm('Сейчас активна другая тренировка. Сбросить её и начать выбранную программу?')) {
-              return;
-            }
-          }
-          startWorkoutFromTemplate(tpl);
-        };
-
-        card.querySelector('.template-edit-btn').onclick = () => {
-          editingTemplateId = tpl.id;
-          if (modalTemplateHeaderTitle) modalTemplateHeaderTitle.textContent = 'Редактировать программу';
-          newTemplateTitle.value = tpl.title || '';
-          newTemplateDesc.value = tpl.desc || '';
-          templateBuilderExercises = (tpl.exercises || []).map((ex) => ({
-            id: ex.id,
-            name: ex.name,
-            muscle: ex.muscle,
-            isBodyweight: !!ex.isBodyweight
-          }));
-          renderTemplateBuilderList();
-          openModal('modalCreateTemplate');
-        };
-
-        card.querySelector('.template-delete-btn').onclick = () => {
-          if (confirm(`Удалить программу «${tpl.title}»?`)) {
-            customTemplates = customTemplates.filter((t) => t.id !== tpl.id);
-            saveCustomTemplates();
-            renderWorkoutHub();
-          }
-        };
-
-        myTemplatesList.appendChild(card);
+        myTemplatesList.appendChild(createProgramCardElement(tpl, true));
       });
     }
 
     // 2. Built-in Program Templates (Базовые программы)
     hubTemplatesList.innerHTML = '';
     BUILTIN_TEMPLATES.forEach((tpl) => {
-      const card = document.createElement('div');
-      card.className = 'template-card';
-
-      const chipsHtml = tpl.exercises
-        .map((ex) => `<span class="template-ex-chip">${ex.name}${ex.isBodyweight ? ' (Свой вес)' : ''}</span>`)
-        .join('');
-
-      card.innerHTML = `
-        <div class="template-card-header">
-          <h3 class="template-title">${tpl.title}</h3>
-        </div>
-        <p class="template-desc">${tpl.desc}</p>
-        <div class="template-exercises-chips">${chipsHtml}</div>
-        <div class="template-card-footer">
-          <button class="template-start-btn" data-tpl-id="${tpl.id}">
-            Начать эту программу ➔
-          </button>
-        </div>
-      `;
-
-      card.querySelector('.template-start-btn').onclick = () => {
-        if (activeWorkout) {
-          if (!confirm('Сейчас активна другая тренировка. Сбросить её и начать выбранную программу?')) {
-            return;
-          }
-        }
-        startWorkoutFromTemplate(tpl);
-      };
-
-      hubTemplatesList.appendChild(card);
+      hubTemplatesList.appendChild(createProgramCardElement(tpl, false));
     });
   }
 
@@ -4105,7 +4228,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=1.9').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.0').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

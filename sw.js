@@ -1,9 +1,9 @@
-const CACHE_NAME = 'cozy-fitness-v10';
+const CACHE_NAME = 'cozy-fitness-v11';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=1.9',
-  './app.js?v=1.9',
+  './styles.css?v=2.0',
+  './app.js?v=2.0',
   './manifest.json',
   './icon.svg',
   './icon-192.png',

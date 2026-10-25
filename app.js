@@ -3310,7 +3310,26 @@
     if (!container) return;
     const achievements = CozyAchievements.evaluate(historyData);
     document.getElementById('achievementsCount').textContent = `${achievements.filter((a) => a.unlocked).length} / ${achievements.length}`;
-    container.innerHTML = achievements.map((a) => {
+    const earned = achievements.filter((a) => a.unlocked);
+    const locked = achievements.filter((a) => !a.unlocked);
+    const percent = Math.round(earned.length / achievements.length * 100);
+    document.getElementById('homeAchievementsCount').textContent = `${earned.length} / ${achievements.length}`;
+    document.getElementById('homeAchievementsProgressText').textContent = `Получено ${earned.length} из ${achievements.length} (${percent}%)`;
+    ['homeAchievementsProgress', 'achievementsModalProgress'].forEach((id) => {
+      const progress = document.getElementById(id);
+      progress.max = achievements.length;
+      progress.value = earned.length;
+    });
+    const badgeRow = (items, label) => {
+      if (!items.length) return '';
+      return `<span class="achievement-badge-group"><span class="achievement-badge-label">${label}</span><span class="achievement-badges">${items.slice(0, 5).map((a) => {
+        const title = a.hidden && !a.unlocked ? 'Скрытое достижение' : a.title;
+        const icon = a.hidden && !a.unlocked ? '🔒' : a.icon;
+        return `<span class="achievement-badge ${a.unlocked ? 'earned' : 'locked'}" title="${title}" role="img" aria-label="${title}: ${a.unlocked ? 'получено' : 'не получено'}">${icon}</span>`;
+      }).join('')}${items.length > 5 ? `<span class="achievement-badge-more">+${items.length - 5}</span>` : ''}</span></span>`;
+    };
+    document.getElementById('homeAchievementBadges').innerHTML = badgeRow(earned, 'Получены') + badgeRow(locked, 'Впереди');
+    container.innerHTML = [...earned, ...locked].map((a) => {
       if (a.hidden && !a.unlocked) return `<article class="achievement-card locked"><span class="achievement-icon" aria-hidden="true">🔒</span><div><h4>Скрытое достижение</h4><p>Откроется, когда придёт время.</p></div></article>`;
       const value = Math.min(a.target, a.value);
       const progress = Math.round(value / a.target * 100);
@@ -3334,7 +3353,6 @@
   }
 
   function renderProfile() {
-    renderAchievements();
     profileNameInput.value = profileData.name || '';
     profileGenderSelect.value = profileData.gender || '';
     if (profileGoalSelect) {
@@ -3523,6 +3541,7 @@
   }
 
   function renderHome() {
+    renderAchievements();
     document.getElementById('statTotalWorkouts').textContent = String(historyData.length);
     document.getElementById('statWeekWorkouts').textContent = String(getWeekWorkoutsCount());
     document.getElementById('statTotalTonnage').innerHTML = `${getTotalTonnage().toLocaleString('ru-RU')} <small>кг</small>`;
@@ -3832,14 +3851,29 @@
   // 14. Modals & Helpers
   // ==========================================================================
 
+  const homeAchievementsBtn = document.getElementById('homeAchievementsBtn');
+  homeAchievementsBtn.addEventListener('click', () => {
+    renderAchievements();
+    openModal('modalAchievements');
+  });
+  document.getElementById('modalAchievements').addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeModal('modalAchievements');
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      document.querySelector('[data-close="modalAchievements"]').focus();
+    }
+  });
+
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.remove('hidden');
+    if (modalId === 'modalAchievements') document.querySelector('[data-close="modalAchievements"]').focus();
   }
 
   function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('hidden');
+    if (modalId === 'modalAchievements') homeAchievementsBtn.focus();
   }
 
   document.querySelectorAll('[data-close]').forEach((el) => {
@@ -3852,7 +3886,7 @@
   document.querySelectorAll('.modal-overlay').forEach((overlay) => {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
-        overlay.classList.add('hidden');
+        closeModal(overlay.id);
       }
     });
   });
@@ -4206,7 +4240,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.2').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.2.1').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

@@ -2975,3 +2975,51 @@ body.modal-open .main-content { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .modal-overlay, .modal-sheet { animation: none; }
 }
+/* Typed metrics, exercise history, and the independent history editor. */
+.exercise-kind-select { max-width: 160px; padding: 4px 7px; font-size: 0.7rem; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-muted); background: var(--bg-input); }
+.exercise-history-link { padding: 0; background: transparent; color: var(--text-main); text-align: left; justify-content: flex-start; font-size: inherit; }
+.typed-timed .sets-table-header, .typed-timed .set-row { grid-template-columns: 36px minmax(0,1fr) 42px 28px; }
+.typed-cardio .sets-table-header, .typed-cardio .set-row { grid-template-columns: 30px minmax(0,1fr) minmax(0,1fr) 38px 24px; }
+.metric-stepper { display: flex; align-items: center; min-width: 0; background: var(--bg-input); border-radius: 10px; }
+.metric-stepper button { width: 24px; min-width: 22px; height: 42px; padding: 0; background: transparent; color: var(--accent-gold); }
+.metric-input { min-width: 0; width: 100%; height: 42px; border: 0; outline: 0; text-align: center; background: transparent; color: var(--text-main); font-size: 1rem; }
+.feature-muted { display: block; font-size: 0.76rem; line-height: 1.5; color: var(--text-muted); }
+.exercise-chart { margin: 14px 0; padding: 10px; background: var(--bg-card-subtle); border-radius: 12px; }
+.exercise-chart figcaption { font-size: 0.75rem; color: var(--text-muted); }
+.exercise-chart svg { width: 100%; display: block; }
+.exercise-chart text { fill: var(--text-muted); font-size: 10px; }
+.history-record { margin: 12px 0; font-size: 0.8rem; }
+.history-exercise-link { white-space: normal; text-align: left; }
+.history-card-quick-actions { flex-wrap: wrap; }
+.workout-editor-sheet { max-height: 90dvh; }
+.workout-editor-sheet > .sheet-header, .workout-editor-sheet > .sheet-drag-handle { flex-shrink: 0; }
+.workout-editor-content { overflow-y: auto; min-height: 0; overscroll-behavior: contain; padding-bottom: 8px; }
+.editor-meta { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 10px; }
+.editor-meta input { min-width: 0; width: 100%; }
+.editor-exercise { padding: 14px 0; border-bottom: 1px solid var(--border-color); }
+.editor-exercise-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.editor-exercise-heading h4 { font-size: 0.9rem; }
+.editor-sets { display: grid; gap: 10px; margin: 12px 0; }
+.editor-set { display: flex; align-items: center; gap: 8px; }
+.editor-set > span { width: 16px; font-size: 0.8rem; color: var(--text-muted); }
+.editor-set label { flex: 1; min-width: 0; font-size: 0.7rem; color: var(--text-muted); }
+.editor-set input { padding: 10px 6px; }
+.editor-save { width: 100%; margin-top: 10px; }
+.editor-error { margin-top: 12px; color: var(--accent-red); font-size: 0.8rem; }
+.achievements-modal-scroll { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+.achievement-emblem { width: 46px; height: 46px; display: block; color: #fde7a6; }
+.emblem-ribbon { fill: #a86b16; }
+.emblem-face { fill: #4b351b; stroke: #eebc55; stroke-width: 1.5; }
+.emblem-ring { fill: #705124; stroke: #b88939; stroke-width: 0.6; }
+.achievement-emblem.is-locked { color: #9ca3af; }
+.is-locked .emblem-ribbon { fill: #353943; }
+.is-locked .emblem-face { fill: #262b34; stroke: #656b76; }
+.is-locked .emblem-ring { fill: #353b46; stroke: #656b76; }
+.achievement-badge .achievement-emblem { width: 36px; height: 40px; }
+.achievement-next-goals { margin-bottom: 18px; padding: 12px; border-radius: 12px; background: var(--bg-card-subtle); }
+.achievement-next-goals h4 { font-size: 0.85rem; margin-bottom: 10px; }
+.achievement-next-goal { display: flex; gap: 10px; align-items: center; padding: 5px 0; }
+.achievement-next-goal strong { display: block; font-size: 0.78rem; }
+.achievement-next-goal small { display: block; color: var(--text-muted); margin-top: 4px; }
+:is(#modalWorkoutEditor, #modalExerciseInfo) .sheet-header, :is(#modalWorkoutEditor, #modalExerciseInfo) .sheet-drag-handle { touch-action: none; user-select: none; }
+@media (max-width: 360px) { .typed-cardio .set-row { gap: 3px; } .metric-stepper button { width: 20px; min-width: 18px; } .editor-meta { grid-template-columns: 1fr; } }

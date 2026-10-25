@@ -1,71 +1,52 @@
-/* Achievement rules shared by the profile and completion notification. */
-(function (root) {
+/* Derived from completed history: edits/imports recalculate awards and their dates. */
+(function(root){
   'use strict';
-  const DAY = 86400000;
-  const positive = (value) => Math.max(0, Number(value) || 0);
-  function localDay(value) {
-    const date = new Date(value);
-    return Number.isFinite(date.getTime())
-      ? Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY : null;
-  }
-  function evaluate(history) {
-    const workouts = (Array.isArray(history) ? history : [])
-      .filter((w) => w && localDay(w.date) !== null)
-      .slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-    const days = [...new Set(workouts.map((w) => localDay(w.date)))].sort((a, b) => a - b);
-    let longestStreak = 0, streak = 0, returned = false;
-    const weeks = new Map();
-    days.forEach((day, i) => {
-      streak = i && day === days[i - 1] + 1 ? streak + 1 : 1;
-      longestStreak = Math.max(longestStreak, streak);
-      if (i && day - days[i - 1] >= 14) returned = true;
-      const monday = day - (new Date(day * DAY).getUTCDay() + 6) % 7;
-      weeks.set(monday, (weeks.get(monday) || 0) + 1);
-    });
-    let consistentWeeks = 0, currentWeeks = 0, previousWeek = null;
-    [...weeks.entries()].sort((a, b) => a[0] - b[0]).forEach(([week, count]) => {
-      currentWeeks = count >= 2 ? (previousWeek === week - 7 ? currentWeeks + 1 : 1) : 0;
-      consistentWeeks = Math.max(consistentWeeks, currentWeeks);
-      previousWeek = week;
-    });
-    // Compare only different sessions, the same exercise/equipment, and equal-or-better reps.
-    let personalRecord = false;
-    const previous = new Map();
-    workouts.forEach((workout) => {
-      const session = new Map();
-      (workout.exercises || []).forEach((ex) => {
-        if (ex.isBodyweight || ex.muscle === 'Кардио') return;
-        const key = `${ex.id || String(ex.name || '').trim().toLowerCase()}|${ex.equip || 'unknown'}`;
-        const sets = (ex.sets || []).filter((set) => set.completed !== false && positive(set.weight) > 0 && positive(set.reps) > 0);
-        const past = previous.get(key) || [];
-        if (sets.some((set) => past.some((old) =>
-          positive(set.weight) >= positive(old.weight) && positive(set.reps) >= positive(old.reps) &&
-          (positive(set.weight) > positive(old.weight) || positive(set.reps) > positive(old.reps))) &&
-          !past.some((old) => positive(old.weight) >= positive(set.weight) && positive(old.reps) >= positive(set.reps)))) personalRecord = true;
-        session.set(key, [...(session.get(key) || []), ...sets]);
+  const DAY=86400000,n=v=>Number.isFinite(Number(v))?Math.max(0,Number(v)):0;
+  function localDay(value){const d=new Date(value);return Number.isFinite(d.getTime())?Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/DAY:null;}
+  function evaluate(history){
+    const workouts=(Array.isArray(history)?history:[]).filter(w=>w&&localDay(w.date)!==null).slice().sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const dates={},weeks=new Map(),previous=new Map();let streak=0,longestStreak=0,lastDay=null,consistentWeeks=0,tonnage=0,personalRecord=false;
+    const mark=(id,date)=>{if(!dates[id])dates[id]=date;};
+    workouts.forEach((w,index)=>{
+      if(index===0)mark('first',w.date);if(index===9)mark('ten',w.date);if(index===99)mark('hundred',w.date);
+      tonnage+=n(w.tonnage);if(tonnage>=100000)mark('titan',w.date);
+      if(w.sourceTemplate&&w.sourceTemplate.custom===true)mark('architect',w.date);
+      if(n(w.durationSec)>10800)mark('marathon',w.date);
+      const day=localDay(w.date);
+      if(day!==lastDay){
+        if(lastDay!==null&&day-lastDay>=14)mark('return',w.date);
+        streak=lastDay!==null&&day===lastDay+1?streak+1:1;longestStreak=Math.max(longestStreak,streak);if(streak>=7)mark('tireless',w.date);lastDay=day;
+        const monday=day-(new Date(day*DAY).getUTCDay()+6)%7;weeks.set(monday,(weeks.get(monday)||0)+1);
+        let consecutive=0;for(let week=monday;(weeks.get(week)||0)>=2;week-=7)consecutive++;
+        consistentWeeks=Math.max(consistentWeeks,consecutive);if(consecutive>=3)mark('rhythm',w.date);if(consecutive>=4)mark('stability',w.date);
+      }
+      const session=new Map();
+      (w.exercises||[]).forEach(ex=>{
+        const type=root.FitnessData?root.FitnessData.kind(ex):ex.kind||(ex.muscle==='Кардио'?'cardio':ex.id==='plank'?'timed':'strength');
+        const key=`${ex.id||String(ex.name||'').trim().toLowerCase()}|${type}|${ex.equip||'unknown'}|${!!ex.isBodyweight}`;
+        const sets=(ex.sets||[]).filter(s=>s.completed!==false&&(type==='strength'?n(s.reps)>0:n(s.durationSec)>0));
+        const past=previous.get(key)||[];
+        const dominates=(a,b)=>type==='strength'?n(a.weight)>=n(b.weight)&&n(a.reps)>=n(b.reps):type==='timed'?n(a.durationSec)>=n(b.durationSec):n(a.distanceKm)>=n(b.distanceKm);
+        const equal=(a,b)=>type==='strength'?n(a.weight)===n(b.weight)&&n(a.reps)===n(b.reps):type==='timed'?n(a.durationSec)===n(b.durationSec):n(a.distanceKm)===n(b.distanceKm);
+        if(sets.some(set=>past.some(old=>dominates(set,old)&&!equal(set,old))&&!past.some(old=>dominates(old,set)))){personalRecord=true;mark('record',w.date);}
+        session.set(key,[...(session.get(key)||[]),...sets]);
       });
-      session.forEach((sets, key) => previous.set(key, [...(previous.get(key) || []), ...sets]));
+      session.forEach((sets,key)=>previous.set(key,[...(previous.get(key)||[]),...sets]));
     });
-    const total = workouts.length;
-    const tonnage = workouts.reduce((sum, w) => sum + positive(w.tonnage), 0);
-    const custom = workouts.some((w) => w.sourceTemplate && w.sourceTemplate.custom === true);
-    const longest = workouts.reduce((max, w) => Math.max(max, positive(w.durationSec)), 0);
-    const result = [];
-    const add = (id, title, icon, description, value, target, unit, hidden = false) => {
-      result.push({id, title, icon, description, value, target, unit, hidden, unlocked: value >= target});
-    };
-    add('first', 'Первый шаг', '🌱', 'Завершить первую тренировку', total, 1, 'трен.');
-    add('rhythm', 'Вошёл в ритм', '🎵', 'Заниматься хотя бы в 2 разных дня в неделю 3 недели подряд', consistentWeeks, 3, 'нед.');
-    add('ten', 'Десятка', '🔟', 'Завершить 10 тренировок', total, 10, 'трен.');
-    add('record', 'Сильнее себя', '📈', 'Улучшить вес или повторения без снижения другого показателя относительно прошлых тренировок', Number(personalRecord), 1, 'рекорд');
-    add('architect', 'Архитектор', '🛠️', 'Завершить тренировку по собственной программе («По своему плану»)', Number(custom), 1, 'трен.');
-    add('titan', 'Титан', '🗿', 'Поднять в сумме 100 000 кг', tonnage, 100000, 'кг');
-    add('tireless', 'Неутомимый', '🔥', 'Тренироваться 7 календарных дней подряд', longestStreak, 7, 'дн.', true);
-    add('return', 'Возвращение', '🌅', 'Вернуться к тренировкам после перерыва от 14 дней', Number(returned), 1, 'возвращение');
-    add('stability', 'Стабильность', '🧭', 'Заниматься хотя бы в 2 разных дня в неделю 4 недели подряд', consistentWeeks, 4, 'нед.');
-    add('hundred', 'Сотня', '💯', 'Завершить 100 тренировок', total, 100, 'трен.');
-    add('marathon', 'Марафонец', '⏳', 'Завершить тренировку продолжительностью более 3 часов', Number(longest > 10800), 1, 'трен.', true);
+    const result=[];
+    const add=(id,title,description,value,target,unit,hidden=false)=>result.push({id,title,description,value,target,unit,hidden,unlocked:value>=target,unlockedAt:dates[id]||null});
+    add('first','Абонемент не зря','Первая завершённая тренировка. Карточка клуба наконец пригодилась.',workouts.length,1,'трен.');
+    add('rhythm','Уже не случайность','Хотя бы 2 разных тренировочных дня в неделю 3 недели подряд. Зал начинает узнавать тебя.',consistentWeeks,3,'нед.');
+    add('ten','Десятка без сдачи','Завершить 10 тренировок. Кассир, пробейте ещё одну.',workouts.length,10,'трен.');
+    add('record','Вчерашний я в шоке','Улучшить вес или повторения без снижения второго показателя; для удержаний — время, для кардио — дистанцию. Сравниваем один тип и снаряд в разных тренировках.',Number(personalRecord),1,'рекорд');
+    add('architect','Сам себе физрук','Завершить тренировку по собственной программе. Учитываются программы, запущенные с версии 2.2.',Number(!!dates.architect),1,'трен.');
+    add('titan','Титан','Поднять в сумме 100 000 кг в силовых подходах. Грузовик уже смотрит с уважением.',tonnage,100000,'кг');
+    add('tireless','Неутомимый','7 тренировочных дней подряд. Даже кроссовки попросили выходной.',longestStreak,7,'дн.',true);
+    add('return','Я просто за водой выходил','Вернуться после перерыва от 14 календарных дней. Мы ничего не видели.',Number(!!dates.return),1,'возвращение');
+    add('stability','Зал добавил в избранное','Хотя бы 2 разных тренировочных дня в неделю 4 недели подряд. Всё серьёзно.',consistentWeeks,4,'нед.');
+    add('hundred','Сотня. Это не разминка','Завершить 100 тренировок. Скамья помнит твоё имя.',workouts.length,100,'трен.');
+    add('marathon','Марафонец','Тренировка дольше 3 часов. Ты там прописался?',Number(!!dates.marathon),1,'трен.',true);
     return result;
   }
-  root.CozyAchievements = {evaluate};
-})(typeof window !== 'undefined' ? window : globalThis);
+  root.CozyAchievements={evaluate};
+})(typeof window!=='undefined'?window:globalThis);

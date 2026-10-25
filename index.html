@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.2.3">
+  <link rel="stylesheet" href="styles.css?v=2.3">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -451,7 +451,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.2 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.3 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
         </div>
       </section>
@@ -506,6 +506,10 @@
       </button>
     </nav>
 
+    <div id="modalWorkoutEditor" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="workoutEditorHeading">
+      <div class="modal-sheet workout-editor-sheet"><div class="sheet-drag-handle"></div><div class="sheet-header"><h3 id="workoutEditorHeading">Поправить историю</h3><button class="close-modal-btn" data-close="modalWorkoutEditor" aria-label="Закрыть редактор">✕</button></div><div id="workoutEditorContent" class="workout-editor-content"></div></div>
+    </div>
+
     <div id="modalProgramDetails" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="programDetailsTitle">
       <div class="modal-sheet program-details-sheet">
         <div class="sheet-drag-handle"></div>
@@ -519,7 +523,7 @@
         <div class="sheet-drag-handle"></div>
         <div class="sheet-header"><h3 id="achievementsHeading">Достижения</h3><button class="close-modal-btn" data-close="modalAchievements" aria-label="Закрыть достижения">✕</button></div>
         <div class="achievements-modal-summary"><span id="achievementsCount" class="achievement-count">0 / 11</span><progress id="achievementsModalProgress" max="11" value="0" aria-label="Общий прогресс достижений"></progress></div>
-        <div id="achievementsList" class="achievements-list achievements-modal-list"></div>
+        <div class="achievements-modal-scroll"><div id="achievementNextGoals" class="achievement-next-goals"></div><div id="achievementsList" class="achievements-list"></div></div>
       </div>
     </div>
 
@@ -560,6 +564,8 @@
           <label class="form-label">Название:</label>
           <input type="text" id="newExerciseName" class="form-input" placeholder="Например: Жим гантелей 30°">
           
+          <label class="form-label" for="newExerciseKind">Тип упражнения:</label>
+          <select id="newExerciseKind" class="form-input"><option value="strength">Вес и повторения</option><option value="timed">Удержание, секунды</option><option value="cardio">Кардио, время и дистанция</option></select>
           <label class="form-label">Группа мышц:</label>
           <select id="newExerciseMuscle" class="form-input">
             <option value="Грудь">Грудь</option>
@@ -712,8 +718,9 @@
     </div>
 
     <!-- MODAL: EXERCISE TECHNIQUE & INFO (Техника упражнения) -->
-    <div id="modalExerciseInfo" class="modal-overlay hidden">
-      <div class="modal-card modal-large-card">
+    <div id="modalExerciseInfo" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="infoModalExName">
+      <div class="modal-sheet exercise-info-sheet">
+        <div class="sheet-drag-handle"></div>
         <div class="sheet-header">
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:1.6rem;">ℹ️</span>
@@ -725,11 +732,8 @@
           <button class="close-modal-btn" data-close="modalExerciseInfo">✕</button>
         </div>
         <div class="modal-body exercise-info-body">
-          <!-- Animated Biomechanics & Muscle Highlight Box -->
-          <div id="infoModalVisual" class="info-visual-box"></div>
-
-          <!-- Personal Progress & Records Box -->
           <div id="infoModalProgressBox" class="info-progress-box"></div>
+          <div id="infoModalVisual" class="info-visual-box"></div>
 
           <div class="info-section">
             <span class="info-sec-title">🎯 Работающие мышцы:</span>
@@ -812,7 +816,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="achievements.js?v=2.2.3"></script>
-  <script src="app.js?v=2.2.3"></script>
+  <script src="fitness-data.js?v=2.3"></script>
+  <script src="fitness-ui.js?v=2.3"></script>
+  <script src="workout-editor.js?v=2.3"></script>
+  <script src="achievements.js?v=2.3"></script>
+  <script src="app.js?v=2.3"></script>
 </body>
 </html>

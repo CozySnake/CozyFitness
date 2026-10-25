@@ -795,6 +795,8 @@
 
       const act = localStorage.getItem(STORAGE_KEYS.ACTIVE);
       if (act) activeWorkout = JSON.parse(act);
+      FitnessData.migrate(historyData);
+      if (activeWorkout) FitnessData.migrate([activeWorkout]);
     } catch (e) {
       console.error('Failed to load state from localStorage:', e);
     }
@@ -956,69 +958,23 @@
 
   // Returns detailed previous sets and personal record for an exercise
   function findExerciseHistoryStats(exerciseName) {
-    if (!historyData || historyData.length === 0 || !exerciseName) return null;
-    const targetName = exerciseName.toLowerCase();
-
-    let lastSessionSets = null;
-    let lastSessionDate = null;
-    let bestSet = null;
-    const sessions = [];
-
-    for (const workout of historyData) {
-      const foundEx = (workout.exercises || []).find((e) => e.name.toLowerCase() === targetName);
-      if (foundEx && foundEx.sets && foundEx.sets.length > 0) {
-        const completedSets = foundEx.sets.filter((s) => s.completed);
-        if (completedSets.length > 0) {
-          const formattedSets = completedSets.map((s) => {
-            const w = parseFloat(s.weight) || 0;
-            return `${w}×${s.reps}`;
-          });
-
-          if (!lastSessionSets) {
-            lastSessionSets = completedSets;
-            lastSessionDate = workout.date;
-          }
-
-          sessions.push({
-            date: workout.date,
-            sets: completedSets,
-            setsText: formattedSets.join(', ')
-          });
-
-          completedSets.forEach((s) => {
-            const w = parseFloat(s.weight) || 0;
-            const r = parseInt(s.reps, 10) || 0;
-            if (!bestSet || w > bestSet.weight || (w === bestSet.weight && r > bestSet.reps)) {
-              bestSet = { weight: w, reps: r };
-            }
-          });
-        }
-      }
-    }
-
-    if (!lastSessionSets) return null;
-
-    const setStrings = lastSessionSets.map((s) => {
-      const w = parseFloat(s.weight) || 0;
-      return `${w}×${s.reps}`;
-    });
-
+    const target = getExerciseDefinition(exerciseName) || {name:exerciseName};
+    const all = FitnessData.sessions(historyData, target).reverse();
+    if (!all.length) return null;
+    const latest = all[0].exercise;
+    const sessions = all.filter(session => FitnessData.kind(session.exercise) === FitnessData.kind(latest) && session.exercise.equip === latest.equip);
+    const lastSets = sessions[0].sets;
+    const usable = sessions.flatMap(session => session.sets).filter(set => FitnessData.validSet(latest, set));
     let prText = '';
-    if (bestSet) {
-      prText = `${bestSet.weight} кг × ${bestSet.reps}`;
+    if (usable.length) {
+      if (FitnessData.kind(latest) === 'strength') {
+        const best = [...usable].sort((a,b) => FitnessData.number(b.weight)-FitnessData.number(a.weight) || FitnessData.number(b.reps)-FitnessData.number(a.reps))[0];
+        prText = FitnessData.setText(latest,best);
+      } else if (FitnessData.kind(latest) === 'timed') prText = `${Math.max(...usable.map(set => FitnessData.number(set.durationSec)))} сек`;
+      else prText = `${Math.max(...usable.map(set => FitnessData.number(set.distanceKm)))} км за отрезок`;
     }
-
-    return {
-      lastSets: lastSessionSets,
-      lastSetsRaw: lastSessionSets,
-      lastSetsStrings: setStrings,
-      summaryInline: setStrings.map((str, i) => `${i + 1}) ${str}`).join(' • '),
-      prText,
-      lastDate: lastSessionDate,
-      totalSessions: sessions.length,
-      recentSessions: sessions.slice(0, 5),
-      sessions: sessions.slice(0, 5)
-    };
+    const strings = lastSets.map(set => FitnessData.setText(latest,set));
+    return {lastSets, lastSetsRaw:lastSets, lastSetsStrings:strings, summaryInline:strings.map((text,i)=>`${i+1}) ${text}`).join(' • '), prText, lastDate:sessions[0].date, totalSessions:sessions.length, recentSessions:sessions.slice(0,10), sessions};
   }
 
   function findPreviousPerformance(exerciseName) {
@@ -1464,6 +1420,8 @@
           planLine = `<span class="tpl-ex-plan">🎯 План: <strong>3 подхода × ${defaultR} повт.</strong> • Ориентир: <strong>${wLabel}</strong></span>`;
         }
 
+        if (FitnessData.kind(ex) !== 'strength') planLine = `<span class="tpl-ex-plan">${histStats && histStats.summaryInline ? 'Прошлый раз: ' + histStats.summaryInline : FitnessData.kind(ex) === 'timed' ? 'Удержание: время в секундах' : 'Кардио: минуты и километры'}</span>`;
+
         return `
           <div class="tpl-drilldown-row">
             <div class="tpl-drilldown-main">
@@ -1593,6 +1551,7 @@
           return {
             id: ex.id || def.id,
             name: ex.name,
+            kind: FitnessData.kind(ex),
             muscle: ex.muscle || def.muscle || 'Другое',
             equip: ex.equip || def.equip,
             canBodyweight: canExerciseUseBodyweight(ex),
@@ -1616,6 +1575,7 @@
           templateBuilderExercises = exList.map((ex) => ({
             id: ex.id,
             name: ex.name,
+            kind: FitnessData.kind(ex),
             muscle: ex.muscle,
             equip: ex.equip,
             canBodyweight: canExerciseUseBodyweight(ex),
@@ -1675,6 +1635,11 @@
   }
 
   function buildSetsFromPreviousOrDefaults(exMeta, defaultWeight = 20, defaultReps = 10) {
+    if (FitnessData.kind(exMeta) !== 'strength') {
+      const previous = FitnessData.sessions(historyData, exMeta).filter((session) => FitnessData.kind(session.exercise) === FitnessData.kind(exMeta)).at(-1);
+      const sets = previous && previous.sets.filter((set) => FitnessData.validSet(exMeta, set));
+      return sets && sets.length ? sets.map((set) => ({...set, completed: false})) : [FitnessData.defaultSet(exMeta)];
+    }
     const canBW = canExerciseUseBodyweight(exMeta);
     const isBW = canBW ? !!exMeta.isBodyweight : false;
     const stats = findExerciseHistoryStats(exMeta.name);
@@ -1715,6 +1680,7 @@
       return {
         id: tplEx.id || ('ex_' + Date.now() + Math.random()),
         name: tplEx.name,
+        kind: FitnessData.kind(tplEx),
         muscle: tplEx.muscle,
         equip: equip,
         canBodyweight: canBW,
@@ -1742,6 +1708,7 @@
       return {
         id: ex.id || ('ex_' + Date.now() + Math.random()),
         name: ex.name,
+        kind: FitnessData.kind(ex),
         muscle: ex.muscle || 'Другое',
         equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
         canBodyweight: canBW,
@@ -1843,6 +1810,7 @@
       return {
         id: ex.id,
         name: ex.name,
+        kind: FitnessData.kind(ex),
         muscle: ex.muscle,
         equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
         canBodyweight: canBW,
@@ -1932,6 +1900,7 @@
     }
 
     activeWorkout.exercises.forEach((exItem, exIndex) => {
+      const measurementKind = FitnessData.kind(exItem);
       const canBW = canExerciseUseBodyweight(exItem);
       const equipInfo = getEquipInfo(exItem);
       const histStats = findExerciseHistoryStats(exItem.name);
@@ -1941,7 +1910,7 @@
       if (histStats && histStats.lastSets && histStats.lastSets.length > 0) {
         const setsChips = histStats.lastSets.map((s, idx) => {
           const w = parseFloat(s.weight) || 0;
-          return `${idx + 1}) ${w}×${s.reps}`;
+          return `${idx + 1}) ${FitnessData.setText(exItem, s)}`;
         }).join(' • ');
 
         const prBadgeHtml = histStats.prText
@@ -1959,7 +1928,7 @@
       // Equipment badge:
       // - Bodyweight-capable exercises show a simple note ("⚡ 0 кг = свой вес (можно +доп. вес)") without any mode toggle
       // - Weighted exercises show a clickable equipment selector ("🏋️ Штанга" / "🏋️ 2 гантели (вес 1 шт)" / "🏋️ 1 гантель" / "⚙️ Тренажёр")
-      const equipControlHtml = canBW
+      const equipControlHtml = measurementKind !== 'strength' ? '' : canBW
         ? `<span class="exercise-muscle-tag" style="background:rgba(16,185,129,0.12); color:var(--accent-green); border-color:rgba(16,185,129,0.28);">
              ${equipInfo.badge}
            </span>`
@@ -1974,12 +1943,17 @@
         <div class="exercise-header">
           <div class="exercise-title-wrap">
             <div style="display:flex; align-items:center; gap:6px;">
-              <span class="exercise-name">${exItem.name}</span>
+              <button type="button" class="exercise-name exercise-history-link" data-ex-name="${FitnessData.escape(exItem.name)}" data-ex-muscle="${exItem.muscle}">${FitnessData.escape(exItem.name)}</button>
               <button type="button" class="exercise-info-btn" data-ex-name="${exItem.name}" data-ex-muscle="${exItem.muscle}" title="Анимация техники и история">ℹ️</button>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px;">
               <span class="exercise-muscle-tag">${exItem.muscle}</span>
               ${equipControlHtml}
+              <select class="exercise-kind-select" data-ex-idx="${exIndex}" aria-label="Тип упражнения ${FitnessData.escape(exItem.name)}">
+                <option value="strength" ${measurementKind === 'strength' ? 'selected' : ''}>Вес × повторы</option>
+                <option value="timed" ${measurementKind === 'timed' ? 'selected' : ''}>Удержание, сек</option>
+                <option value="cardio" ${measurementKind === 'cardio' ? 'selected' : ''}>Кардио</option>
+              </select>
             </div>
             ${prevSummaryHtml}
           </div>
@@ -2003,6 +1977,10 @@
       `;
 
       const setsContainer = card.querySelector(`#setsContainer_${exIndex}`);
+      if (measurementKind !== 'strength') {
+        card.querySelector('.sets-table-header').innerHTML = `<div>Сет</div>${FitnessData.fields(exItem).map((field) => `<div>${field.label}</div>`).join('')}<div>Готово</div><div></div>`;
+        card.querySelector('.sets-table').classList.add('typed-sets', `typed-${measurementKind}`);
+      }
 
       exItem.sets.forEach((set, setIndex) => {
         const numericWeight = (set.weight !== undefined && set.weight !== null && set.weight !== '')
@@ -2066,6 +2044,9 @@
           <button type="button" class="remove-set-btn" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" title="Удалить подход" aria-label="Удалить подход">✕</button>
         `;
 
+        if (measurementKind !== 'strength') {
+          row.innerHTML = `<div class="set-num-badge">${setIndex + 1}</div>${FitnessData.fields(exItem).map((field) => `<div class="metric-stepper"><button type="button" data-metric-step="-${field.step}" data-field="${field.key}" data-ex="${exIndex}" data-set="${setIndex}" aria-label="Уменьшить ${field.label}">−</button><input type="text" inputmode="decimal" class="metric-input" data-field="${field.key}" data-scale="${field.scale || 1}" data-ex="${exIndex}" data-set="${setIndex}" aria-label="${field.label}" value="${Math.round(FitnessData.number(set[field.key]) / (field.scale || 1) * 100) / 100}"><button type="button" data-metric-step="${field.step}" data-field="${field.key}" data-ex="${exIndex}" data-set="${setIndex}" aria-label="Увеличить ${field.label}">+</button></div>`).join('')}<button type="button" class="set-check-btn" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Отметить подход">${set.completed ? '✓' : '○'}</button><button type="button" class="remove-set-btn" data-ex-idx="${exIndex}" data-set-idx="${setIndex}" aria-label="Удалить подход">✕</button>`;
+        }
         setsContainer.appendChild(row);
       });
 
@@ -2084,7 +2065,7 @@
     };
 
     // Exercise info button
-    document.querySelectorAll('.exercise-info-btn').forEach((btn) => {
+    document.querySelectorAll('.exercise-info-btn, .exercise-history-link').forEach((btn) => {
       btn.onclick = (e) => {
         e.stopPropagation();
         blurActiveInput();
@@ -2104,6 +2085,31 @@
         ex.equip = order[nextIdx];
         saveActiveWorkout();
         renderActiveWorkout();
+      };
+    });
+
+    activeExercisesList.querySelectorAll('.exercise-kind-select').forEach((select) => {
+      select.onchange = () => {
+        const ex = activeWorkout.exercises[Number(select.dataset.exIdx)];
+        ex.kind = select.value;
+        ex.sets.forEach((set) => { Object.entries(FitnessData.defaultSet(ex)).forEach(([key,value]) => {if (set[key] === undefined) set[key] = value;}); set.completed = false; });
+        saveActiveWorkout(); renderActiveWorkout();
+      };
+    });
+    activeExercisesList.querySelectorAll('.metric-input').forEach((input) => {
+      input.onfocus = () => input.select(); input.onclick = () => input.select();
+      input.oninput = () => {
+        const set = activeWorkout.exercises[Number(input.dataset.ex)].sets[Number(input.dataset.set)];
+        const value = FitnessData.number(input.value) * Number(input.dataset.scale);
+        set[input.dataset.field] = input.dataset.field === 'durationSec' ? Math.round(value) : Math.round(value * 1000) / 1000;
+        saveActiveWorkout();
+      };
+    });
+    activeExercisesList.querySelectorAll('[data-metric-step]').forEach((button) => {
+      button.onclick = () => {
+        const input = button.parentElement.querySelector('input');
+        input.value = Math.max(0, Math.round((FitnessData.number(input.value) + Number(button.dataset.metricStep)) * 100) / 100);
+        input.oninput();
       };
     });
 
@@ -2200,6 +2206,9 @@
         const exercise = activeWorkout.exercises[exIdx];
         const targetSet = exercise.sets[setIdx];
 
+        if (!targetSet.completed && !FitnessData.validSet(exercise, targetSet)) {
+          alert('Укажи повторения или время больше нуля, прежде чем отметить подход.'); return;
+        }
         targetSet.completed = !targetSet.completed;
         saveActiveWorkout();
         renderActiveWorkout();
@@ -2223,6 +2232,10 @@
         blurActiveInput();
         const exIdx = parseInt(btn.dataset.exIdx, 10);
         const exercise = activeWorkout.exercises[exIdx];
+        if (FitnessData.kind(exercise) !== 'strength') {
+          exercise.sets.push({...FitnessData.defaultSet(exercise), ...(exercise.sets.at(-1) || {}), completed: false});
+          saveActiveWorkout(); renderActiveWorkout(); return;
+        }
         const nextSetIdx = exercise.sets.length;
         const lastSet = exercise.sets[exercise.sets.length - 1];
         const histStats = findExerciseHistoryStats(exercise.name);
@@ -2285,6 +2298,7 @@
     activeWorkout.exercises.push({
       id: exercise.id,
       name: exercise.name,
+      kind: FitnessData.kind(exercise),
       muscle: exercise.muscle,
       equip: equip,
       canBodyweight: canBW,
@@ -2715,37 +2729,13 @@
       }
     }
 
-    // Personal progress & PR history box inside the exercise modal
-    if (infoModalProgressBox) {
-      const stats = findExerciseHistoryStats(name);
-      if (stats && stats.recentSessions && stats.recentSessions.length > 0) {
-        const rowsHtml = stats.recentSessions.map((sess) => {
-          const dStr = new Date(sess.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-          const setsStr = sess.sets.map((s, idx) => {
-            const w = parseFloat(s.weight) || 0;
-            return `${idx + 1}) ${w}×${s.reps}`;
-          }).join(' • ');
-          return `
-            <div class="info-progress-row">
-              <span class="info-progress-date">${dStr}</span>
-              <span class="info-progress-sets">${setsStr}</span>
-            </div>
-          `;
-        }).join('');
-
-        infoModalProgressBox.classList.remove('hidden');
-        infoModalProgressBox.innerHTML = `
-          <div class="info-progress-header">
-            <span>📈 Ваш прогресс (${stats.totalSessions} трен.)</span>
-            ${stats.prText ? `<span class="exercise-pr-badge">🏆 Рекорд: ${stats.prText}</span>` : ''}
-          </div>
-          <div class="info-progress-list">${rowsHtml}</div>
-        `;
-      } else {
-        infoModalProgressBox.classList.add('hidden');
-        infoModalProgressBox.innerHTML = '';
-      }
+    function updateExerciseHistory(group) {
+      infoModalProgressBox.classList.remove('hidden');
+      infoModalProgressBox.innerHTML = FitnessUI.history(historyData, found || {name, muscle}, group);
+      const selector = document.getElementById('exerciseHistoryGroup');
+      if (selector) selector.onchange = () => updateExerciseHistory(selector.value);
     }
+    if (infoModalProgressBox) updateExerciseHistory();
 
     if (guide) {
       infoModalMuscles.textContent = guide.muscles;
@@ -2934,6 +2924,18 @@
   }
 
   // Creates detailed history card with drill-down accordion!
+  function openWorkoutEditor(item) {
+    FitnessEditor.mount(item, getAllExercises(), (updated) => {
+      const next = historyData.map(workout => workout.id === updated.id ? updated : workout);
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(next));
+      historyData = next;
+      FitnessEditor.discard();
+      closeModal('modalWorkoutEditor');
+      renderHome(); renderHistoryAndCalendar();
+    });
+    openModal('modalWorkoutEditor');
+  }
+
   function createHistoryCardElement(item) {
     const card = document.createElement('div');
     card.className = 'history-card';
@@ -2954,7 +2956,7 @@
     const exercisesSummary = validExercises
       .map((ex) => {
         const completedSetsCount = ex.sets.length;
-        const bwTag = (canExerciseUseBodyweight(ex) && ex.isBodyweight) ? ' (Свой вес)' : '';
+        const bwTag = (FitnessData.kind(ex) === 'strength' && canExerciseUseBodyweight(ex) && ex.isBodyweight) ? ' (Свой вес)' : '';
         return `${ex.name} (${completedSetsCount}${bwTag})`;
       })
       .join(' • ');
@@ -2976,7 +2978,7 @@
         return `
           <div class="drilldown-set-row">
             <span class="drilldown-set-badge">Сет ${sIdx + 1}</span>
-            <span class="drilldown-set-val">${weightStr} × ${s.reps}</span>
+            <span class="drilldown-set-val">${FitnessData.escape(FitnessData.setText(ex, s))}</span>
             <span>✓</span>
           </div>
         `;
@@ -2985,7 +2987,7 @@
       return `
         <div class="drilldown-ex-block">
           <div class="drilldown-ex-title">
-            <span>${ex.name}</span>
+            <button type="button" class="history-exercise-link text-link-btn" data-name="${FitnessData.escape(ex.name)}" data-muscle="${ex.muscle}">${FitnessData.escape(ex.name)}</button>
             <span class="exercise-muscle-tag">${ex.muscle}</span>
           </div>
           <div class="drilldown-sets-list">
@@ -3029,6 +3031,7 @@
         <button class="secondary-btn small-btn save-tpl-history-btn" data-id="${item.id}" type="button" title="Сохранить в Мои программы">
           📌 В программы
         </button>
+        <button class="secondary-btn small-btn edit-workout-btn" type="button">✎ Изменить</button>
         <button class="danger-icon-btn delete-workout-btn" data-id="${item.id}" type="button" title="Удалить из истории">🗑</button>
       </div>
 
@@ -3057,6 +3060,9 @@
       }
     };
 
+    card.querySelector('.edit-workout-btn').onclick = () => openWorkoutEditor(item);
+    card.querySelectorAll('.history-exercise-link').forEach(button => button.onclick = () => openExerciseInfoModal(button.dataset.name, button.dataset.muscle));
+
     // Repeat workout
     card.querySelector('.repeat-workout-btn').onclick = (e) => {
       e.stopPropagation();
@@ -3070,11 +3076,13 @@
         return {
           id: ex.id,
           name: ex.name,
+          kind: FitnessData.kind(ex),
           muscle: ex.muscle,
           equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
           canBodyweight: canBW,
           isBodyweight: isBW,
           sets: ex.sets.map((s) => ({
+            ...s,
             weight: s.weight,
             reps: s.reps,
             isBodyweight: isBW,
@@ -3334,18 +3342,20 @@
       if (!items.length) return '';
       return `<span class="achievement-badge-group"><span class="achievement-badge-label">${label}</span><span class="achievement-badges">${items.slice(0, 5).map((a) => {
         const title = a.hidden && !a.unlocked ? 'Скрытое достижение' : a.title;
-        const icon = a.hidden && !a.unlocked ? '🔒' : a.icon;
+        const icon = FitnessUI.badge(a.hidden && !a.unlocked ? 'hidden' : a.id, !a.unlocked);
         return `<span class="achievement-badge ${a.unlocked ? 'earned' : 'locked'}" title="${title}" role="img" aria-label="${title}: ${a.unlocked ? 'получено' : 'не получено'}">${icon}</span>`;
       }).join('')}${items.length > 5 ? `<span class="achievement-badge-more">+${items.length - 5}</span>` : ''}</span></span>`;
     };
     document.getElementById('homeAchievementBadges').innerHTML = badgeRow(earned, 'Получены') + badgeRow(locked, 'Впереди');
+    const nearest = locked.filter(a => !a.hidden).sort((a,b) => b.value / b.target - a.value / a.target).slice(0,3);
+    document.getElementById('achievementNextGoals').innerHTML = nearest.length ? '<h4>На подходе</h4>' + nearest.map(a => `<div class="achievement-next-goal"><span>${FitnessUI.badge(a.id, true)}</span><div><strong>${a.title}</strong><small>${Math.min(a.value,a.target).toLocaleString('ru-RU')} / ${a.target.toLocaleString('ru-RU')} ${a.unit}</small></div></div>`).join('') : '<p class="feature-muted">Всё собрано. Полка просит пощады.</p>';
     container.innerHTML = [...earned, ...locked].map((a) => {
-      if (a.hidden && !a.unlocked) return `<article class="achievement-card locked"><span class="achievement-icon" aria-hidden="true">🔒</span><div><h4>Скрытое достижение</h4><p>Откроется, когда придёт время.</p></div></article>`;
+      if (a.hidden && !a.unlocked) return `<article class="achievement-card locked"><span class="achievement-icon" aria-hidden="true">${FitnessUI.badge('hidden', true)}</span><div><h4>Скрытое достижение</h4><p>Откроется, когда придёт время.</p></div></article>`;
       const value = Math.min(a.target, a.value);
       const progress = Math.round(value / a.target * 100);
       return `<article class="achievement-card ${a.unlocked ? 'earned' : 'locked'}">
-        <span class="achievement-icon" aria-hidden="true">${a.icon}</span>
-        <div class="achievement-body"><h4>${a.title} <span class="achievement-state">${a.unlocked ? '✓ Получено' : 'В процессе'}</span></h4>
+        <span class="achievement-icon" aria-hidden="true">${FitnessUI.badge(a.id, !a.unlocked)}</span>
+        <div class="achievement-body"><h4>${a.title} <span class="achievement-state">${a.unlocked ? 'Получено ' + new Date(a.unlockedAt).toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'}) : 'В процессе'}</span></h4>
           <p>${a.description}</p>
           ${a.unlocked ? '' : `<progress max="${a.target}" value="${value}" aria-label="${a.title}: ${progress}%"></progress><small>${value.toLocaleString('ru-RU')} / ${a.target.toLocaleString('ru-RU')} ${a.unit}</small>`}
         </div></article>`;
@@ -3867,7 +3877,7 @@
     openModal('modalAchievements');
   });
   const sheetOpeners = new Map();
-  ['modalAchievements', 'modalProgramDetails'].forEach((id) => {
+  ['modalAchievements', 'modalProgramDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].forEach((id) => {
     const overlay = document.getElementById(id);
     const sheet = overlay.querySelector('.modal-sheet');
     installSheetSwipe(overlay, sheet);
@@ -3957,13 +3967,17 @@
       sheet.style.transform = '';
       sheet.style.animation = '';
     }
-    if (modalId === 'modalAchievements' || modalId === 'modalProgramDetails') sheetOpeners.set(modalId, document.activeElement);
+    if (['modalAchievements', 'modalProgramDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
     modal.classList.remove('hidden');
     syncModalScrollLock();
     if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus({preventScroll: true});
   }
 
   function closeModal(modalId) {
+    if (modalId === 'modalWorkoutEditor' && FitnessEditor.dirty()) {
+      if (!confirm('Закрыть без сохранения изменений?')) return;
+      FitnessEditor.discard();
+    }
     const modal = document.getElementById(modalId);
     if (!modal || modal.classList.contains('hidden') || modalClosures.has(modalId)) return;
     const sheet = modal.querySelector('.modal-sheet');
@@ -4075,6 +4089,7 @@
           templateBuilderExercises.push({
             id: ex.id,
             name: ex.name,
+            kind: FitnessData.kind(ex),
             muscle: ex.muscle,
             equip: ex.equip || (ex.isBodyweight ? 'bodyweight' : 'barbell'),
             canBodyweight: canExerciseUseBodyweight(ex),
@@ -4132,6 +4147,7 @@
 
   createCustomExerciseBtn.addEventListener('click', () => {
     newExerciseName.value = '';
+    document.getElementById('newExerciseKind').value = newExerciseMuscle.value === 'Кардио' ? 'cardio' : 'strength';
     openModal('modalCreateExercise');
   });
 
@@ -4145,7 +4161,8 @@
     const newEx = {
       id: 'custom_' + Date.now(),
       name: name,
-      muscle: newExerciseMuscle.value
+      muscle: newExerciseMuscle.value,
+      kind: document.getElementById('newExerciseKind').value
     };
 
     customExercises.push(newEx);
@@ -4162,6 +4179,9 @@
       return;
     }
 
+    if (activeWorkout.exercises.some(ex => ex.sets.some(set => set.completed && !FitnessData.validSet(ex, set)))) {
+      alert('В отмеченных подходах не хватает повторений или времени. Проверь введённые значения.'); return;
+    }
     const elapsedSec = Math.floor((Date.now() - activeWorkout.startTime) / 1000);
     let totalCompletedSets = 0;
     let totalTonnage = 0;
@@ -4172,7 +4192,7 @@
       ex.sets.forEach((set) => {
         if (set.completed) {
           totalCompletedSets += 1;
-          totalTonnage += (parseFloat(set.weight) || 0) * mult * (parseInt(set.reps, 10) || 0);
+          totalTonnage += FitnessData.tonnage(ex, [set]);
         }
       });
     });
@@ -4215,6 +4235,9 @@
   });
 
   document.getElementById('saveFinishedWorkoutBtn').addEventListener('click', () => {
+    if (activeWorkout.exercises.some(ex => ex.sets.some(set => set.completed && !FitnessData.validSet(ex, set)))) {
+      alert('В отмеченных подходах не хватает повторений или времени. Проверь введённые значения.'); return;
+    }
     const elapsedSec = Math.floor((Date.now() - activeWorkout.startTime) / 1000);
     let totalCompletedSets = 0;
     let totalTonnage = 0;
@@ -4229,13 +4252,14 @@
         const completedSets = (ex.sets || []).filter((set) => set.completed);
         completedSets.forEach((set) => {
           totalCompletedSets += 1;
-          totalTonnage += (parseFloat(set.weight) || 0) * mult * (parseInt(set.reps, 10) || 0);
+          totalTonnage += FitnessData.tonnage(ex, [set]);
         });
         return {
           id: ex.id,
           name: ex.name,
+          kind: FitnessData.kind(ex),
           muscle: ex.muscle,
-          equip: equipInfo.type,
+          equip: ex.equip || equipInfo.type,
           canBodyweight: canBW,
           isBodyweight: isBW,
           sets: completedSets
@@ -4388,7 +4412,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.2.3').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

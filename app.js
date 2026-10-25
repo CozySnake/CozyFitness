@@ -3884,15 +3884,24 @@
 
   function installSheetSwipe(overlay, sheet) {
     let gesture = null;
-    const reset = () => {
+    let rebound = null;
+    const settle = () => {
       gesture = null;
       sheet.classList.remove('sheet-dragging');
+      const from = sheet.style.transform || 'translateY(0px)';
       sheet.style.transform = '';
+      if (sheet.animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        rebound = sheet.animate([{transform: from}, {transform: 'translateY(0px)'}], {
+          duration: 300, easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+        });
+      }
     };
     sheet.addEventListener('pointerdown', (event) => {
       if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
       if (event.target.closest('button, input, select, textarea, a')) return;
       if (!event.target.closest('.sheet-header, .sheet-drag-handle')) return;
+      if (modalClosures.has(overlay.id)) return;
+      if (rebound) { rebound.cancel(); rebound = null; }
       gesture = {id: event.pointerId, start: event.clientY, time: performance.now(), distance: 0};
       sheet.style.animation = 'none';
       sheet.classList.add('sheet-dragging');
@@ -3906,32 +3915,83 @@
     sheet.addEventListener('pointerup', (event) => {
       if (!gesture || gesture.id !== event.pointerId) return;
       const elapsed = Math.max(1, performance.now() - gesture.time);
-      const dismiss = gesture.distance >= 80 || (gesture.distance >= 35 && gesture.distance / elapsed > 0.5);
-      reset();
-      if (dismiss) closeModal(overlay.id);
+      const distance = Math.max(0, event.clientY - gesture.start);
+      const dismiss = distance >= 80 || (distance >= 35 && distance / elapsed > 0.5);
+      if (dismiss) {
+        gesture = null;
+        sheet.style.transform = `translateY(${distance}px)`;
+        sheet.classList.remove('sheet-dragging');
+        closeModal(overlay.id);
+      } else settle();
     });
-    sheet.addEventListener('pointercancel', reset);
-    sheet.addEventListener('lostpointercapture', reset);
+    sheet.addEventListener('pointercancel', () => { if (gesture) settle(); });
+    sheet.addEventListener('lostpointercapture', () => { if (gesture) settle(); });
+  }
+
+  const modalClosures = new Map();
+  let modalScrollPosition = null;
+  function syncModalScrollLock() {
+    const isOpen = !!document.querySelector('.modal-overlay:not(.hidden)');
+    if (isOpen && !modalScrollPosition) {
+      modalScrollPosition = {x: window.scrollX, y: window.scrollY};
+      document.body.style.setProperty('--modal-scroll-top', `-${modalScrollPosition.y}px`);
+      document.body.classList.add('modal-open');
+    } else if (!isOpen && modalScrollPosition) {
+      const saved = modalScrollPosition;
+      modalScrollPosition = null;
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('--modal-scroll-top');
+      window.scrollTo({left: saved.x, top: saved.y, behavior: 'instant'});
+    }
   }
 
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    if (modalId === 'modalAchievements' || modalId === 'modalProgramDetails') {
-      sheetOpeners.set(modalId, document.activeElement);
-      modal.querySelector('.modal-sheet').style.transform = '';
-      modal.querySelector('.modal-sheet').style.animation = '';
+    const closing = modalClosures.get(modalId);
+    if (closing) { modalClosures.delete(modalId); closing.forEach((animation) => animation.cancel()); }
+    const sheet = modal.querySelector('.modal-sheet');
+    if (sheet) {
+      sheet.getAnimations().forEach((animation) => animation.cancel());
+      sheet.classList.remove('sheet-dragging');
+      sheet.style.transform = '';
+      sheet.style.animation = '';
     }
+    if (modalId === 'modalAchievements' || modalId === 'modalProgramDetails') sheetOpeners.set(modalId, document.activeElement);
     modal.classList.remove('hidden');
-    if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus();
+    syncModalScrollLock();
+    if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus({preventScroll: true});
   }
 
   function closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add('hidden');
-    const opener = sheetOpeners.get(modalId);
-    if (opener && opener.isConnected) opener.focus();
-    sheetOpeners.delete(modalId);
+    if (!modal || modal.classList.contains('hidden') || modalClosures.has(modalId)) return;
+    const sheet = modal.querySelector('.modal-sheet');
+    const finish = () => {
+      modal.classList.add('hidden');
+      modalClosures.delete(modalId);
+      if (sheet) { sheet.style.transform = ''; sheet.classList.remove('sheet-dragging'); }
+      syncModalScrollLock();
+      const opener = sheetOpeners.get(modalId);
+      if (!document.querySelector('.modal-overlay:not(.hidden)') && opener && opener.isConnected) opener.focus({preventScroll: true});
+      sheetOpeners.delete(modalId);
+    };
+    if (!sheet || !sheet.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+    // Continue from the finger's last position, then hide only after leaving the screen.
+    const from = getComputedStyle(sheet).transform;
+    sheet.style.animation = 'none';
+    const travel = Math.max(sheet.getBoundingClientRect().height, window.innerHeight - sheet.getBoundingClientRect().top) + 40;
+    const slide = sheet.animate([{transform: from}, {transform: `translateY(${travel}px)`}], {
+      duration: 300, easing: 'cubic-bezier(0.32, 0, 0.67, 0)', fill: 'forwards'
+    });
+    const fade = modal.animate([{opacity: 1}, {opacity: 0}], {duration: 300, easing: 'ease-in', fill: 'forwards'});
+    const animations = [slide, fade];
+    modalClosures.set(modalId, animations);
+    Promise.all(animations.map((animation) => animation.finished)).then(() => {
+      if (modalClosures.get(modalId) !== animations) return;
+      finish();
+      animations.forEach((animation) => animation.cancel());
+    }).catch(() => {});
   }
 
   document.querySelectorAll('[data-close]').forEach((el) => {
@@ -3942,11 +4002,41 @@
   });
 
   document.querySelectorAll('.modal-overlay').forEach((overlay) => {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        closeModal(overlay.id);
+    let touchY = 0;
+    let backdropPointer = null;
+    let ignoreBackdropClickUntil = 0;
+    overlay.addEventListener('pointerdown', (event) => {
+      backdropPointer = event.target === overlay ? {x: event.clientX, y: event.clientY} : null;
+      if (backdropPointer) ignoreBackdropClickUntil = 0;
+    });
+    overlay.addEventListener('pointermove', (event) => {
+      if (backdropPointer && Math.hypot(event.clientX - backdropPointer.x, event.clientY - backdropPointer.y) > 8) {
+        ignoreBackdropClickUntil = performance.now() + 500;
       }
     });
+    overlay.addEventListener('pointercancel', () => { ignoreBackdropClickUntil = performance.now() + 500; });
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay && performance.now() >= ignoreBackdropClickUntil) closeModal(overlay.id);
+    });
+    overlay.addEventListener('touchstart', (event) => {
+      if (event.touches.length === 1) touchY = event.touches[0].clientY;
+    }, {passive: true});
+    overlay.addEventListener('touchmove', (event) => {
+      if (event.touches.length !== 1) return;
+      const nextY = event.touches[0].clientY;
+      const delta = nextY - touchY;
+      touchY = nextY;
+      // Allow only content that can actually scroll in the requested direction.
+      let target = event.target;
+      while (target && target !== overlay) {
+        const overflow = getComputedStyle(target).overflowY;
+        if (/(auto|scroll)/.test(overflow) && target.scrollHeight > target.clientHeight &&
+            ((delta < 0 && target.scrollTop + target.clientHeight < target.scrollHeight - 1) ||
+             (delta > 0 && target.scrollTop > 0))) return;
+        target = target.parentElement;
+      }
+      if (event.cancelable) event.preventDefault();
+    }, {passive: false});
   });
 
   // Exercise Selector Modal
@@ -4298,7 +4388,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.2.2').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.2.3').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

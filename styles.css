@@ -2966,3 +2966,12 @@ input[type="checkbox"]:checked::after {
 .program-details-card { margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
 .program-details-card .template-card-footer { flex-wrap: wrap; }
 .program-details-card .copy-builtin-tpl-btn { white-space: normal; }
+
+/* Keep the underlying page stationary, including iOS rubber-band scrolling. */
+body.modal-open { position: fixed; top: var(--modal-scroll-top, 0px); left: 0; right: 0; width: 100%; overflow: hidden; }
+body.modal-open .main-content { overflow: hidden; }
+.modal-overlay { overscroll-behavior: none; }
+.modal-sheet { overscroll-behavior: contain; will-change: transform; }
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay, .modal-sheet { animation: none; }
+}

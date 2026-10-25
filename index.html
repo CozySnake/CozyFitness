@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.1.1">
+  <link rel="stylesheet" href="styles.css?v=2.2">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -257,7 +257,7 @@
       <!-- VIEW: EXERCISES LIBRARY (Библиотека упражнений) -->
       <section id="viewExercises" class="view-section">
         <div class="section-title-row">
-          <h2>Библиотека</h2>
+          <h2>Упражнения</h2>
           <button id="createCustomExerciseBtn" class="small-primary-btn">+ Своё</button>
         </div>
         
@@ -355,6 +355,11 @@
           </div>
         </div>
 
+        <section class="achievements-section" aria-labelledby="achievementsHeading">
+          <div class="section-title-row"><h3 id="achievementsHeading">Достижения</h3><span id="achievementsCount" class="achievement-count">0 / 11</span></div>
+          <div id="achievementsList" class="achievements-list"></div>
+        </section>
+
         <div class="section-title-row" style="margin-top: 24px;">
           <h3>Настройки приложения</h3>
         </div>
@@ -442,7 +447,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.1 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.2 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
         </div>
       </section>
@@ -489,7 +494,7 @@
       </button>
       <button class="tab-item" data-target="viewExercises">
         <span class="tab-icon">📚</span>
-        <span class="tab-label">Библиотека</span>
+        <span class="tab-label">Упражнения</span>
       </button>
       <button class="tab-item" data-target="viewProfile" id="tabProfile">
         <span class="tab-icon">👤</span>
@@ -785,6 +790,8 @@
 
   </div>
 
-  <script src="app.js?v=2.1.1"></script>
+  <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
+  <script src="achievements.js?v=2.2"></script>
+  <script src="app.js?v=2.2"></script>
 </body>
 </html>

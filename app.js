@@ -1713,7 +1713,7 @@
       };
     });
 
-    startNewWorkout(tpl.title, preloadedExercises);
+    startNewWorkout(tpl.title, preloadedExercises, { id: tpl.id, custom: customTemplates.some((item) => item.id === tpl.id) });
   }
 
   function saveExercisesListAsCustomTemplate(defaultTitle, exercisesList) {
@@ -1882,7 +1882,7 @@
   const addExerciseBtn = document.getElementById('addExerciseBtn');
   const bottomAddExerciseBtn = document.getElementById('bottomAddExerciseBtn');
 
-  function startNewWorkout(customTitle = null, preloadedExercises = null) {
+  function startNewWorkout(customTitle = null, preloadedExercises = null, sourceTemplate = null) {
     initAudio();
     const defaultName = customTitle || `Тренировка ${new Date().toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' })}`;
 
@@ -1890,6 +1890,7 @@
       id: 'w_' + Date.now(),
       title: defaultName,
       startTime: Date.now(),
+      sourceTemplate,
       exercises: preloadedExercises || []
     };
 
@@ -3072,7 +3073,7 @@
         };
       });
 
-      startNewWorkout(item.title, clonedExercises);
+      startNewWorkout(item.title, clonedExercises, item.sourceTemplate || null);
     };
 
     // Fix #7: Save past workout to "My Programs"
@@ -3304,7 +3305,36 @@
     `;
   }
 
+  function renderAchievements() {
+    const container = document.getElementById('achievementsList');
+    if (!container) return;
+    const achievements = CozyAchievements.evaluate(historyData);
+    document.getElementById('achievementsCount').textContent = `${achievements.filter((a) => a.unlocked).length} / ${achievements.length}`;
+    container.innerHTML = achievements.map((a) => {
+      if (a.hidden && !a.unlocked) return `<article class="achievement-card locked"><span class="achievement-icon" aria-hidden="true">🔒</span><div><h4>Скрытое достижение</h4><p>Откроется, когда придёт время.</p></div></article>`;
+      const value = Math.min(a.target, a.value);
+      const progress = Math.round(value / a.target * 100);
+      return `<article class="achievement-card ${a.unlocked ? 'earned' : 'locked'}">
+        <span class="achievement-icon" aria-hidden="true">${a.icon}</span>
+        <div class="achievement-body"><h4>${a.title} <span class="achievement-state">${a.unlocked ? '✓ Получено' : 'В процессе'}</span></h4>
+          <p>${a.description}</p>
+          ${a.unlocked ? '' : `<progress max="${a.target}" value="${value}" aria-label="${a.title}: ${progress}%"></progress><small>${value.toLocaleString('ru-RU')} / ${a.target.toLocaleString('ru-RU')} ${a.unit}</small>`}
+        </div></article>`;
+    }).join('');
+  }
+
+  let achievementNoticeTimeout = null;
+  function showAchievementNotice(achievements) {
+    if (!achievements.length) return;
+    const notice = document.getElementById('achievementNotice');
+    notice.textContent = '🏆 Новые достижения: ' + achievements.map((a) => a.title).join(', ');
+    notice.classList.remove('hidden');
+    clearTimeout(achievementNoticeTimeout);
+    achievementNoticeTimeout = setTimeout(() => notice.classList.add('hidden'), 7000);
+  }
+
   function renderProfile() {
+    renderAchievements();
     profileNameInput.value = profileData.name || '';
     profileGenderSelect.value = profileData.gender || '';
     if (profileGoalSelect) {
@@ -4033,6 +4063,7 @@
 
     const finishedRecord = {
       id: activeWorkout.id,
+      sourceTemplate: activeWorkout.sourceTemplate || null,
       title: activeWorkout.title,
       date: new Date().toISOString(),
       durationSec: elapsedSec,
@@ -4042,6 +4073,7 @@
       notes: document.getElementById('finishWorkoutNotes').value.trim()
     };
 
+    const previouslyEarned = new Set(CozyAchievements.evaluate(historyData).filter((a) => a.unlocked).map((a) => a.id));
     historyData.unshift(finishedRecord);
     saveHistory();
 
@@ -4054,6 +4086,8 @@
 
     closeModal('modalFinishWorkout');
     switchView('viewHistory');
+    const newlyEarned = CozyAchievements.evaluate(historyData).filter((a) => a.unlocked && !previouslyEarned.has(a.id));
+    showAchievementNotice(newlyEarned);
   });
 
   function triggerCancelWorkout() {
@@ -4172,7 +4206,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.1.1').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.2').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

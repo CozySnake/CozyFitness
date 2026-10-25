@@ -1426,7 +1426,7 @@
   const newTemplateExercisesList = document.getElementById('newTemplateExercisesList');
   const saveCustomTemplateBtn = document.getElementById('saveCustomTemplateBtn');
 
-  function createProgramCardElement(tpl, isCustom = false) {
+  function createProgramCardElement(tpl, isCustom = false, detailsMode = false) {
     const card = document.createElement('div');
     card.className = 'template-card';
 
@@ -1535,21 +1535,27 @@
       </div>
     `;
 
-    // Toggle accordion on header or "Состав ▾" button click
     const toggleHeader = card.querySelector('.tpl-toggle-header');
     const drilldown = card.querySelector('.template-drilldown');
-    const arrow = card.querySelector('.drilldown-arrow');
-
-    toggleHeader.onclick = () => {
-      const isHidden = drilldown.classList.contains('hidden');
-      if (isHidden) {
-        drilldown.classList.remove('hidden');
-        arrow.textContent = '▴';
-      } else {
-        drilldown.classList.add('hidden');
-        arrow.textContent = '▾';
-      }
-    };
+    if (detailsMode) {
+      toggleHeader.remove();
+      card.querySelector('.template-exercises-chips').remove();
+      drilldown.classList.remove('hidden');
+      card.classList.add('program-details-card');
+    } else {
+      // Keep the list compact; details live in a dedicated sheet.
+      drilldown.remove();
+      toggleHeader.title = 'Открыть программу';
+      const detailsButton = card.querySelector('.tpl-toggle-btn');
+      detailsButton.setAttribute('aria-haspopup', 'dialog');
+      detailsButton.setAttribute('aria-controls', 'modalProgramDetails');
+      card.querySelector('.drilldown-arrow').textContent = '›';
+      toggleHeader.onclick = () => {
+        document.getElementById('programDetailsTitle').textContent = tpl.title;
+        document.getElementById('programDetailsContent').replaceChildren(createProgramCardElement(tpl, isCustom, true));
+        openModal('modalProgramDetails');
+      };
+    }
 
     // Interactive exercise chips & info buttons inside the card
     card.querySelectorAll('.interactive-ex-chip, .tpl-ex-info-btn').forEach((btn) => {
@@ -1569,6 +1575,7 @@
           return;
         }
       }
+      if (detailsMode) closeModal('modalProgramDetails');
       startWorkoutFromTemplate(tpl);
     };
 
@@ -1593,6 +1600,7 @@
           };
         });
         renderTemplateBuilderList();
+        if (detailsMode) closeModal('modalProgramDetails');
         openModal('modalCreateTemplate');
       };
     }
@@ -1614,6 +1622,7 @@
             isBodyweight: !!ex.isBodyweight
           }));
           renderTemplateBuilderList();
+          if (detailsMode) closeModal('modalProgramDetails');
           openModal('modalCreateTemplate');
         };
       }
@@ -1624,6 +1633,7 @@
           if (confirm(`Удалить программу «${tpl.title}»?`)) {
             customTemplates = customTemplates.filter((t) => t.id !== tpl.id);
             saveCustomTemplates();
+            if (detailsMode) closeModal('modalProgramDetails');
             renderWorkoutHub();
           }
         };
@@ -3856,24 +3866,72 @@
     renderAchievements();
     openModal('modalAchievements');
   });
-  document.getElementById('modalAchievements').addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeModal('modalAchievements');
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      document.querySelector('[data-close="modalAchievements"]').focus();
-    }
+  const sheetOpeners = new Map();
+  ['modalAchievements', 'modalProgramDetails'].forEach((id) => {
+    const overlay = document.getElementById(id);
+    const sheet = overlay.querySelector('.modal-sheet');
+    installSheetSwipe(overlay, sheet);
+    overlay.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeModal(id); }
+      if (event.key === 'Tab') {
+        const buttons = [...sheet.querySelectorAll('button:not([disabled]), [href], input, select, textarea, [tabindex="0"]')];
+        const first = buttons[0], last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    });
   });
+
+  function installSheetSwipe(overlay, sheet) {
+    let gesture = null;
+    const reset = () => {
+      gesture = null;
+      sheet.classList.remove('sheet-dragging');
+      sheet.style.transform = '';
+    };
+    sheet.addEventListener('pointerdown', (event) => {
+      if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+      if (event.target.closest('button, input, select, textarea, a')) return;
+      if (!event.target.closest('.sheet-header, .sheet-drag-handle')) return;
+      gesture = {id: event.pointerId, start: event.clientY, time: performance.now(), distance: 0};
+      sheet.style.animation = 'none';
+      sheet.classList.add('sheet-dragging');
+      sheet.setPointerCapture(event.pointerId);
+    });
+    sheet.addEventListener('pointermove', (event) => {
+      if (!gesture || gesture.id !== event.pointerId) return;
+      gesture.distance = Math.max(0, event.clientY - gesture.start);
+      sheet.style.transform = `translateY(${gesture.distance}px)`;
+    });
+    sheet.addEventListener('pointerup', (event) => {
+      if (!gesture || gesture.id !== event.pointerId) return;
+      const elapsed = Math.max(1, performance.now() - gesture.time);
+      const dismiss = gesture.distance >= 80 || (gesture.distance >= 35 && gesture.distance / elapsed > 0.5);
+      reset();
+      if (dismiss) closeModal(overlay.id);
+    });
+    sheet.addEventListener('pointercancel', reset);
+    sheet.addEventListener('lostpointercapture', reset);
+  }
 
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove('hidden');
-    if (modalId === 'modalAchievements') document.querySelector('[data-close="modalAchievements"]').focus();
+    if (!modal) return;
+    if (modalId === 'modalAchievements' || modalId === 'modalProgramDetails') {
+      sheetOpeners.set(modalId, document.activeElement);
+      modal.querySelector('.modal-sheet').style.transform = '';
+      modal.querySelector('.modal-sheet').style.animation = '';
+    }
+    modal.classList.remove('hidden');
+    if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus();
   }
 
   function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('hidden');
-    if (modalId === 'modalAchievements') homeAchievementsBtn.focus();
+    const opener = sheetOpeners.get(modalId);
+    if (opener && opener.isConnected) opener.focus();
+    sheetOpeners.delete(modalId);
   }
 
   document.querySelectorAll('[data-close]').forEach((el) => {
@@ -4240,7 +4298,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.2.1').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.2.2').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

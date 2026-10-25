@@ -2951,3 +2951,18 @@ input[type="checkbox"]:checked::after {
 .achievements-sheet { max-height: 88dvh; }
 .achievements-sheet > .sheet-header, .achievements-sheet > .sheet-drag-handle, .achievements-modal-summary { flex-shrink: 0; }
 .achievements-summary:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 3px; }
+
+/* Drag only the sheet top; the content keeps normal vertical scrolling. */
+:is(#modalAchievements, #modalProgramDetails) .sheet-header,
+:is(#modalAchievements, #modalProgramDetails) .sheet-drag-handle { touch-action: none; user-select: none; cursor: grab; }
+:is(#modalAchievements, #modalProgramDetails) .sheet-drag-handle { width: 100%; height: 20px; margin-bottom: 6px; background: transparent; position: relative; flex-shrink: 0; }
+:is(#modalAchievements, #modalProgramDetails) .sheet-drag-handle::after { content: ''; position: absolute; top: 6px; left: calc(50% - 20px); width: 40px; height: 5px; border-radius: 3px; background: var(--border-color); }
+:is(#modalAchievements, #modalProgramDetails) .sheet-dragging { animation: none; transition: none; }
+.program-details-sheet { max-height: 88dvh; }
+.program-details-sheet .sheet-header { flex-shrink: 0; align-items: flex-start; gap: 12px; }
+.program-details-sheet .sheet-header h3 { overflow-wrap: anywhere; }
+.program-details-sheet .close-modal-btn { flex-shrink: 0; }
+.program-details-content { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+.program-details-card { margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.program-details-card .template-card-footer { flex-wrap: wrap; }
+.program-details-card .copy-builtin-tpl-btn { white-space: normal; }

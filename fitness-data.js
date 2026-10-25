@@ -2,10 +2,25 @@
   'use strict';
   const number = (value) => { const n = Number(String(value ?? '').replace(',', '.')); return Number.isFinite(n) ? Math.max(0, n) : 0; };
   const escape = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // Catalog definitions own the measurement type; workout copies cannot change it.
+  const catalogKinds = new Map();
+  function registerCatalog(exercises) {
+    (exercises || []).forEach(ex => {
+      const type = ['strength', 'timed', 'cardio'].includes(ex.kind) ? ex.kind
+        : ex.id === 'plank' || /планк/i.test(ex.name || '') ? 'timed'
+        : ex.muscle === 'Кардио' ? 'cardio' : 'strength';
+      if (ex.id) catalogKinds.set('id:' + ex.id, type);
+      const nameKey = 'name:' + String(ex.name || '').trim().toLowerCase();
+      if (ex.name && !catalogKinds.has(nameKey)) catalogKinds.set(nameKey, type);
+    });
+  }
   function kind(ex) {
-    if (['strength', 'timed', 'cardio'].includes(ex.kind)) return ex.kind;
+    const catalogType = catalogKinds.get('id:' + ex.id) || catalogKinds.get('name:' + String(ex.name || '').trim().toLowerCase());
+    if (catalogType) return catalogType;
     if (ex.id === 'plank' || /планк/i.test(ex.name || '')) return 'timed';
-    return ex.muscle === 'Кардио' || ['treadmill','stationary_bike','rowing_machine'].includes(ex.id) ? 'cardio' : 'strength';
+    if (['treadmill', 'stationary_bike', 'rowing_machine'].includes(ex.id)) return 'cardio';
+    if (['strength', 'timed', 'cardio'].includes(ex.kind)) return ex.kind;
+    return ex.muscle === 'Кардио' ? 'cardio' : 'strength';
   }
   const fields = (ex) => kind(ex) === 'strength'
     ? [{key:'weight',label:'Вес, кг',step:1}, {key:'reps',label:'Повторения',step:1}]
@@ -61,12 +76,12 @@
   function migrate(workouts) {
     (workouts || []).forEach(w => {
       (w.exercises || []).forEach(ex => {
-        if (!ex.kind && kind(ex) !== 'strength' && (ex.sets || []).some(s=>s.reps !== undefined)) ex.legacyMetrics = true;
+        if (kind(ex) !== 'strength' && (ex.sets || []).some(s=>s.reps !== undefined && s.durationSec === undefined)) ex.legacyMetrics = true;
         ex.kind = kind(ex);
       });
       recalculate(w);
     });
     return workouts;
   }
-  root.FitnessData = {number,escape,kind,fields,defaultSet,validSet,tonnage,recalculate,setText,sessions,metric,migrate};
+  root.FitnessData = {registerCatalog,number,escape,kind,fields,defaultSet,validSet,tonnage,recalculate,setText,sessions,metric,migrate};
 })(typeof window !== 'undefined' ? window : globalThis);

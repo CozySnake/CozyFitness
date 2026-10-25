@@ -2976,7 +2976,6 @@ body.modal-open .main-content { overflow: hidden; }
   .modal-overlay, .modal-sheet { animation: none; }
 }
 /* Typed metrics, exercise history, and the independent history editor. */
-.exercise-kind-select { max-width: 160px; padding: 4px 7px; font-size: 0.7rem; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-muted); background: var(--bg-input); }
 .exercise-history-link { padding: 0; background: transparent; color: var(--text-main); text-align: left; justify-content: flex-start; font-size: inherit; }
 .typed-timed .sets-table-header, .typed-timed .set-row { grid-template-columns: 36px minmax(0,1fr) 42px 28px; }
 .typed-cardio .sets-table-header, .typed-cardio .set-row { grid-template-columns: 30px minmax(0,1fr) minmax(0,1fr) 38px 24px; }
@@ -3023,3 +3022,5 @@ body.modal-open .main-content { overflow: hidden; }
 .achievement-next-goal small { display: block; color: var(--text-muted); margin-top: 4px; }
 :is(#modalWorkoutEditor, #modalExerciseInfo) .sheet-header, :is(#modalWorkoutEditor, #modalExerciseInfo) .sheet-drag-handle { touch-action: none; user-select: none; }
 @media (max-width: 360px) { .typed-cardio .set-row { gap: 3px; } .metric-stepper button { width: 20px; min-width: 18px; } .editor-meta { grid-template-columns: 1fr; } }
+
+.sheet-filter-chips { flex-shrink: 0; min-width: 0; max-width: 100%; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }

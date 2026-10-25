@@ -12,56 +12,58 @@
 
   const DEFAULT_EXERCISES = [
     // Грудь
-    { id: 'bench_press', name: 'Жим штанги лёжа', muscle: 'Грудь', equip: 'barbell' },
-    { id: 'incline_dumbbell_press', name: 'Жим гантелей на наклонной', muscle: 'Грудь', equip: 'dumbbell_2' },
-    { id: 'dips_chest', name: 'Отжимания на брусьях', muscle: 'Грудь', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
-    { id: 'cable_crossover', name: 'Сведение рук в кроссовере', muscle: 'Грудь', equip: 'machine' },
-    { id: 'dumbbell_flyes', name: 'Разводка гантелей лёжа', muscle: 'Грудь', equip: 'dumbbell_2' },
-    { id: 'pushups', name: 'Отжимания от пола', muscle: 'Грудь', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'bench_press', kind: 'strength', name: 'Жим штанги лёжа', muscle: 'Грудь', equip: 'barbell' },
+    { id: 'incline_dumbbell_press', kind: 'strength', name: 'Жим гантелей на наклонной', muscle: 'Грудь', equip: 'dumbbell_2' },
+    { id: 'dips_chest', kind: 'strength', name: 'Отжимания на брусьях', muscle: 'Грудь', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'cable_crossover', kind: 'strength', name: 'Сведение рук в кроссовере', muscle: 'Грудь', equip: 'machine' },
+    { id: 'dumbbell_flyes', kind: 'strength', name: 'Разводка гантелей лёжа', muscle: 'Грудь', equip: 'dumbbell_2' },
+    { id: 'pushups', kind: 'strength', name: 'Отжимания от пола', muscle: 'Грудь', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
 
     // Спина
-    { id: 'pullups', name: 'Подтягивания', muscle: 'Спина', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
-    { id: 'lat_pulldown', name: 'Тяга верхнего блока к груди', muscle: 'Спина', equip: 'machine' },
-    { id: 'barbell_row', name: 'Тяга штанги в наклоне', muscle: 'Спина', equip: 'barbell' },
-    { id: 'seated_cable_row', name: 'Горизонтальная тяга блока', muscle: 'Спина', equip: 'machine' },
-    { id: 'dumbbell_row', name: 'Тяга гантели одной рукой', muscle: 'Спина', equip: 'dumbbell_1' },
-    { id: 'hyperextension', name: 'Гиперэкстензия', muscle: 'Спина', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
-    { id: 'deadlift', name: 'Классическая становая тяга', muscle: 'Спина', equip: 'barbell' },
+    { id: 'pullups', kind: 'strength', name: 'Подтягивания', muscle: 'Спина', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'lat_pulldown', kind: 'strength', name: 'Тяга верхнего блока к груди', muscle: 'Спина', equip: 'machine' },
+    { id: 'barbell_row', kind: 'strength', name: 'Тяга штанги в наклоне', muscle: 'Спина', equip: 'barbell' },
+    { id: 'seated_cable_row', kind: 'strength', name: 'Горизонтальная тяга блока', muscle: 'Спина', equip: 'machine' },
+    { id: 'dumbbell_row', kind: 'strength', name: 'Тяга гантели одной рукой', muscle: 'Спина', equip: 'dumbbell_1' },
+    { id: 'hyperextension', kind: 'strength', name: 'Гиперэкстензия', muscle: 'Спина', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'deadlift', kind: 'strength', name: 'Классическая становая тяга', muscle: 'Спина', equip: 'barbell' },
 
     // Ноги
-    { id: 'squats', name: 'Приседания со штангой', muscle: 'Ноги', equip: 'barbell', canBodyweight: true },
-    { id: 'leg_press', name: 'Жим ногами в тренажере', muscle: 'Ноги', equip: 'machine' },
-    { id: 'romanian_deadlift', name: 'Румынская становая тяга', muscle: 'Ноги', equip: 'barbell' },
-    { id: 'lunges', name: 'Выпады с гантелями', muscle: 'Ноги', equip: 'dumbbell_2', canBodyweight: true },
-    { id: 'leg_extension', name: 'Разгибания ног в тренажере', muscle: 'Ноги', equip: 'machine' },
-    { id: 'leg_curl', name: 'Сгибания ног лёжа', muscle: 'Ноги', equip: 'machine' },
-    { id: 'calf_raises', name: 'Подъемы на носки (икры)', muscle: 'Ноги', equip: 'machine', canBodyweight: true },
+    { id: 'squats', kind: 'strength', name: 'Приседания со штангой', muscle: 'Ноги', equip: 'barbell', canBodyweight: true },
+    { id: 'leg_press', kind: 'strength', name: 'Жим ногами в тренажере', muscle: 'Ноги', equip: 'machine' },
+    { id: 'romanian_deadlift', kind: 'strength', name: 'Румынская становая тяга', muscle: 'Ноги', equip: 'barbell' },
+    { id: 'lunges', kind: 'strength', name: 'Выпады с гантелями', muscle: 'Ноги', equip: 'dumbbell_2', canBodyweight: true },
+    { id: 'leg_extension', kind: 'strength', name: 'Разгибания ног в тренажере', muscle: 'Ноги', equip: 'machine' },
+    { id: 'leg_curl', kind: 'strength', name: 'Сгибания ног лёжа', muscle: 'Ноги', equip: 'machine' },
+    { id: 'calf_raises', kind: 'strength', name: 'Подъемы на носки (икры)', muscle: 'Ноги', equip: 'machine', canBodyweight: true },
 
     // Плечи
-    { id: 'overhead_press', name: 'Армейский жим стоя', muscle: 'Плечи', equip: 'barbell' },
-    { id: 'seated_dumbbell_press', name: 'Жим гантелей сидя', muscle: 'Плечи', equip: 'dumbbell_2' },
-    { id: 'lateral_raises', name: 'Махи гантелями в стороны', muscle: 'Плечи', equip: 'dumbbell_2' },
-    { id: 'upright_row', name: 'Тяга штанги к подбородку', muscle: 'Плечи', equip: 'barbell' },
-    { id: 'rear_delt_fly', name: 'Махи на заднюю дельту в наклоне', muscle: 'Плечи', equip: 'dumbbell_2' },
+    { id: 'overhead_press', kind: 'strength', name: 'Армейский жим стоя', muscle: 'Плечи', equip: 'barbell' },
+    { id: 'seated_dumbbell_press', kind: 'strength', name: 'Жим гантелей сидя', muscle: 'Плечи', equip: 'dumbbell_2' },
+    { id: 'lateral_raises', kind: 'strength', name: 'Махи гантелями в стороны', muscle: 'Плечи', equip: 'dumbbell_2' },
+    { id: 'upright_row', kind: 'strength', name: 'Тяга штанги к подбородку', muscle: 'Плечи', equip: 'barbell' },
+    { id: 'rear_delt_fly', kind: 'strength', name: 'Махи на заднюю дельту в наклоне', muscle: 'Плечи', equip: 'dumbbell_2' },
 
     // Руки
-    { id: 'barbell_curl', name: 'Подъем штанги на бицепс', muscle: 'Руки', equip: 'barbell' },
-    { id: 'hammer_curls', name: 'Молотковые сгибания с гантелями', muscle: 'Руки', equip: 'dumbbell_2' },
-    { id: 'french_press', name: 'Французский жим лёжа', muscle: 'Руки', equip: 'barbell' },
-    { id: 'cable_tricep_pushdown', name: 'Разгибания на трицепс на блоке', muscle: 'Руки', equip: 'machine' },
-    { id: 'preacher_curl', name: 'Сгибания на скамье Скотта', muscle: 'Руки', equip: 'barbell' },
+    { id: 'barbell_curl', kind: 'strength', name: 'Подъем штанги на бицепс', muscle: 'Руки', equip: 'barbell' },
+    { id: 'hammer_curls', kind: 'strength', name: 'Молотковые сгибания с гантелями', muscle: 'Руки', equip: 'dumbbell_2' },
+    { id: 'french_press', kind: 'strength', name: 'Французский жим лёжа', muscle: 'Руки', equip: 'barbell' },
+    { id: 'cable_tricep_pushdown', kind: 'strength', name: 'Разгибания на трицепс на блоке', muscle: 'Руки', equip: 'machine' },
+    { id: 'preacher_curl', kind: 'strength', name: 'Сгибания на скамье Скотта', muscle: 'Руки', equip: 'barbell' },
 
     // Пресс
-    { id: 'plank', name: 'Планка', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
-    { id: 'crunches', name: 'Скручивания на коврике', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
-    { id: 'hanging_leg_raises', name: 'Подъемы ног в висе', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
-    { id: 'cable_crunch', name: 'Скручивания на блоке («Молитва»)', muscle: 'Пресс', equip: 'machine' },
+    { id: 'plank', kind: 'timed', name: 'Планка', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'crunches', kind: 'strength', name: 'Скручивания на коврике', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'hanging_leg_raises', kind: 'strength', name: 'Подъемы ног в висе', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
+    { id: 'cable_crunch', kind: 'strength', name: 'Скручивания на блоке («Молитва»)', muscle: 'Пресс', equip: 'machine' },
 
     // Кардио
-    { id: 'treadmill', name: 'Беговая дорожка', muscle: 'Кардио', equip: 'machine' },
-    { id: 'stationary_bike', name: 'Велотренажер', muscle: 'Кардио', equip: 'machine' },
-    { id: 'rowing_machine', name: 'Гребной тренажер', muscle: 'Кардио', equip: 'machine' }
+    { id: 'treadmill', kind: 'cardio', name: 'Беговая дорожка', muscle: 'Кардио', equip: 'machine' },
+    { id: 'stationary_bike', kind: 'cardio', name: 'Велотренажер', muscle: 'Кардио', equip: 'machine' },
+    { id: 'rowing_machine', kind: 'cardio', name: 'Гребной тренажер', muscle: 'Кардио', equip: 'machine' }
   ];
+
+  FitnessData.registerCatalog(DEFAULT_EXERCISES);
 
   // Pre-set Workout Programs (Базовые программы)
   const BUILTIN_TEMPLATES = [
@@ -795,6 +797,7 @@
 
       const act = localStorage.getItem(STORAGE_KEYS.ACTIVE);
       if (act) activeWorkout = JSON.parse(act);
+      FitnessData.registerCatalog(customExercises);
       FitnessData.migrate(historyData);
       if (activeWorkout) FitnessData.migrate([activeWorkout]);
     } catch (e) {
@@ -1949,11 +1952,6 @@
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px;">
               <span class="exercise-muscle-tag">${exItem.muscle}</span>
               ${equipControlHtml}
-              <select class="exercise-kind-select" data-ex-idx="${exIndex}" aria-label="Тип упражнения ${FitnessData.escape(exItem.name)}">
-                <option value="strength" ${measurementKind === 'strength' ? 'selected' : ''}>Вес × повторы</option>
-                <option value="timed" ${measurementKind === 'timed' ? 'selected' : ''}>Удержание, сек</option>
-                <option value="cardio" ${measurementKind === 'cardio' ? 'selected' : ''}>Кардио</option>
-              </select>
             </div>
             ${prevSummaryHtml}
           </div>
@@ -2088,14 +2086,6 @@
       };
     });
 
-    activeExercisesList.querySelectorAll('.exercise-kind-select').forEach((select) => {
-      select.onchange = () => {
-        const ex = activeWorkout.exercises[Number(select.dataset.exIdx)];
-        ex.kind = select.value;
-        ex.sets.forEach((set) => { Object.entries(FitnessData.defaultSet(ex)).forEach(([key,value]) => {if (set[key] === undefined) set[key] = value;}); set.completed = false; });
-        saveActiveWorkout(); renderActiveWorkout();
-      };
-    });
     activeExercisesList.querySelectorAll('.metric-input').forEach((input) => {
       input.onfocus = () => input.select(); input.onclick = () => input.select();
       input.oninput = () => {
@@ -3793,12 +3783,14 @@
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target.result);
+        if (Array.isArray(data.customExercises)) FitnessData.registerCatalog(data.customExercises);
         if (data.history && Array.isArray(data.history)) {
-          historyData = data.history;
+          historyData = FitnessData.migrate(data.history);
           saveHistory();
         }
         if (data.customExercises && Array.isArray(data.customExercises)) {
           customExercises = data.customExercises;
+          FitnessData.registerCatalog(customExercises);
           saveCustomExercises();
         }
         if (data.customTemplates && Array.isArray(data.customTemplates)) {
@@ -4016,7 +4008,7 @@
   });
 
   document.querySelectorAll('.modal-overlay').forEach((overlay) => {
-    let touchY = 0;
+    let touchX = 0, touchY = 0, touchAxis = null;
     let backdropPointer = null;
     let ignoreBackdropClickUntil = 0;
     overlay.addEventListener('pointerdown', (event) => {
@@ -4033,20 +4025,32 @@
       if (event.target === overlay && performance.now() >= ignoreBackdropClickUntil) closeModal(overlay.id);
     });
     overlay.addEventListener('touchstart', (event) => {
-      if (event.touches.length === 1) touchY = event.touches[0].clientY;
+      if (event.touches.length === 1) {
+        touchX = event.touches[0].clientX;
+        touchY = event.touches[0].clientY;
+        touchAxis = null;
+      }
     }, {passive: true});
     overlay.addEventListener('touchmove', (event) => {
       if (event.touches.length !== 1) return;
-      const nextY = event.touches[0].clientY;
-      const delta = nextY - touchY;
-      touchY = nextY;
-      // Allow only content that can actually scroll in the requested direction.
+      const nextX = event.touches[0].clientX, nextY = event.touches[0].clientY;
+      const dx = nextX - touchX, dy = nextY - touchY;
+      if (!touchAxis) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 4) return;
+        touchAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      }
+      touchX = nextX; touchY = nextY;
+      const horizontal = touchAxis === 'x';
+      const delta = horizontal ? dx : dy;
       let target = event.target;
       while (target && target !== overlay) {
-        const overflow = getComputedStyle(target).overflowY;
-        if (/(auto|scroll)/.test(overflow) && target.scrollHeight > target.clientHeight &&
-            ((delta < 0 && target.scrollTop + target.clientHeight < target.scrollHeight - 1) ||
-             (delta > 0 && target.scrollTop > 0))) return;
+        const style = getComputedStyle(target);
+        const overflow = horizontal ? style.overflowX : style.overflowY;
+        const extent = horizontal ? target.scrollWidth : target.scrollHeight;
+        const visible = horizontal ? target.clientWidth : target.clientHeight;
+        const offset = horizontal ? target.scrollLeft : target.scrollTop;
+        if (/(auto|scroll)/.test(overflow) && extent > visible &&
+            ((delta < 0 && offset + visible < extent - 1) || (delta > 0 && offset > 0))) return;
         target = target.parentElement;
       }
       if (event.cancelable) event.preventDefault();
@@ -4166,6 +4170,7 @@
     };
 
     customExercises.push(newEx);
+    FitnessData.registerCatalog([newEx]);
     saveCustomExercises();
     closeModal('modalCreateExercise');
     renderExercisesLibrary();
@@ -4412,7 +4417,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3.1').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

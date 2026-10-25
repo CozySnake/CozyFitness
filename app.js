@@ -664,167 +664,87 @@
     isRunning: false
   };
 
-  // Audio Context + HTML5 WAV Bell Player (works on iOS even over background music!)
+  // Use one short Web Audio notification; never unlock an HTML media channel.
   let audioCtx = null;
-  let alarmAudioEl = null;
+  let audioReady = Promise.resolve();
+  let chimeTimeout = null;
+  let chimeGeneration = 0;
+  const chimeOscillators = new Set();
 
-  function buildBellWavDataUri() {
+  function initAudio() {
+    if (!settings.sound) return null;
     try {
-      const sampleRate = 22050;
-      const durationSec = 1.65;
-      const numSamples = Math.floor(sampleRate * durationSec);
-      const buffer = new ArrayBuffer(44 + numSamples * 2);
-      const view = new DataView(buffer);
-
-      const writeStr = (offset, str) => {
-        for (let i = 0; i < str.length; i++) {
-          view.setUint8(offset + i, str.charCodeAt(i));
+      if ('audioSession' in navigator) {
+        try {
+          navigator.audioSession.type = 'transient';
+        } catch (e) {
+          navigator.audioSession.type = 'ambient';
         }
-      };
-
-      writeStr(0, 'RIFF');
-      view.setUint32(4, 36 + numSamples * 2, true);
-      writeStr(8, 'WAVE');
-      writeStr(12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, 1, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, sampleRate * 2, true);
-      view.setUint16(32, 2, true);
-      view.setUint16(34, 16, true);
-      writeStr(36, 'data');
-      view.setUint32(40, numSamples * 2, true);
-
-      // 3 bright harmonic bell strikes at t=0, t=0.25s, t=0.52s
-      const notes = [
-        { freq: 659.25, start: 0.0, dur: 0.45 },   // E5
-        { freq: 880.00, start: 0.24, dur: 0.45 },  // A5
-        { freq: 1046.50, start: 0.48, dur: 1.10 }  // C6
-      ];
-
-      for (let i = 0; i < numSamples; i++) {
-        const t = i / sampleRate;
-        let sample = 0;
-        for (const n of notes) {
-          if (t >= n.start && t <= n.start + n.dur) {
-            const localT = t - n.start;
-            const env = Math.exp(-localT * 4.2) * Math.min(1, localT / 0.008);
-            sample += env * (
-              0.65 * Math.sin(2 * Math.PI * n.freq * localT) +
-              0.25 * Math.sin(2 * Math.PI * (n.freq * 2) * localT) +
-              0.10 * Math.sin(2 * Math.PI * (n.freq * 3) * localT)
-            );
-          }
-        }
-        const clamped = Math.max(-1, Math.min(1, sample * 0.92));
-        view.setInt16(44 + i * 2, clamped * 32767, true);
       }
-
-      const bytes = new Uint8Array(buffer);
-      let binary = '';
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
+      if (!audioCtx || audioCtx.state === 'closed') {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        audioCtx = new AudioContextClass();
+        // Prepare during a user gesture without playing silent media or holding focus.
+        audioReady = audioCtx.suspend().catch(() => {});
       }
-      return 'data:audio/wav;base64,' + window.btoa(binary);
+      return audioCtx;
     } catch (e) {
       return null;
     }
   }
 
-  function initAudio() {
-    try {
-      if (!audioCtx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-          audioCtx = new AudioContextClass();
-        }
-      }
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      if (!alarmAudioEl) {
-        const uri = buildBellWavDataUri();
-        if (uri) {
-          alarmAudioEl = new Audio(uri);
-          alarmAudioEl.preload = 'auto';
-        }
-      }
-    } catch (e) {
-      // Ignore audio init errors
+  function stopChime() {
+    chimeGeneration += 1;
+    clearTimeout(chimeTimeout);
+    chimeTimeout = null;
+    chimeOscillators.forEach((osc) => {
+      try { osc.stop(); } catch (e) { /* Already ended. */ }
+    });
+    chimeOscillators.clear();
+    if (audioCtx && audioCtx.state !== 'closed') {
+      audioReady = audioCtx.suspend().catch(() => {});
     }
   }
 
-  // Unlock iOS Media playback channel on user tap when starting timer
-  function unlockAudioOnUserTap() {
-    initAudio();
-    if (alarmAudioEl) {
-      try {
-        alarmAudioEl.volume = 0.01;
-        const p = alarmAudioEl.play();
-        if (p && p.then) {
-          p.then(() => {
-            alarmAudioEl.pause();
-            alarmAudioEl.currentTime = 0;
-            alarmAudioEl.volume = 1.0;
-          }).catch(() => {});
-        }
-      } catch (e) {
-        // Ignore
-      }
-    }
-  }
-
-  function playCozyChime() {
+  async function playCozyChime() {
     if (!settings.sound) return;
-
-    // 1. Play HTML5 <audio> WAV (plays on iOS Media channel even over background music!)
+    stopChime();
+    const generation = chimeGeneration;
+    const ctx = initAudio();
+    if (!ctx) return;
     try {
-      initAudio();
-      if (alarmAudioEl) {
-        alarmAudioEl.currentTime = 0;
-        alarmAudioEl.volume = 1.0;
-        alarmAudioEl.play().catch(() => {});
-      }
-    } catch (e) {
-      // Ignore
-    }
-
-    // 2. Also play Web Audio API synthesizer chime (after ensuring audioCtx is resumed)
-    try {
-      if (!audioCtx) return;
-      const triggerSynth = () => {
-        const now = audioCtx.currentTime;
-        const playTone = (freq, start, duration) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(freq, start);
-
-          gain.gain.setValueAtTime(0.001, start);
-          gain.gain.exponentialRampToValueAtTime(0.8, start + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-
-          osc.start(start);
-          osc.stop(start + duration);
+      await audioReady;
+      if (!settings.sound || generation !== chimeGeneration) return;
+      await ctx.resume();
+      if (!settings.sound || generation !== chimeGeneration) return;
+      const now = ctx.currentTime;
+      [[659.25, 0], [880, 0.2], [1046.5, 0.4]].forEach(([freq, delay]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const start = now + delay;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.25, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        chimeOscillators.add(osc);
+        osc.onended = () => {
+          chimeOscillators.delete(osc);
+          osc.disconnect();
+          gain.disconnect();
         };
-
-        playTone(659.25, now, 0.45);        // E5
-        playTone(880.00, now + 0.24, 0.45); // A5
-        playTone(1046.50, now + 0.48, 0.95);// C6
-      };
-
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume().then(triggerSynth).catch(() => {});
-      } else {
-        triggerSynth();
-      }
+        osc.start(start);
+        osc.stop(start + 0.6);
+      });
+      // Release the session after the one-second signal so music can recover.
+      chimeTimeout = setTimeout(() => {
+        if (generation === chimeGeneration) stopChime();
+      }, 1100);
     } catch (e) {
-      console.warn('Audio play error:', e);
+      if (generation === chimeGeneration) stopChime();
     }
   }
 
@@ -1252,6 +1172,7 @@
   const timerProgressBg = document.getElementById('timerProgressBg');
   const timerPlayPauseBtn = document.getElementById('timerPlayPauseBtn');
   const timerStopBtn = document.getElementById('timerStopBtn');
+  const timerMinus15Btn = document.getElementById('timerMinus15Btn');
   const timerPlus15Btn = document.getElementById('timerPlus15Btn');
   const timerInfoTap = document.getElementById('timerInfoTap');
 
@@ -1338,7 +1259,7 @@
   }
 
   function startRestTimer(seconds, customLabel = null) {
-    unlockAudioOnUserTap();
+    initAudio();
     blurActiveInput();
 
     if (seconds) {
@@ -1448,6 +1369,11 @@
   timerStopBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     stopRestTimer(true);
+  });
+
+  timerMinus15Btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    adjustRestTimer(-15);
   });
 
   timerPlus15Btn.addEventListener('click', (e) => {
@@ -2181,9 +2107,9 @@
         if (type === 'weight') {
           let currentWeight = parseFloat(targetSet.weight) || 0;
           if (action === 'plus') {
-            currentWeight = Math.round((currentWeight + 2.5) * 10) / 10;
+            currentWeight = Math.round((currentWeight + 1) * 10) / 10;
           } else {
-            currentWeight = Math.max(0, Math.round((currentWeight - 2.5) * 10) / 10);
+            currentWeight = Math.max(0, Math.round((currentWeight - 1) * 10) / 10);
           }
           targetSet.weight = currentWeight;
           const input = row.querySelector('.set-weight-input');
@@ -2206,6 +2132,9 @@
 
     // Direct Weight input (clean numeric input; empty or 0 = 0 kg)
     document.querySelectorAll('.set-weight-input').forEach((input) => {
+      input.onfocus = () => input.select();
+      // Repeat after the tap's default caret placement (including iOS).
+      input.onclick = () => input.select();
       input.oninput = (e) => {
         const exIdx = parseInt(e.target.dataset.exIdx, 10);
         const setIdx = parseInt(e.target.dataset.setIdx, 10);
@@ -3706,6 +3635,7 @@
 
   settingSoundToggle.onchange = (e) => {
     settings.sound = e.target.checked;
+    if (!settings.sound) stopChime();
     saveSettings();
   };
 
@@ -4147,7 +4077,7 @@
   async function requestWakeLockIfNeeded() {
     if (!('wakeLock' in navigator)) return;
     if (document.visibilityState !== 'visible') return;
-    if (!activeWorkout && !restTimer.active) return;
+    if (!activeWorkout && !restTimer.isRunning) return;
     try {
       if (!wakeLockSentinel) {
         wakeLockSentinel = await navigator.wakeLock.request('screen');
@@ -4200,7 +4130,7 @@
         if (activeWorkout) {
           startWorkoutStopwatch();
         }
-        if (restTimer.active) {
+        if (restTimer.isRunning) {
           tickRestTimer();
         }
         requestWakeLockIfNeeded();
@@ -4209,7 +4139,7 @@
 
     window.addEventListener('focus', () => {
       if (activeWorkout) startWorkoutStopwatch();
-      if (restTimer.active) tickRestTimer();
+      if (restTimer.isRunning) tickRestTimer();
     });
 
     loadState();
@@ -4228,7 +4158,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.0').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.1').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

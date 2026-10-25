@@ -2886,3 +2886,12 @@ input[type="checkbox"]:checked::after {
   height: 90px;
   overflow: visible;
 }
+
+/* Keep both rest adjustments reachable on narrow phones. */
+@media (max-width: 380px) {
+  .timer-content { padding: 0 10px; gap: 6px; }
+  .timer-info { gap: 5px; min-width: 0; }
+  .timer-bell { display: none; }
+  .timer-quick-actions { gap: 4px; flex-shrink: 0; }
+  .timer-chip-btn { padding: 6px 7px; }
+}

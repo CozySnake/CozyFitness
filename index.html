@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.0">
+  <link rel="stylesheet" href="styles.css?v=2.1">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -459,7 +459,8 @@
           </div>
         </div>
         <div class="timer-quick-actions">
-          <button class="timer-chip-btn" id="timerPlus15Btn">+15с</button>
+          <button class="timer-chip-btn" id="timerMinus15Btn" aria-label="Уменьшить отдых на 15 секунд">−15с</button>
+          <button class="timer-chip-btn" id="timerPlus15Btn" aria-label="Увеличить отдых на 15 секунд">+15с</button>
           <button class="timer-action-btn" id="timerPlayPauseBtn" title="Пауза / Продолжить">⏸</button>
           <button class="timer-action-btn" id="timerStopBtn" title="Закрыть таймер">✕</button>
         </div>
@@ -782,6 +783,6 @@
 
   </div>
 
-  <script src="app.js?v=2.0"></script>
+  <script src="app.js?v=2.1"></script>
 </body>
 </html>

@@ -38,9 +38,36 @@
     const multiplier = ex.equip === 'dumbbell_2' && !ex.isBodyweight ? 2 : 1;
     return sets.filter((s) => s.completed !== false).reduce((sum,s) => sum + number(s.weight) * number(s.reps) * multiplier, 0);
   }
+  function summarize(workout) {
+    const result = {strengthSets:0, cardioEntries:0, cardioDurationSec:0, distanceKm:0, timedEntries:0, timedDurationSec:0, completedEntries:0, tonnage:0};
+    (workout.exercises || []).forEach(ex => {
+      const sets = (ex.sets || []).filter(set => set.completed !== false);
+      result.completedEntries += sets.length;
+      if (kind(ex) === 'strength') { result.strengthSets += sets.length; result.tonnage += tonnage(ex, sets); }
+      else if (kind(ex) === 'cardio') {
+        result.cardioEntries += sets.length;
+        sets.forEach(set => { result.cardioDurationSec += number(set.durationSec); result.distanceKm += number(set.distanceKm); });
+      } else {
+        result.timedEntries += sets.length;
+        sets.forEach(set => { result.timedDurationSec += number(set.durationSec); });
+      }
+    });
+    result.tonnage = Math.round(result.tonnage);
+    result.distanceKm = Math.round(result.distanceKm * 1000) / 1000;
+    return result;
+  }
+  function activityText(summary) {
+    const format = value => value.toLocaleString('ru-RU', {maximumFractionDigits:2});
+    return {
+      cardio: summary.cardioEntries ? (summary.cardioDurationSec ? `${format(summary.cardioDurationSec / 60)} мин` : 'Время не записано') + (summary.distanceKm ? ` · ${format(summary.distanceKm)} км` : '') : '',
+      timed: summary.timedEntries ? (summary.timedDurationSec ? `${format(summary.timedDurationSec)} сек` : 'Время не записано') : ''
+    };
+  }
   function recalculate(workout) {
-    workout.totalSets = (workout.exercises || []).reduce((sum,ex) => sum + (ex.sets || []).filter(s => s.completed !== false).length,0);
-    workout.tonnage = Math.round((workout.exercises || []).reduce((sum,ex) => sum + tonnage(ex),0));
+    const summary = summarize(workout);
+    workout.totalSets = summary.strengthSets;
+    workout.tonnage = summary.tonnage;
+    workout.activitySummary = summary;
     return workout;
   }
   function setText(ex, set) {
@@ -83,5 +110,5 @@
     });
     return workouts;
   }
-  root.FitnessData = {registerCatalog,number,escape,kind,fields,defaultSet,validSet,tonnage,recalculate,setText,sessions,metric,migrate};
+  root.FitnessData = {registerCatalog,number,escape,kind,fields,defaultSet,validSet,tonnage,summarize,activityText,recalculate,setText,sessions,metric,migrate};
 })(typeof window !== 'undefined' ? window : globalThis);

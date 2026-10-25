@@ -1976,8 +1976,9 @@
 
       const setsContainer = card.querySelector(`#setsContainer_${exIndex}`);
       if (measurementKind !== 'strength') {
-        card.querySelector('.sets-table-header').innerHTML = `<div>Сет</div>${FitnessData.fields(exItem).map((field) => `<div>${field.label}</div>`).join('')}<div>Готово</div><div></div>`;
+        card.querySelector('.sets-table-header').innerHTML = `<div>№</div>${FitnessData.fields(exItem).map((field) => `<div>${field.label}</div>`).join('')}<div>Готово</div><div></div>`;
         card.querySelector('.sets-table').classList.add('typed-sets', `typed-${measurementKind}`);
+        card.querySelector('.add-set-btn').textContent = measurementKind === 'cardio' ? '+ Добавить отрезок' : '+ Добавить удержание';
       }
 
       exItem.sets.forEach((set, setIndex) => {
@@ -2930,6 +2931,8 @@
     const card = document.createElement('div');
     card.className = 'history-card';
 
+    const summary = FitnessData.summarize(item);
+    const activities = FitnessData.activityText(summary);
     const dateFormatted = new Date(item.date).toLocaleDateString('ru-RU', {
       day: 'numeric',
       month: 'long',
@@ -2947,7 +2950,11 @@
       .map((ex) => {
         const completedSetsCount = ex.sets.length;
         const bwTag = (FitnessData.kind(ex) === 'strength' && canExerciseUseBodyweight(ex) && ex.isBodyweight) ? ' (Свой вес)' : '';
-        return `${ex.name} (${completedSetsCount}${bwTag})`;
+        if (FitnessData.kind(ex) !== 'strength') {
+          const activity = FitnessData.activityText(FitnessData.summarize({exercises:[ex]}));
+          return `${ex.name} — ${activity.cardio || activity.timed}`;
+        }
+        return `${ex.name} (${completedSetsCount} подх.${bwTag})`;
       })
       .join(' • ');
 
@@ -2967,7 +2974,7 @@
 
         return `
           <div class="drilldown-set-row">
-            <span class="drilldown-set-badge">Сет ${sIdx + 1}</span>
+            <span class="drilldown-set-badge">${FitnessData.kind(ex) === 'cardio' ? 'Отрезок' : FitnessData.kind(ex) === 'timed' ? 'Удержание' : 'Сет'} ${sIdx + 1}</span>
             <span class="drilldown-set-val">${FitnessData.escape(FitnessData.setText(ex, s))}</span>
             <span>✓</span>
           </div>
@@ -3003,8 +3010,9 @@
 
       <div class="history-stats-chips">
         <span class="history-stat-chip">⏱️ <strong>${formatTime(item.durationSec || 0)}</strong></span>
-        <span class="history-stat-chip">⚡ <strong>${item.totalSets || 0}</strong> подх.</span>
-        <span class="history-stat-chip">🏋️ <strong>${(item.tonnage || 0).toLocaleString('ru-RU')}</strong> кг</span>
+        ${summary.strengthSets ? `<span class="history-stat-chip">⚡ <strong>${summary.strengthSets}</strong> силовых подх.</span><span class="history-stat-chip">🏋️ <strong>${summary.tonnage.toLocaleString('ru-RU')}</strong> кг</span>` : ''}
+        ${activities.cardio ? `<span class="history-stat-chip">Кардио: <strong>${activities.cardio}</strong></span>` : ''}
+        ${activities.timed ? `<span class="history-stat-chip">Удержания: <strong>${activities.timed}</strong></span>` : ''}
       </div>
 
       <div class="history-exercises-summary">
@@ -4188,28 +4196,21 @@
       alert('В отмеченных подходах не хватает повторений или времени. Проверь введённые значения.'); return;
     }
     const elapsedSec = Math.floor((Date.now() - activeWorkout.startTime) / 1000);
-    let totalCompletedSets = 0;
-    let totalTonnage = 0;
-
-    activeWorkout.exercises.forEach((ex) => {
-      const equipInfo = getEquipInfo(ex);
-      const mult = equipInfo.multiplier || 1;
-      ex.sets.forEach((set) => {
-        if (set.completed) {
-          totalCompletedSets += 1;
-          totalTonnage += FitnessData.tonnage(ex, [set]);
-        }
-      });
-    });
-
-    if (totalCompletedSets === 0) {
+    const summary = FitnessData.summarize(activeWorkout);
+    const activities = FitnessData.activityText(summary);
+    if (summary.completedEntries === 0) {
       alert('Отметьте галочкой (✓) хотя бы один выполненный подход перед сохранением тренировки.');
       return;
     }
 
     document.getElementById('finishTimeVal').textContent = formatTime(elapsedSec);
-    document.getElementById('finishSetsVal').textContent = String(totalCompletedSets);
-    document.getElementById('finishTonnageVal').textContent = `${Math.round(totalTonnage).toLocaleString('ru-RU')} кг`;
+    document.getElementById('finishSetsVal').textContent = String(summary.strengthSets);
+    document.getElementById('finishTonnageVal').textContent = `${summary.tonnage.toLocaleString('ru-RU')} кг`;
+    document.getElementById('finishStrengthStat').classList.toggle('hidden', !summary.strengthSets);
+    document.getElementById('finishTonnageStat').classList.toggle('hidden', !summary.strengthSets);
+    const activityBox = document.getElementById('finishActivitySummary');
+    activityBox.innerHTML = (activities.cardio ? `<div class="finish-activity-row"><span>Кардио</span><strong>${activities.cardio}</strong></div>` : '') + (activities.timed ? `<div class="finish-activity-row"><span>Удержания</span><strong>${activities.timed}</strong></div>` : '');
+    activityBox.classList.toggle('hidden', !activities.cardio && !activities.timed);
     document.getElementById('finishWorkoutNotes').value = '';
 
     openModal('modalFinishWorkout');
@@ -4284,6 +4285,7 @@
       notes: document.getElementById('finishWorkoutNotes').value.trim()
     };
 
+    FitnessData.recalculate(finishedRecord);
     const previouslyEarned = new Set(CozyAchievements.evaluate(historyData).filter((a) => a.unlocked).map((a) => a.id));
     historyData.unshift(finishedRecord);
     saveHistory();
@@ -4417,7 +4419,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3.1').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3.2').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

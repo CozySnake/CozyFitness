@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.3.1">
+  <link rel="stylesheet" href="styles.css?v=2.3.2">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -451,7 +451,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.3.1 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.3.2 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
         </div>
       </section>
@@ -628,16 +628,17 @@
             <span class="fs-label">Время</span>
             <span class="fs-val" id="finishTimeVal">45 мин</span>
           </div>
-          <div class="finish-stat">
-            <span class="fs-label">Подходов</span>
+          <div class="finish-stat" id="finishStrengthStat">
+            <span class="fs-label">Силовых подходов</span>
             <span class="fs-val" id="finishSetsVal">16</span>
           </div>
-          <div class="finish-stat">
-            <span class="fs-label">Общий вес</span>
+          <div class="finish-stat" id="finishTonnageStat">
+            <span class="fs-label">Тоннаж</span>
             <span class="fs-val" id="finishTonnageVal">4 850 кг</span>
           </div>
         </div>
 
+        <div id="finishActivitySummary" class="finish-activities hidden"></div>
         <div class="modal-body">
           <button type="button" id="finishSaveTemplateBtn" class="secondary-btn small-btn" style="width:100%; margin-bottom:12px;">
             📌 Сохранить эту тренировку в «Мои программы»
@@ -816,10 +817,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.3.1"></script>
-  <script src="fitness-ui.js?v=2.3.1"></script>
-  <script src="workout-editor.js?v=2.3.1"></script>
-  <script src="achievements.js?v=2.3.1"></script>
-  <script src="app.js?v=2.3.1"></script>
+  <script src="fitness-data.js?v=2.3.2"></script>
+  <script src="fitness-ui.js?v=2.3.2"></script>
+  <script src="workout-editor.js?v=2.3.2"></script>
+  <script src="achievements.js?v=2.3.2"></script>
+  <script src="app.js?v=2.3.2"></script>
 </body>
 </html>

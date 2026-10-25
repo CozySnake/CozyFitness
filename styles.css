@@ -3024,3 +3024,9 @@ body.modal-open .main-content { overflow: hidden; }
 @media (max-width: 360px) { .typed-cardio .set-row { gap: 3px; } .metric-stepper button { width: 20px; min-width: 18px; } .editor-meta { grid-template-columns: 1fr; } }
 
 .sheet-filter-chips { flex-shrink: 0; min-width: 0; max-width: 100%; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+
+.finish-stats-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; }
+.finish-activities { display: grid; gap: 10px; background: var(--bg-card-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 18px; }
+.finish-activity-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; font-size: 0.85rem; text-align: left; }
+.finish-activity-row > span { color: var(--text-muted); }
+.finish-activity-row strong { color: var(--accent-gold); }

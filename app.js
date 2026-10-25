@@ -726,7 +726,7 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, start);
         gain.gain.setValueAtTime(0.0001, start);
-        gain.gain.exponentialRampToValueAtTime(0.25, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.55, start + 0.015);
         gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -750,7 +750,7 @@
 
   function triggerVibration() {
     if (!settings.vibrate) return;
-    if ('vibrate' in navigator) {
+    if (typeof navigator.vibrate === 'function') {
       try {
         navigator.vibrate([300, 120, 300, 120, 450]);
       } catch (e) {
@@ -1106,6 +1106,7 @@
 
   const headerWorkoutTimerChip = document.getElementById('headerWorkoutTimerChip');
   const headerTimerText = document.getElementById('headerTimerText');
+  const headerWorkoutName = document.getElementById('headerWorkoutName');
 
   if (headerWorkoutTimerChip) {
     headerWorkoutTimerChip.addEventListener('click', () => {
@@ -1142,6 +1143,10 @@
       if (headerWorkoutTimerChip && headerTimerText) {
         headerWorkoutTimerChip.classList.remove('hidden');
         headerTimerText.textContent = formatted;
+        const title = activeWorkout.title.trim() || 'Тренировка';
+        if (headerWorkoutName) headerWorkoutName.textContent = title;
+        headerWorkoutTimerChip.title = `Открыть тренировку: ${title}`;
+        headerWorkoutTimerChip.setAttribute('aria-label', `${title}, ${formatted}. Открыть тренировку`);
       }
       if (hubActiveTimer && !hubActiveResumeBanner.classList.contains('hidden')) {
         hubActiveTimer.textContent = formatted;
@@ -1228,7 +1233,7 @@
   function finishRestTimerAlert() {
     restTimer.remainingSeconds = 0;
     restTimer.endTime = 0;
-    if (timerTypeLabel) timerTypeLabel.textContent = 'Отдых завершён! 🔔';
+    restTimer.label = 'Отдых завершён! 🔔';
     updateRestTimerUI();
     stopRestTimer(false);
     localStorage.removeItem(STORAGE_KEYS.REST_TIMER);
@@ -3616,6 +3621,15 @@
   function applySettingsUI() {
     settingSoundToggle.checked = settings.sound;
     settingVibrateToggle.checked = settings.vibrate;
+    const vibrationSupported = typeof navigator.vibrate === 'function';
+    settingVibrateToggle.disabled = !vibrationSupported;
+    if (!vibrationSupported) settingVibrateToggle.checked = false;
+    const vibrationHint = document.getElementById('vibrationSupportHint');
+    if (vibrationHint) {
+      vibrationHint.textContent = vibrationSupported
+        ? 'Вибросигнал при завершении отдыха'
+        : 'В этом браузере вибрация недоступна (включая Safari на iPhone)';
+    }
     settingDefaultRest.value = String(settings.defaultRestSec || 90);
     if (settingExerciseRest) {
       settingExerciseRest.value = String(settings.exerciseRestSec || 120);
@@ -4158,7 +4172,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.1').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.1.1').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

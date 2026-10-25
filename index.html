@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.1">
+  <link rel="stylesheet" href="styles.css?v=2.1.1">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -31,10 +31,6 @@
         </div>
       </div>
       <div class="header-actions">
-        <button id="headerWorkoutTimerChip" class="header-timer-chip hidden" title="Активная тренировка">
-          <span class="htc-dot"></span>
-          <span id="headerTimerText">00:00</span>
-        </button>
         <button id="themeToggleBtn" class="icon-btn" title="Сменить тему" aria-label="Сменить тему">
           <span id="themeIcon">☀️</span>
         </button>
@@ -42,6 +38,12 @@
           <span>📲</span>
         </button>
       </div>
+      <button id="headerWorkoutTimerChip" class="header-timer-chip hidden" title="Перейти к активной тренировке">
+        <span class="htc-dot" aria-hidden="true"></span>
+        <span id="headerWorkoutName" class="header-workout-name">Тренировка</span>
+        <span id="headerTimerText">00:00</span>
+        <span aria-hidden="true">›</span>
+      </button>
     </header>
 
     <!-- Main Views Container -->
@@ -374,7 +376,7 @@
           <label class="settings-item">
             <div class="settings-item-text">
               <span class="settings-item-title">Вибрация на телефоне</span>
-              <span class="settings-item-sub">Вибросигнал таймера (для Android)</span>
+              <span class="settings-item-sub" id="vibrationSupportHint">Вибросигнал таймера (для Android)</span>
             </div>
             <input type="checkbox" id="settingVibrateToggle" checked>
           </label>
@@ -440,7 +442,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.0 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.1 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
         </div>
       </section>
@@ -454,7 +456,7 @@
         <div class="timer-info" id="timerInfoTap">
           <span class="timer-bell">⏱️</span>
           <div class="timer-text-wrap">
-            <span class="timer-label" id="timerTypeLabel">Отдых</span>
+            <span class="timer-label" id="timerTypeLabel" role="status">Отдых</span>
             <span class="timer-digits" id="timerDigits">01:30</span>
           </div>
         </div>
@@ -783,6 +785,6 @@
 
   </div>
 
-  <script src="app.js?v=2.1"></script>
+  <script src="app.js?v=2.1.1"></script>
 </body>
 </html>

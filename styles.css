@@ -2895,3 +2895,25 @@ input[type="checkbox"]:checked::after {
   .timer-quick-actions { gap: 4px; flex-shrink: 0; }
   .timer-chip-btn { padding: 6px 7px; }
 }
+
+/* Active workout shortcut occupies its own row below the brand. */
+.top-header { flex-wrap: wrap; row-gap: 10px; }
+.header-timer-chip {
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+}
+.header-timer-chip .htc-dot { flex-shrink: 0; }
+.header-workout-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+}
+#headerTimerText { flex-shrink: 0; font-variant-numeric: tabular-nums; }

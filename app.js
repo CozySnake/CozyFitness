@@ -4364,19 +4364,9 @@
     }
   }
 
-  function syncViewportHeight() {
-    // Let CSS size the full viewport; visualViewport may exclude the bottom
-    // safe area in standalone iOS and must not shorten the app shell.
-    const dynamicViewport = window.CSS && window.CSS.supports('height', '100dvh');
-    document.documentElement.style.setProperty('--app-shell-height', dynamicViewport ? '100dvh' : `${window.innerHeight}px`);
-  }
-
   function initApp() {
-    syncViewportHeight();
     updateLiveCalendarTabIcon();
 
-    window.addEventListener('resize', syncViewportHeight);
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', syncViewportHeight);
     const tabBar = document.querySelector('.bottom-tab-bar');
     const syncTabHeight = () => document.documentElement.style.setProperty('--tab-bar-height', `${Math.ceil(tabBar.getBoundingClientRect().height)}px`);
     syncTabHeight();
@@ -4384,9 +4374,6 @@
     const syncRestSpace = () => document.body.classList.toggle('has-rest-timer', !restTimerBar.classList.contains('hidden'));
     syncRestSpace();
     new MutationObserver(syncRestSpace).observe(restTimerBar, {attributes:true, attributeFilter:['class']});
-    window.addEventListener('orientationchange', () => {
-      setTimeout(syncViewportHeight, 100);
-    });
 
     // Fix #10: Suppress iOS "Undo Typing" popup when locking/unlocking or shaking phone
     window.addEventListener('beforeinput', (e) => {
@@ -4435,7 +4422,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3.5').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3.6').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

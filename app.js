@@ -4364,7 +4364,61 @@
     }
   }
 
+  function calculateAppViewport(metrics) {
+    const {innerWidth, innerHeight, screenWidth, screenHeight, visualHeight, visualTop, scale, standalone, ios, editable} = metrics;
+    const landscape = innerWidth > Math.max(screenWidth, screenHeight) * 0.8;
+    const fullWidth = landscape ? Math.max(screenWidth, screenHeight) : Math.min(screenWidth, screenHeight);
+    const fullHeight = landscape ? Math.min(screenWidth, screenHeight) : Math.max(screenWidth, screenHeight);
+    // Only a full-screen installed iOS app can use physical screen dimensions.
+    // Browser tabs, desktop windows and iPad split views keep their own viewport.
+    const fullscreenIOS = ios && standalone && Math.abs(innerWidth - fullWidth) <= 2 && scale <= 1.01;
+    const baseline = fullscreenIOS ? Math.max(innerHeight, fullHeight) : innerHeight;
+    const visibleBottom = visualHeight + visualTop;
+    const keyboard = editable && scale <= 1.01 && baseline - visibleBottom > 160;
+    return {height: Math.round(keyboard ? visibleBottom : baseline), fullscreenIOS, keyboard, expectedBottom: keyboard ? visibleBottom : baseline};
+  }
+
+  function getAppViewportMetrics() {
+    const viewport = window.visualViewport;
+    const active = document.activeElement;
+    return {
+      innerWidth: window.innerWidth, innerHeight: window.innerHeight,
+      screenWidth: window.screen.width, screenHeight: window.screen.height,
+      visualHeight: viewport ? viewport.height : window.innerHeight,
+      visualTop: viewport ? viewport.offsetTop : 0, scale: viewport ? viewport.scale : 1,
+      standalone: window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches,
+      ios: /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
+      editable: !!(active && (active.isContentEditable || active.matches('input:not([type="checkbox"]):not([type="button"]), textarea, select')))
+    };
+  }
+
+  function syncAppViewport() {
+    const layout = calculateAppViewport(getAppViewportMetrics());
+    document.documentElement.style.setProperty('--app-layout-height', `${layout.height}px`);
+  }
+
+  function getLayoutDiagnostics() {
+    const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
+    const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
+    const footer = bounds('.bottom-tab-bar');
+    return {version:'2.3.7', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+  }
+
   function initApp() {
+    syncAppViewport();
+    window.addEventListener('resize', syncAppViewport);
+    window.addEventListener('orientationchange', () => { syncAppViewport(); setTimeout(syncAppViewport, 250); });
+    window.addEventListener('pageshow', syncAppViewport);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', syncAppViewport);
+      window.visualViewport.addEventListener('scroll', syncAppViewport);
+    }
+    document.addEventListener('focusin', syncAppViewport);
+    document.addEventListener('focusout', () => requestAnimationFrame(syncAppViewport));
+    window.CozyViewport = {getDiagnostics: getLayoutDiagnostics};
+    document.getElementById('layoutDiagnostics').addEventListener('toggle', event => {
+      if (event.target.open) document.getElementById('layoutDiagnosticsText').textContent = JSON.stringify(getLayoutDiagnostics(), null, 2);
+    });
     updateLiveCalendarTabIcon();
 
     const tabBar = document.querySelector('.bottom-tab-bar');
@@ -4422,7 +4476,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3.6').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3.7').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

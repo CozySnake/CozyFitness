@@ -1385,6 +1385,23 @@
   const newTemplateExercisesList = document.getElementById('newTemplateExercisesList');
   const saveCustomTemplateBtn = document.getElementById('saveCustomTemplateBtn');
 
+  function bindDetailsCard(card, modalId, label, open) {
+    card.classList.add('details-card-trigger');
+    card.tabIndex = 0;
+    card.setAttribute('role', 'group');
+    card.setAttribute('aria-label', label);
+    card.setAttribute('aria-haspopup', 'dialog');
+    card.setAttribute('aria-controls', modalId);
+    card.onclick = (event) => {
+      if (event.target.closest('button, a, input, select, textarea, label, [role="button"]')) return;
+      open();
+    };
+    card.onkeydown = (event) => {
+      if (event.target !== card || !['Enter', ' '].includes(event.key)) return;
+      event.preventDefault(); open();
+    };
+  }
+
   function createProgramCardElement(tpl, isCustom = false, detailsMode = false) {
     const card = document.createElement('div');
     card.className = 'template-card';
@@ -1467,15 +1484,11 @@
       `;
 
     card.innerHTML = `
-      <div class="template-card-header tpl-toggle-header" title="Нажмите, чтобы раскрыть подробный состав программы">
+      <div class="template-card-header tpl-toggle-header">
         <div>
           <h3 class="template-title">${tpl.title}</h3>
           ${isCustom ? `<span class="badge" style="font-size:0.7rem; margin-top:4px; display:inline-block;">Моя программа</span>` : ''}
         </div>
-        <button class="toggle-drilldown-btn tpl-toggle-btn" type="button">
-          <span>Состав (${exList.length})</span>
-          <span class="drilldown-arrow">▾</span>
-        </button>
       </div>
       <p class="template-desc">${tpl.desc}</p>
       <div class="template-exercises-chips">${chipsHtml}</div>
@@ -1506,16 +1519,11 @@
     } else {
       // Keep the list compact; details live in a dedicated sheet.
       drilldown.remove();
-      toggleHeader.title = 'Открыть программу';
-      const detailsButton = card.querySelector('.tpl-toggle-btn');
-      detailsButton.setAttribute('aria-haspopup', 'dialog');
-      detailsButton.setAttribute('aria-controls', 'modalProgramDetails');
-      card.querySelector('.drilldown-arrow').textContent = '›';
-      toggleHeader.onclick = () => {
+      bindDetailsCard(card, 'modalProgramDetails', `Открыть программу: ${tpl.title}`, () => {
         document.getElementById('programDetailsTitle').textContent = tpl.title;
         document.getElementById('programDetailsContent').replaceChildren(createProgramCardElement(tpl, isCustom, true));
         openModal('modalProgramDetails');
-      };
+      });
     }
 
     // Interactive exercise chips & info buttons inside the card
@@ -2841,11 +2849,15 @@
       const cell = document.createElement('div');
       cell.className = 'cal-day-cell';
       cell.textContent = String(day);
+      cell.setAttribute('role', 'button');
+      cell.tabIndex = 0;
 
       const monthStr = String(calendarMonth + 1).padStart(2, '0');
       const dayStr = String(day).padStart(2, '0');
       const dateKey = `${calendarYear}-${monthStr}-${dayStr}`;
 
+      cell.setAttribute('aria-label', new Date(calendarYear, calendarMonth, day).toLocaleDateString('ru-RU') + (workoutDatesMap[dateKey] ? ', есть тренировка' : ''));
+      cell.setAttribute('aria-pressed', String(dateKey === selectedCalendarDateStr));
       if (dateKey === todayStr) {
         cell.classList.add('today');
       }
@@ -2866,6 +2878,7 @@
         renderCalendar();
       };
 
+      cell.onkeydown = (event) => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); cell.click(); } };
       calendarDaysGrid.appendChild(cell);
     }
 
@@ -2927,7 +2940,7 @@
     openModal('modalWorkoutEditor');
   }
 
-  function createHistoryCardElement(item) {
+  function createHistoryCardElement(item, detailsMode = false) {
     const card = document.createElement('div');
     card.className = 'history-card';
 
@@ -3001,10 +3014,6 @@
             <div class="history-title">${item.title}</div>
             <div class="history-date">${dateFormatted}</div>
           </div>
-          <button class="toggle-drilldown-btn" type="button">
-            <span>Детали</span>
-            <span class="drilldown-arrow">▾</span>
-          </button>
         </div>
       </div>
 
@@ -3036,29 +3045,31 @@
       <!-- Expandable Accordion Drill-Down -->
       <div class="history-drilldown hidden">
         <div style="font-size:0.8rem; font-weight:700; color:var(--accent-gold); text-transform:uppercase; margin-bottom:4px;">
-          📋 Подробный журнал подходов:
+          📋 Подробный журнал тренировки:
         </div>
         ${drilldownBlocksHtml}
       </div>
     `;
 
-    // Accordion toggle handler
-    const header = card.querySelector('.history-card-header');
     const drilldown = card.querySelector('.history-drilldown');
-    const arrow = card.querySelector('.drilldown-arrow');
+    if (detailsMode) {
+      drilldown.classList.remove('hidden');
+      card.classList.add('history-details-card');
+      card.querySelector('.history-title').remove();
+      card.querySelector('.history-exercises-summary').remove();
+    } else {
+      drilldown.remove();
+      bindDetailsCard(card, 'modalHistoryDetails', `Открыть тренировку: ${item.title}`, () => {
+        document.getElementById('historyDetailsTitle').textContent = item.title;
+        document.getElementById('historyDetailsContent').replaceChildren(createHistoryCardElement(item, true));
+        openModal('modalHistoryDetails');
+      });
+    }
 
-    header.onclick = () => {
-      const isHidden = drilldown.classList.contains('hidden');
-      if (isHidden) {
-        drilldown.classList.remove('hidden');
-        arrow.textContent = '▴';
-      } else {
-        drilldown.classList.add('hidden');
-        arrow.textContent = '▾';
-      }
+    card.querySelector('.edit-workout-btn').onclick = () => {
+      if (detailsMode) closeModal('modalHistoryDetails');
+      openWorkoutEditor(item);
     };
-
-    card.querySelector('.edit-workout-btn').onclick = () => openWorkoutEditor(item);
     card.querySelectorAll('.history-exercise-link').forEach(button => button.onclick = () => openExerciseInfoModal(button.dataset.name, button.dataset.muscle));
 
     // Repeat workout
@@ -3089,6 +3100,7 @@
         };
       });
 
+      if (detailsMode) closeModal('modalHistoryDetails');
       startNewWorkout(item.title, clonedExercises, item.sourceTemplate || null);
     };
 
@@ -3102,6 +3114,7 @@
     card.querySelector('.delete-workout-btn').onclick = (e) => {
       e.stopPropagation();
       if (confirm(`Удалить тренировку «${item.title}» от ${dateFormatted}?`)) {
+        if (detailsMode) closeModal('modalHistoryDetails');
         historyData = historyData.filter((w) => w.id !== item.id);
         saveHistory();
         renderHome();
@@ -3877,7 +3890,7 @@
     openModal('modalAchievements');
   });
   const sheetOpeners = new Map();
-  ['modalAchievements', 'modalProgramDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].forEach((id) => {
+  ['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].forEach((id) => {
     const overlay = document.getElementById(id);
     const sheet = overlay.querySelector('.modal-sheet');
     installSheetSwipe(overlay, sheet);
@@ -3967,7 +3980,7 @@
       sheet.style.transform = '';
       sheet.style.animation = '';
     }
-    if (['modalAchievements', 'modalProgramDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
+    if (['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
     modal.classList.remove('hidden');
     syncModalScrollLock();
     if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus({preventScroll: true});
@@ -4419,7 +4432,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3.2').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3.3').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

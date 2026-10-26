@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.3.2">
+  <link rel="stylesheet" href="styles.css?v=2.3.3">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -451,7 +451,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.3.2 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.3.3 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
         </div>
       </section>
@@ -505,6 +505,14 @@
         <span class="tab-label">Профиль</span>
       </button>
     </nav>
+
+    <div id="modalHistoryDetails" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="historyDetailsTitle">
+      <div class="modal-sheet history-details-sheet">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-header"><h3 id="historyDetailsTitle">Тренировка</h3><button class="close-modal-btn" data-close="modalHistoryDetails" aria-label="Закрыть тренировку">✕</button></div>
+        <div id="historyDetailsContent" class="history-details-content"></div>
+      </div>
+    </div>
 
     <div id="modalWorkoutEditor" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="workoutEditorHeading">
       <div class="modal-sheet workout-editor-sheet"><div class="sheet-drag-handle"></div><div class="sheet-header"><h3 id="workoutEditorHeading">Поправить историю</h3><button class="close-modal-btn" data-close="modalWorkoutEditor" aria-label="Закрыть редактор">✕</button></div><div id="workoutEditorContent" class="workout-editor-content"></div></div>
@@ -817,10 +825,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.3.2"></script>
-  <script src="fitness-ui.js?v=2.3.2"></script>
-  <script src="workout-editor.js?v=2.3.2"></script>
-  <script src="achievements.js?v=2.3.2"></script>
-  <script src="app.js?v=2.3.2"></script>
+  <script src="fitness-data.js?v=2.3.3"></script>
+  <script src="fitness-ui.js?v=2.3.3"></script>
+  <script src="workout-editor.js?v=2.3.3"></script>
+  <script src="achievements.js?v=2.3.3"></script>
+  <script src="app.js?v=2.3.3"></script>
 </body>
 </html>

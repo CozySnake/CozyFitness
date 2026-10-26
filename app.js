@@ -4365,10 +4365,10 @@
   }
 
   function syncViewportHeight() {
-    // The physical screen also includes areas outside Safari/PWA's usable viewport.
-    const viewport = window.visualViewport;
-    const height = viewport ? Math.min(window.innerHeight, viewport.height) : window.innerHeight;
-    document.documentElement.style.setProperty('--app-shell-height', `${Math.round(height)}px`);
+    // Let CSS size the full viewport; visualViewport may exclude the bottom
+    // safe area in standalone iOS and must not shorten the app shell.
+    const dynamicViewport = window.CSS && window.CSS.supports('height', '100dvh');
+    document.documentElement.style.setProperty('--app-shell-height', dynamicViewport ? '100dvh' : `${window.innerHeight}px`);
   }
 
   function initApp() {
@@ -4435,7 +4435,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3.4').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3.5').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

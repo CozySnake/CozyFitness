@@ -1036,9 +1036,8 @@
 
     const mainContentEl = document.querySelector('.main-content');
     if (mainContentEl) {
-      mainContentEl.scrollTo({ top: 0, behavior: 'smooth' });
+      mainContentEl.scrollTo({ top: 0, behavior: 'instant' });
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Render targeted view contents
     if (targetViewId === 'viewHome') renderHome();
@@ -3982,6 +3981,7 @@
     }
     if (['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
     modal.classList.remove('hidden');
+    modal.querySelectorAll('.history-details-content, .program-details-content, .achievements-modal-scroll, .workout-editor-content, .sheet-exercise-list, .exercise-info-body').forEach(content => { content.scrollTop = 0; });
     syncModalScrollLock();
     if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus({preventScroll: true});
   }
@@ -4365,15 +4365,10 @@
   }
 
   function syncViewportHeight() {
-    const isStandalone = window.navigator.standalone === true ||
-      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    let targetHeight = window.innerHeight;
-
-    if (isStandalone && window.screen && window.screen.height > window.innerHeight) {
-      targetHeight = window.screen.height;
-    }
-
-    document.documentElement.style.setProperty('--app-shell-height', `${targetHeight}px`);
+    // The physical screen also includes areas outside Safari/PWA's usable viewport.
+    const viewport = window.visualViewport;
+    const height = viewport ? Math.min(window.innerHeight, viewport.height) : window.innerHeight;
+    document.documentElement.style.setProperty('--app-shell-height', `${Math.round(height)}px`);
   }
 
   function initApp() {
@@ -4381,6 +4376,14 @@
     updateLiveCalendarTabIcon();
 
     window.addEventListener('resize', syncViewportHeight);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', syncViewportHeight);
+    const tabBar = document.querySelector('.bottom-tab-bar');
+    const syncTabHeight = () => document.documentElement.style.setProperty('--tab-bar-height', `${Math.ceil(tabBar.getBoundingClientRect().height)}px`);
+    syncTabHeight();
+    if ('ResizeObserver' in window) new ResizeObserver(syncTabHeight).observe(tabBar);
+    const syncRestSpace = () => document.body.classList.toggle('has-rest-timer', !restTimerBar.classList.contains('hidden'));
+    syncRestSpace();
+    new MutationObserver(syncRestSpace).observe(restTimerBar, {attributes:true, attributeFilter:['class']});
     window.addEventListener('orientationchange', () => {
       setTimeout(syncViewportHeight, 100);
     });
@@ -4432,7 +4435,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3.3').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.3.4').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

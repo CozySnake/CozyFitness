@@ -3049,3 +3049,31 @@ body.modal-open .main-content { overflow: hidden; }
   box-shadow: inset 0 0 0 1px var(--accent-gold);
 }
 .cal-day-cell:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+
+/* One viewport-sized shell: only main content scrolls, never the document. */
+html, body { height: 100%; min-height: 0; overflow: hidden; overscroll-behavior: none; }
+body { height: var(--app-shell-height, 100dvh); }
+.app-container { height: var(--app-shell-height, 100dvh); min-height: 0; overflow: hidden; }
+.top-header { position: relative; flex: 0 0 auto; }
+.main-content { flex: 1 1 0; min-height: 0; padding: 18px 18px 12px; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+.bottom-tab-bar { position: relative; inset: auto; flex: 0 0 auto; margin: 0; padding-bottom: max(6px, env(safe-area-inset-bottom, 0px)); }
+.rest-timer-bar { bottom: calc(var(--tab-bar-height, 70px) + 8px); }
+body.has-rest-timer .main-content { padding-bottom: 88px; }
+
+/* Safe-area space belongs inside the scroll region, not outside it. */
+.modal-overlay { height: var(--app-shell-height, 100dvh); bottom: auto; overflow: hidden; animation: none; background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.modal-overlay::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; animation: overlayFade 0.25s ease-out; }
+.modal-overlay > .modal-sheet, .modal-overlay > .modal-card { position: relative; z-index: 1; }
+.modal-sheet { padding-bottom: 0; min-height: 0; overflow: hidden; isolation: isolate; animation: sheetSlideUp 0.32s cubic-bezier(0.22,1,0.36,1); }
+@keyframes sheetSlideUp { from { transform: translate3d(0,100%,0); } to { transform: translate3d(0,0,0); } }
+.modal-overlay > .modal-sheet { max-height: calc(var(--app-shell-height, 100dvh) * 0.9); }
+.modal-sheet > .sheet-drag-handle, .modal-sheet > .sheet-header, .modal-sheet > .sheet-search, .modal-sheet > .sheet-filter-chips { flex-shrink: 0; }
+.history-details-content, .program-details-content, .achievements-modal-scroll, .workout-editor-content, .sheet-exercise-list { min-height: 0; padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); -webkit-overflow-scrolling: touch; }
+.modal-sheet > .sheet-exercise-list, .modal-sheet > .exercise-info-body { max-height: none; flex: 1 1 auto; min-height: 0; }
+.modal-sheet > .modal-actions { flex-shrink: 0; padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
+.history-details-card, .history-details-card .history-drilldown, .program-details-card { animation: none; transition: none; transform: none; }
+#modalRestTimer > .modal-sheet { padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
+@media (prefers-reduced-motion: reduce) { .modal-overlay::before, .modal-sheet { animation: none; } }
+
+.view-section { animation: viewFade 0.18s ease-out; }
+@keyframes viewFade { from { opacity: 0; } to { opacity: 1; } }

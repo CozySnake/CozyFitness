@@ -110,5 +110,29 @@
     });
     return workouts;
   }
-  root.FitnessData = {registerCatalog,number,escape,kind,fields,defaultSet,validSet,tonnage,summarize,activityText,recalculate,setText,sessions,metric,migrate};
+  function moveItem(items, from, to) {
+    if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || from >= items.length || to < 0 || to >= items.length || from === to) return false;
+    const [item] = items.splice(from, 1); items.splice(to, 0, item); return true;
+  }
+  function insertExercise(workout, exercise, position = workout.exercises.length) {
+    const index = Math.max(0, Math.min(workout.exercises.length, Number.isInteger(position) ? position : workout.exercises.length));
+    workout.exercises.splice(index, 0, exercise); return index;
+  }
+  function moveAfterStarted(items, item, started) {
+    const from = items.indexOf(item), others = items.filter(candidate => candidate !== item);
+    let to = 0;
+    others.forEach((candidate, index) => { if (started(candidate)) to = index + 1; });
+    return moveItem(items, from, to);
+  }
+  function toggleSet(workout, exerciseIndex, setIndex) {
+    const exercise = workout.exercises[exerciseIndex], set = exercise.sets[setIndex];
+    const hadCompleted = exercise.sets.some(candidate => candidate.completed);
+    set.completed = !set.completed;
+    if (set.completed && workout.autoOrder !== false) {
+      moveAfterStarted(exercise.sets, set, candidate => candidate.completed);
+      if (!hadCompleted) moveAfterStarted(workout.exercises, exercise, candidate => candidate.sets.some(entry => entry.completed));
+    }
+    return {exercise, set, exerciseIndex:workout.exercises.indexOf(exercise), setIndex:exercise.sets.indexOf(set)};
+  }
+  root.FitnessData = {moveItem,insertExercise,toggleSet,registerCatalog,number,escape,kind,fields,defaultSet,validSet,tonnage,summarize,activityText,recalculate,setText,sessions,metric,migrate};
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.3.7">
+  <link rel="stylesheet" href="styles.css?v=2.4">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -177,6 +177,12 @@
           </div>
         </div>
 
+        <div class="workout-order-tools">
+          <button type="button" id="exerciseOrderBtn" class="secondary-btn small-btn">↕ Порядок упражнений</button>
+          <label class="auto-order-label"><input type="checkbox" id="autoOrderToggle" checked> По порядку выполнения</label>
+          <p class="feature-muted">Начатое упражнение и отмеченный подход переместятся за уже выполненными. Порядок можно менять вручную.</p>
+        </div>
+        <div id="workoutOrderNotice" class="workout-order-notice" role="status" aria-live="polite"></div>
         <!-- Exercise Cards List -->
         <div id="activeExercisesList" class="active-exercises-list">
           <!-- Dynamically filled with exercises and sets -->
@@ -451,7 +457,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.3.7 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.4 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
           <details id="layoutDiagnostics" class="layout-diagnostics"><summary>Диагностика экрана</summary><pre id="layoutDiagnosticsText"></pre></details>
         </div>
@@ -507,6 +513,16 @@
       </button>
     </nav>
 
+    <div id="modalExerciseOrder" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseOrderHeading">
+      <div class="modal-sheet exercise-order-sheet">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-header"><h3 id="exerciseOrderHeading">Порядок упражнений</h3><button class="close-modal-btn" data-close="modalExerciseOrder" aria-label="Закрыть порядок упражнений">✕</button></div>
+        <p class="feature-muted order-help">Перетаскивай за ручку ⠿. Стрелки тоже работают. Изменения сохраняются сразу.</p>
+        <div id="exerciseOrderList" class="exercise-order-list"></div>
+        <div class="modal-actions"><button class="primary-btn" data-close="modalExerciseOrder">Готово</button></div>
+      </div>
+    </div>
+
     <div id="modalHistoryDetails" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="historyDetailsTitle">
       <div class="modal-sheet history-details-sheet">
         <div class="sheet-drag-handle"></div>
@@ -547,6 +563,9 @@
         <div class="sheet-search">
           <input type="text" id="modalExerciseSearch" placeholder="Поиск...">
         </div>
+        <label class="exercise-insert-position" id="exerciseInsertPositionWrap">Куда добавить
+          <select id="exerciseInsertPosition" class="form-input"></select>
+        </label>
         <div class="sheet-filter-chips" id="modalMuscleFilters">
           <button class="filter-chip active" data-muscle="all">Все</button>
           <button class="filter-chip" data-muscle="Грудь">Грудь</button>
@@ -826,10 +845,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.3.7"></script>
-  <script src="fitness-ui.js?v=2.3.7"></script>
-  <script src="workout-editor.js?v=2.3.7"></script>
-  <script src="achievements.js?v=2.3.7"></script>
-  <script src="app.js?v=2.3.7"></script>
+  <script src="fitness-data.js?v=2.4"></script>
+  <script src="fitness-ui.js?v=2.4"></script>
+  <script src="workout-editor.js?v=2.4"></script>
+  <script src="achievements.js?v=2.4"></script>
+  <script src="app.js?v=2.4"></script>
 </body>
 </html>

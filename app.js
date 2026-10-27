@@ -1870,10 +1870,92 @@
   const addExerciseBtn = document.getElementById('addExerciseBtn');
   const bottomAddExerciseBtn = document.getElementById('bottomAddExerciseBtn');
 
+  let exerciseOrderDrag = null;
+  document.getElementById('autoOrderToggle').onchange = event => {
+    if (!activeWorkout) return;
+    activeWorkout.autoOrder = event.target.checked;
+    saveActiveWorkout();
+  };
+  document.getElementById('exerciseOrderBtn').onclick = () => {
+    if (!activeWorkout) return;
+    blurActiveInput(); renderExerciseOrder(); openModal('modalExerciseOrder');
+  };
+
+  function cancelExerciseOrderDrag() {
+    if (!exerciseOrderDrag) return;
+    cancelAnimationFrame(exerciseOrderDrag.frame);
+    exerciseOrderDrag.row.style.transform = '';
+    exerciseOrderDrag.row.classList.remove('order-row-dragging');
+    document.getElementById('exerciseOrderList').querySelectorAll('.order-drop-before, .order-drop-after').forEach(row => row.classList.remove('order-drop-before', 'order-drop-after'));
+    const {handle, pointerId} = exerciseOrderDrag;
+    exerciseOrderDrag = null;
+    if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);
+  }
+
+  function commitExerciseMove(from, to) {
+    if (!activeWorkout || !FitnessData.moveItem(activeWorkout.exercises, from, to)) return;
+    saveActiveWorkout(); renderActiveWorkout(); renderExerciseOrder();
+    const handle = document.querySelector(`.order-drag-handle[data-order-index="${to}"]`);
+    if (handle) handle.focus({preventScroll:true});
+    document.getElementById('workoutOrderNotice').textContent = 'Порядок упражнений сохранён';
+  }
+
+  function renderExerciseOrder() {
+    cancelExerciseOrderDrag();
+    const list = document.getElementById('exerciseOrderList');
+    if (!activeWorkout) return;
+    list.innerHTML = activeWorkout.exercises.map((exercise,index) => {
+      const completed = exercise.sets.filter(set => set.completed).length;
+      const unit = FitnessData.kind(exercise) === 'cardio' ? 'отрезков' : FitnessData.kind(exercise) === 'timed' ? 'удержаний' : 'подходов';
+      return `<div class="exercise-order-row" data-order-index="${index}"><button type="button" class="order-drag-handle" data-order-index="${index}" aria-label="Перетащить: ${FitnessData.escape(exercise.name)}" title="Перетащить; стрелки на клавиатуре тоже работают">⠿</button><span class="order-row-number">${index + 1}</span><div class="order-row-title"><strong>${FitnessData.escape(exercise.name)}</strong><small>${completed} / ${exercise.sets.length} ${unit} выполнено</small></div><div class="order-row-arrows"><button type="button" data-order-from="${index}" data-order-to="${index - 1}" ${index === 0 ? 'disabled' : ''} aria-label="Поднять ${FitnessData.escape(exercise.name)}">↑</button><button type="button" data-order-from="${index}" data-order-to="${index + 1}" ${index === activeWorkout.exercises.length - 1 ? 'disabled' : ''} aria-label="Опустить ${FitnessData.escape(exercise.name)}">↓</button></div></div>`;
+    }).join('');
+    list.querySelectorAll('[data-order-to]').forEach(button => button.onclick = () => commitExerciseMove(Number(button.dataset.orderFrom),Number(button.dataset.orderTo)));
+    list.querySelectorAll('.order-drag-handle').forEach(handle => {
+      handle.onkeydown = event => {
+        if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+        event.preventDefault(); const from = Number(handle.dataset.orderIndex);
+        commitExerciseMove(from, from + (event.key === 'ArrowUp' ? -1 : 1));
+      };
+      handle.addEventListener('pointerdown', event => {
+        if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+        blurActiveInput();
+        const row = handle.closest('.exercise-order-row');
+        exerciseOrderDrag = {row, handle, pointerId:event.pointerId, from:Number(handle.dataset.orderIndex), to:Number(handle.dataset.orderIndex), startY:event.clientY, y:event.clientY, startScroll:list.scrollTop, frame:null};
+        row.classList.add('order-row-dragging'); handle.setPointerCapture(event.pointerId);
+        const tick = () => {
+          const drag = exerciseOrderDrag; if (!drag) return;
+          const bounds = list.getBoundingClientRect(), edge = Math.min(48,bounds.height / 4);
+          const speed = drag.y < bounds.top + edge ? -Math.min(16,(bounds.top + edge - drag.y) / 3) : drag.y > bounds.bottom - edge ? Math.min(16,(drag.y - bounds.bottom + edge) / 3) : 0;
+          list.scrollTop += speed;
+          drag.row.style.transform = `translate3d(0,${drag.y - drag.startY + list.scrollTop - drag.startScroll}px,0)`;
+          const others = [...list.querySelectorAll('.exercise-order-row')].filter(row => row !== drag.row);
+          drag.to = others.filter(row => drag.y > row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2).length;
+          list.querySelectorAll('.exercise-order-row').forEach(row => row.classList.remove('order-drop-before','order-drop-after'));
+          if (others[drag.to]) others[drag.to].classList.add('order-drop-before');
+          else if (others.length) others[others.length - 1].classList.add('order-drop-after');
+          drag.frame = requestAnimationFrame(tick);
+        };
+        exerciseOrderDrag.frame = requestAnimationFrame(tick);
+      });
+      handle.addEventListener('pointermove', event => {if (exerciseOrderDrag && event.pointerId === exerciseOrderDrag.pointerId) exerciseOrderDrag.y = event.clientY;});
+      handle.addEventListener('pointerup', event => {
+        const drag = exerciseOrderDrag; if (!drag || event.pointerId !== drag.pointerId) return;
+        const changed = Math.abs(event.clientY - drag.startY) >= 6;
+        const from = drag.from;
+        const to = [...list.querySelectorAll('.exercise-order-row')].filter(row => row !== drag.row).filter(row => event.clientY > row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2).length;
+        cancelExerciseOrderDrag();
+        if (changed) commitExerciseMove(from,to);
+      });
+      handle.addEventListener('pointercancel', cancelExerciseOrderDrag);
+      handle.addEventListener('lostpointercapture', cancelExerciseOrderDrag);
+    });
+  }
+
   function startNewWorkout(customTitle = null, preloadedExercises = null, sourceTemplate = null) {
     initAudio();
     const defaultName = customTitle || `Тренировка ${new Date().toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' })}`;
 
+    document.getElementById('workoutOrderNotice').textContent = '';
     activeWorkout = {
       id: 'w_' + Date.now(),
       title: defaultName,
@@ -1895,6 +1977,8 @@
     }
 
     activeWorkoutTitleInput.value = activeWorkout.title;
+    document.getElementById('autoOrderToggle').checked = activeWorkout.autoOrder !== false;
+    document.getElementById('exerciseOrderBtn').disabled = activeWorkout.exercises.length < 2;
     startWorkoutStopwatch();
 
     activeExercisesList.innerHTML = '';
@@ -1948,6 +2032,7 @@
 
       const card = document.createElement('div');
       card.className = 'exercise-card';
+      card.dataset.exerciseIndex = exIndex;
 
       card.innerHTML = `
         <div class="exercise-header">
@@ -1979,6 +2064,7 @@
         </div>
 
         <button class="add-set-btn" data-ex-idx="${exIndex}">+ Добавить подход</button>
+        <button type="button" class="insert-exercise-btn" data-insert-index="${exIndex + 1}">+ Упражнение после этого</button>
       `;
 
       const setsContainer = card.querySelector(`#setsContainer_${exIndex}`);
@@ -2063,6 +2149,9 @@
   }
 
   function attachActiveWorkoutEvents() {
+    activeExercisesList.querySelectorAll('.insert-exercise-btn').forEach(button => {
+      button.onclick = () => { isSelectingForTemplateBuilder = false; openExerciseSelector(Number(button.dataset.insertIndex)); };
+    });
     activeWorkoutTitleInput.oninput = (e) => {
       if (activeWorkout) {
         activeWorkout.title = e.target.value;
@@ -2207,9 +2296,16 @@
         if (!targetSet.completed && !FitnessData.validSet(exercise, targetSet)) {
           alert('Укажи повторения или время больше нуля, прежде чем отметить подход.'); return;
         }
-        targetSet.completed = !targetSet.completed;
+        const oldTop = btn.getBoundingClientRect().top;
+        const result = FitnessData.toggleSet(activeWorkout, exIdx, setIdx);
         saveActiveWorkout();
         renderActiveWorkout();
+        const movedButton = activeExercisesList.querySelector(`.set-check-btn[data-ex-idx="${result.exerciseIndex}"][data-set-idx="${result.setIndex}"]`);
+        const scroller = document.querySelector('.main-content');
+        if (movedButton) scroller.scrollTop += movedButton.getBoundingClientRect().top - oldTop;
+        if (result.exerciseIndex !== exIdx || result.setIndex !== setIdx) {
+          document.getElementById('workoutOrderNotice').textContent = 'Порядок обновлён по выполнению';
+        }
 
         if (targetSet.completed && settings.autoRest) {
           const allSetsDone = exercise.sets.length > 0 && exercise.sets.every((s) => s.completed);
@@ -2293,7 +2389,7 @@
     const isBW = canBW ? !!exercise.isBodyweight : false;
     const equip = exercise.equip || (isBW ? 'bodyweight' : 'barbell');
 
-    activeWorkout.exercises.push({
+    const addedExercise = {
       id: exercise.id,
       name: exercise.name,
       kind: FitnessData.kind(exercise),
@@ -2302,8 +2398,9 @@
       canBodyweight: canBW,
       isBodyweight: isBW,
       sets: buildSetsFromPreviousOrDefaults(exercise, isBW ? 0 : 20, 10)
-    });
-
+    };
+    const position = Number(document.getElementById('exerciseInsertPosition').value);
+    FitnessData.insertExercise(activeWorkout, addedExercise, position);
     saveActiveWorkout();
     closeModal('modalSelectExercise');
     renderActiveWorkout();
@@ -3889,7 +3986,7 @@
     openModal('modalAchievements');
   });
   const sheetOpeners = new Map();
-  ['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].forEach((id) => {
+  ['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo', 'modalExerciseOrder'].forEach((id) => {
     const overlay = document.getElementById(id);
     const sheet = overlay.querySelector('.modal-sheet');
     installSheetSwipe(overlay, sheet);
@@ -3979,14 +4076,15 @@
       sheet.style.transform = '';
       sheet.style.animation = '';
     }
-    if (['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
+    if (['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo', 'modalExerciseOrder'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
     modal.classList.remove('hidden');
-    modal.querySelectorAll('.history-details-content, .program-details-content, .achievements-modal-scroll, .workout-editor-content, .sheet-exercise-list, .exercise-info-body').forEach(content => { content.scrollTop = 0; });
+    modal.querySelectorAll('.history-details-content, .program-details-content, .achievements-modal-scroll, .workout-editor-content, .sheet-exercise-list, .exercise-info-body, .exercise-order-list').forEach(content => { content.scrollTop = 0; });
     syncModalScrollLock();
     if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus({preventScroll: true});
   }
 
   function closeModal(modalId) {
+    if (modalId === 'modalExerciseOrder') cancelExerciseOrderDrag();
     if (modalId === 'modalWorkoutEditor' && FitnessEditor.dirty()) {
       if (!confirm('Закрыть без сохранения изменений?')) return;
       FitnessEditor.discard();
@@ -4144,7 +4242,13 @@
     };
   });
 
-  function openExerciseSelector() {
+  function openExerciseSelector(position = null) {
+    const wrapper = document.getElementById('exerciseInsertPositionWrap');
+    wrapper.classList.toggle('hidden', isSelectingForTemplateBuilder);
+    const positionSelect = document.getElementById('exerciseInsertPosition');
+    const exercises = activeWorkout ? activeWorkout.exercises : [];
+    positionSelect.innerHTML = '<option value="0">В начало тренировки</option>' + exercises.map((ex,index) => `<option value="${index + 1}">После ${index + 1}. ${FitnessData.escape(ex.name)}</option>`).join('');
+    positionSelect.value = String(position === null ? exercises.length : position);
     modalExerciseSearch.value = '';
     modalSelectedMuscle = 'all';
     modalMuscleFilters.querySelectorAll('.filter-chip').forEach((c, idx) => {
@@ -4401,7 +4505,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.3.7', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4476,7 +4580,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.3.7').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

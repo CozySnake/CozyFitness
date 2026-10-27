@@ -3081,3 +3081,32 @@ body.has-rest-timer .main-content { padding-bottom: 88px; }
 .layout-diagnostics { margin: 12px 0; font-size: 0.72rem; color: var(--text-muted); }
 .layout-diagnostics summary { cursor: pointer; padding: 8px 0; }
 .layout-diagnostics pre { user-select: text; -webkit-user-select: text; white-space: pre-wrap; overflow-wrap: anywhere; text-align: left; padding: 10px; background: var(--bg-card); border-radius: 10px; }
+
+.workout-order-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 12px; }
+.workout-order-tools p { flex-basis: 100%; }
+.auto-order-label { display: flex; align-items: center; gap: 7px; font-size: 0.76rem; color: var(--text-muted); }
+.auto-order-label input { appearance: auto; -webkit-appearance: checkbox; width: 18px; height: 18px; accent-color: var(--accent-gold); border: 0; }
+.auto-order-label input::after { display: none; }
+.workout-order-notice { min-height: 0; font-size: 0.75rem; color: var(--accent-green); }
+.workout-order-notice:not(:empty) { margin-bottom: 12px; }
+.insert-exercise-btn { width: 100%; margin-top: 9px; padding: 8px; font-size: 0.75rem; color: var(--text-muted); background: transparent; border: 1px solid var(--border-color); }
+.exercise-insert-position { display: block; flex-shrink: 0; margin-bottom: 12px; color: var(--text-muted); font-size: 0.76rem; }
+.exercise-insert-position select { padding: 8px 10px; margin-top: 5px; font-size: 0.85rem; }
+.exercise-order-list { overflow-y: auto; min-height: 0; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 4px 0 12px; }
+.exercise-order-sheet > .sheet-header, .exercise-order-sheet > .sheet-drag-handle, .order-help { flex-shrink: 0; }
+.exercise-order-sheet > .sheet-header, .exercise-order-sheet > .sheet-drag-handle { touch-action: none; user-select: none; }
+.order-help { padding-bottom: 12px; }
+.exercise-order-row { display: flex; align-items: center; gap: 8px; padding: 10px 8px; margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card-subtle); position: relative; min-height: 68px; }
+.order-drag-handle { touch-action: none; width: 32px; min-width: 32px; height: 44px; background: transparent; color: var(--text-muted); font-size: 1.5rem; cursor: grab; user-select: none; }
+.order-row-number { color: var(--accent-gold); width: 18px; font-size: 0.8rem; flex-shrink: 0; }
+.order-row-title { flex: 1; min-width: 0; }
+.order-row-title strong { display: block; font-size: 0.82rem; overflow-wrap: anywhere; }
+.order-row-title small { display: block; margin-top: 4px; color: var(--text-muted); font-size: 0.68rem; }
+.order-row-arrows { display: flex; flex-direction: column; flex-shrink: 0; gap: 3px; }
+.order-row-arrows button { width: 30px; height: 27px; background: var(--bg-input); color: var(--text-main); }
+.order-row-arrows button:disabled { opacity: 0.2; }
+.order-row-dragging { z-index: 2; border-color: var(--accent-gold); box-shadow: var(--shadow-float); pointer-events: none; }
+.order-row-dragging .order-drag-handle { cursor: grabbing; }
+.order-drop-before::before, .order-drop-after::after { content: ''; position: absolute; left: 0; right: 0; height: 3px; background: var(--accent-gold); border-radius: 2px; }
+.order-drop-before::before { top: -6px; }
+.order-drop-after::after { bottom: -6px; }

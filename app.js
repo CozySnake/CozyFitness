@@ -1970,6 +1970,55 @@
     switchView('viewActive');
   }
 
+  function captureWorkoutPositions() {
+    const positions = new Map();
+    activeExercisesList.querySelectorAll('.exercise-card').forEach(card => {
+      const exercise = activeWorkout.exercises[Number(card.dataset.exerciseIndex)];
+      const rect = card.getBoundingClientRect();
+      const sets = new Map();
+      card.querySelectorAll('.set-row').forEach(row => {
+        const set = exercise.sets[Number(row.dataset.setIdx)];
+        const rowRect = row.getBoundingClientRect();
+        sets.set(set, {top:rowRect.top - rect.top, rect:rowRect});
+      });
+      positions.set(exercise, {rect, sets});
+    });
+    return positions;
+  }
+
+  function animateWorkoutReorder(before, movedExercise, exerciseMoved) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const viewport = document.querySelector('.main-content').getBoundingClientRect();
+    const visible = rect => rect.bottom > viewport.top && rect.top < viewport.bottom;
+    const play = (element, delta, id, duration = 300) => {
+      if (!element.animate || Math.abs(delta) < 1) return;
+      const animation = element.animate([
+        {transform:`translate3d(0,${delta}px,0)`, zIndex:2},
+        {transform:'translate3d(0,0,0)', zIndex:2}
+      ], {duration, easing:'cubic-bezier(0.22,1,0.36,1)'});
+      animation.id = id;
+    };
+    activeExercisesList.querySelectorAll('.exercise-card').forEach(card => {
+      const exercise = activeWorkout.exercises[Number(card.dataset.exerciseIndex)], previous = before.get(exercise);
+      if (!previous) return;
+      const rect = card.getBoundingClientRect(), delta = previous.rect.top - rect.top;
+      if (exerciseMoved && visible(rect)) {
+        if (visible(previous.rect) && Math.abs(delta) >= 1 && Math.abs(delta) < viewport.height * 0.75) play(card,delta,'workout-exercise-move',340);
+        else if (exercise === movedExercise && card.animate) {
+          const animation = card.animate([{opacity:0.65,transform:'translate3d(0,12px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}], {duration:260,easing:'ease-out'});
+          animation.id = 'workout-exercise-arrive';
+        }
+      }
+      if (exercise !== movedExercise) return;
+      card.querySelectorAll('.set-row').forEach(row => {
+        const set = exercise.sets[Number(row.dataset.setIdx)], old = previous.sets.get(set), current = row.getBoundingClientRect();
+        if (!old || (!visible(current) && !visible(old.rect))) return;
+        const offset = old.top - (current.top - rect.top);
+        if (Math.abs(offset) < viewport.height) play(row,offset,'workout-set-move');
+      });
+    });
+  }
+
   function renderActiveWorkout() {
     if (!activeWorkout) {
       switchView('viewWorkoutHub');
@@ -2297,12 +2346,16 @@
           alert('Укажи повторения или время больше нуля, прежде чем отметить подход.'); return;
         }
         const oldTop = btn.getBoundingClientRect().top;
+        const positions = captureWorkoutPositions();
         const result = FitnessData.toggleSet(activeWorkout, exIdx, setIdx);
         saveActiveWorkout();
         renderActiveWorkout();
         const movedButton = activeExercisesList.querySelector(`.set-check-btn[data-ex-idx="${result.exerciseIndex}"][data-set-idx="${result.setIndex}"]`);
         const scroller = document.querySelector('.main-content');
-        if (movedButton) scroller.scrollTop += movedButton.getBoundingClientRect().top - oldTop;
+        // Preserve context for a distant exercise move. A local set move keeps
+        // the viewport stationary so its actual path remains visible.
+        if (result.exerciseIndex !== exIdx && movedButton) scroller.scrollTop += movedButton.getBoundingClientRect().top - oldTop;
+        if (result.exerciseIndex !== exIdx || result.setIndex !== setIdx) animateWorkoutReorder(positions, exercise, result.exerciseIndex !== exIdx);
         if (result.exerciseIndex !== exIdx || result.setIndex !== setIdx) {
           document.getElementById('workoutOrderNotice').textContent = 'Порядок обновлён по выполнению';
         }
@@ -4505,7 +4558,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.1', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4580,7 +4633,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.1').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

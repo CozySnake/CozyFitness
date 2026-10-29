@@ -968,16 +968,17 @@
     const sessions = all.filter(session => FitnessData.kind(session.exercise) === FitnessData.kind(latest) && session.exercise.equip === latest.equip);
     const lastSets = sessions[0].sets;
     const usable = sessions.flatMap(session => session.sets).filter(set => FitnessData.validSet(latest, set));
-    let prText = '';
+    let prText = '', bestSet = null;
     if (usable.length) {
       if (FitnessData.kind(latest) === 'strength') {
         const best = [...usable].sort((a,b) => FitnessData.number(b.weight)-FitnessData.number(a.weight) || FitnessData.number(b.reps)-FitnessData.number(a.reps))[0];
+        bestSet = best;
         prText = FitnessData.setText(latest,best);
       } else if (FitnessData.kind(latest) === 'timed') prText = `${Math.max(...usable.map(set => FitnessData.number(set.durationSec)))} сек`;
       else prText = `${Math.max(...usable.map(set => FitnessData.number(set.distanceKm)))} км за отрезок`;
     }
     const strings = lastSets.map(set => FitnessData.setText(latest,set));
-    return {lastSets, lastSetsRaw:lastSets, lastSetsStrings:strings, summaryInline:strings.map((text,i)=>`${i+1}) ${text}`).join(' • '), prText, lastDate:sessions[0].date, totalSessions:sessions.length, recentSessions:sessions.slice(0,10), sessions};
+    return {lastExercise:latest, bestSet, lastSets, lastSetsRaw:lastSets, lastSetsStrings:strings, summaryInline:strings.map((text,i)=>`${i+1}) ${text}`).join(' • '), prText, lastDate:sessions[0].date, totalSessions:sessions.length, recentSessions:sessions.slice(0,10), sessions};
   }
 
   function findPreviousPerformance(exerciseName) {
@@ -2115,21 +2116,32 @@
       // Detailed set-by-set previous workout summary + all-time PR badge
       let prevSummaryHtml = '';
       if (histStats && histStats.lastSets && histStats.lastSets.length > 0) {
-        const setsChips = histStats.lastSets.map((s, idx) => {
-          const w = parseFloat(s.weight) || 0;
-          return `${idx + 1}) ${FitnessData.setText(exItem, s)}`;
-        }).join(' • ');
-
-        const prBadgeHtml = histStats.prText
-          ? `<span class="exercise-pr-badge" title="Личный рекорд в этом упражнении">🏆 Рекорд: ${histStats.prText}</span>`
-          : '';
-
-        prevSummaryHtml = `
-          <div class="exercise-prev-row">
-            <span class="exercise-prev-sets">📊 Прошлый раз: <strong>${setsChips}</strong></span>
-            ${prBadgeHtml}
-          </div>
-        `;
+        const previousExercise = histStats.lastExercise || exItem;
+        const previousKind = FitnessData.kind(previousExercise);
+        const previousEquip = getEquipInfo(previousExercise);
+        const format = value => FitnessData.number(value).toLocaleString('ru-RU', {maximumFractionDigits:3});
+        const rows = histStats.lastSets.map((set,index) => {
+          const label = previousKind === 'strength' ? 'Подход' : previousKind === 'cardio' ? 'Отрезок' : 'Удержание';
+          const values = previousKind === 'strength'
+            ? `<strong>${format(set.weight)} кг</strong><span>${format(set.reps)} повт.</span>`
+            : previousKind === 'cardio'
+              ? `<strong>${set.durationSec ? format(set.durationSec / 60) + ' мин' : '—'}</strong><span>${set.distanceKm != null ? format(set.distanceKm) + ' км' : '—'}</span>`
+              : `<strong class="previous-time-value">${set.durationSec ? format(set.durationSec) + ' сек' : 'Время не записано'}</strong>`;
+          return `<li class="previous-set-row"><span class="previous-set-label">${label} ${index + 1}</span>${values}</li>`;
+        }).join('');
+        const previousEquipment = previousExercise.equip || previousEquip.type;
+        const previousBodyweight = previousExercise.isBodyweight === true || (previousExercise.isBodyweight !== false && previousEquipment === 'bodyweight');
+        const units = previousKind === 'strength'
+          ? previousEquipment === 'dumbbell_2' ? 'Вес одной гантели · повторения' : previousBodyweight ? 'Доп. вес · повторения (0 кг — свой вес)' : 'Вес · повторения'
+          : previousKind === 'cardio' ? 'Время · дистанция' : 'Время удержания';
+        const recordText = previousKind === 'strength' && histStats.bestSet ? `${format(histStats.bestSet.weight)} кг × ${format(histStats.bestSet.reps)} повт.` : histStats.prText;
+        const date = new Date(histStats.lastDate).toLocaleDateString('ru-RU', {day:'numeric',month:'short'});
+        prevSummaryHtml = `<section class="exercise-prev-row" aria-label="Результаты прошлой тренировки">
+          <div class="previous-session-heading"><strong>Прошлый раз</strong><span>${date}</span></div>
+          <p class="previous-session-units">${units}</p>
+          <ol class="previous-set-list">${rows}</ol>
+          ${histStats.prText ? `<div class="previous-session-record"><span class="exercise-pr-badge">Рекорд: ${FitnessData.escape(recordText)}</span></div>` : ''}
+        </section>`;
       }
 
       // Equipment badge:
@@ -2158,11 +2170,11 @@
               <span class="exercise-muscle-tag">${exItem.muscle}</span>
               ${equipControlHtml}
             </div>
-            ${prevSummaryHtml}
           </div>
           <button class="remove-exercise-btn" data-ex-idx="${exIndex}" title="Удалить упражнение">✕</button>
         </div>
 
+        ${prevSummaryHtml}
         <div class="sets-table">
           <div class="sets-table-header">
             <div>Сет</div>
@@ -2193,14 +2205,6 @@
           : (canBW ? 0 : '');
         const repsDisplay = (set.reps !== undefined && set.reps !== null && set.reps !== '') ? set.reps : '';
 
-        // Previous performance specifically for this set number (e.g. Set 1 vs Set 2 vs Set 3)
-        let perSetPrevHtml = '';
-        if (histStats && histStats.lastSets && histStats.lastSets[setIndex]) {
-          const ps = histStats.lastSets[setIndex];
-          const psW = parseFloat(ps.weight) || 0;
-          perSetPrevHtml = `<span class="set-prev-mini" title="Прошлый результат в ${setIndex + 1}-м подходе">${psW}×${ps.reps}</span>`;
-        }
-
         const row = document.createElement('div');
         row.className = `set-row ${set.completed ? 'completed' : ''}`;
         row.dataset.exIdx = exIndex;
@@ -2209,7 +2213,6 @@
         row.innerHTML = `
           <div class="set-num-badge">
             <span>${setIndex + 1}</span>
-            ${perSetPrevHtml}
           </div>
 
           <!-- Weight Stepper Cell -->
@@ -3797,7 +3800,10 @@
     renderAchievements();
     document.getElementById('statTotalWorkouts').textContent = String(historyData.length);
     document.getElementById('statWeekWorkouts').textContent = String(getWeekWorkoutsCount());
-    document.getElementById('statTotalTonnage').innerHTML = `${getTotalTonnage().toLocaleString('ru-RU')} <small>кг</small>`;
+    const tonnageValue = document.getElementById('statTotalTonnage');
+    const tonnageText = getTotalTonnage().toLocaleString('ru-RU');
+    tonnageValue.innerHTML = `<span class="stat-figure">${tonnageText}</span><small>кг</small>`;
+    tonnageValue.classList.toggle('stat-value-long', tonnageText.length >= 8);
 
     if (activeWorkout) {
       document.getElementById('startBtnText').textContent = 'Продолжить текущую тренировку';
@@ -4632,7 +4638,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.2', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.3', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4707,7 +4713,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.2').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.3').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

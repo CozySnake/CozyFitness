@@ -2628,13 +2628,7 @@ input[type="checkbox"]:checked::after {
   line-height: 1;
 }
 
-.set-prev-mini {
-  font-size: 0.56rem;
-  color: var(--accent-gold);
-  font-weight: 600;
-  opacity: 0.9;
-  white-space: nowrap;
-}
+
 
 .equip-badge-btn {
   background: var(--bg-card-subtle);
@@ -3124,3 +3118,28 @@ body.has-rest-timer .main-content { padding-bottom: 88px; }
 .workout-transfer-busy { pointer-events: none; }
 .workout-transfer-notice { position: absolute; z-index: 110; left: 18px; right: 18px; bottom: calc(var(--tab-bar-height,70px) + 12px); margin: 0 auto; padding: 12px 14px; border: 1px solid var(--accent-gold); border-radius: 12px; background: var(--bg-card); color: var(--accent-gold); box-shadow: var(--shadow-float); font-size: 0.82rem; pointer-events: none; }
 body.has-rest-timer .workout-transfer-notice { bottom: calc(var(--tab-bar-height,70px) + 80px); }
+
+/* Compact home statistics: keep the unit beside the number. */
+.stats-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.stat-card { min-width: 0; padding: 12px 8px; }
+.stat-label { line-height: 1.25; min-height: 2.5em; margin-bottom: 5px; }
+.stat-value { display: inline-flex; align-items: baseline; justify-content: center; gap: 3px; max-width: 100%; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#statTotalTonnage { font-size: clamp(1rem,4.8vw,1.3rem); }
+#statTotalTonnage.stat-value-long { font-size: 0.85rem; }
+.stat-value small { font-size: 0.68rem; line-height: 1; }
+
+/* Previous performance is a labelled list, separate from current set numbers. */
+.exercise-header { align-items: flex-start; }
+.exercise-title-wrap { flex: 1; min-width: 0; }
+.exercise-header .remove-exercise-btn, .exercise-header .exercise-info-btn { flex-shrink: 0; }
+.exercise-prev-row { display: block; margin: 0 0 12px; padding: 10px; }
+.previous-session-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; color: var(--text-main); font-size: 0.8rem; }
+.previous-session-heading > span { color: var(--text-muted); font-size: 0.72rem; }
+.previous-session-units { margin: 4px 0 8px; color: var(--text-muted); font-size: 0.68rem; line-height: 1.4; }
+.previous-set-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.previous-set-row { display: grid; grid-template-columns: minmax(72px,1fr) minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 6px; padding: 5px 0; font-size: 0.76rem; line-height: 1.4; border-top: 1px solid var(--border-color); font-variant-numeric: tabular-nums; }
+.previous-set-label { color: var(--text-muted); }
+.previous-set-row > strong, .previous-set-row > span:not(.previous-set-label) { color: var(--text-main); text-align: right; }
+.previous-time-value { grid-column: 2 / 4; }
+.previous-session-record { margin-top: 7px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+.set-num-badge { flex-direction: row; }

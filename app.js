@@ -1860,6 +1860,8 @@
   // 7. Active Workout Logic
   // ==========================================================================
 
+  const expandedPreviousSessions = new WeakSet();
+  const previousSessionOwners = new WeakMap();
   const activeWorkoutTitleInput = document.getElementById('activeWorkoutTitle');
   const activeExercisesList = document.getElementById('activeExercisesList');
   const startWorkoutBtn = document.getElementById('startWorkoutBtn');
@@ -2084,6 +2086,12 @@
   }
 
   function renderActiveWorkout(keepJourney = false) {
+    // Remember native details state before rebuilding cards; object identity
+    // keeps this correct when exercises are reordered or repeated by name.
+    activeExercisesList.querySelectorAll('details.exercise-prev-row').forEach(details => {
+      const owner = previousSessionOwners.get(details);
+      if (owner) { if (details.open) expandedPreviousSessions.add(owner); else expandedPreviousSessions.delete(owner); }
+    });
     if (!keepJourney) cancelWorkoutJourney();
     if (!activeWorkout) {
       switchView('viewWorkoutHub');
@@ -2136,12 +2144,13 @@
           : previousKind === 'cardio' ? 'Время · дистанция' : 'Время удержания';
         const recordText = previousKind === 'strength' && histStats.bestSet ? `${format(histStats.bestSet.weight)} кг × ${format(histStats.bestSet.reps)} повт.` : histStats.prText;
         const date = new Date(histStats.lastDate).toLocaleDateString('ru-RU', {day:'numeric',month:'short'});
-        prevSummaryHtml = `<section class="exercise-prev-row" aria-label="Результаты прошлой тренировки">
-          <div class="previous-session-heading"><strong>Прошлый раз</strong><span>${date}</span></div>
-          <p class="previous-session-units">${units}</p>
+        prevSummaryHtml = `<details class="exercise-prev-row" ${expandedPreviousSessions.has(exItem) ? 'open' : ''}>
+          <summary class="previous-session-heading"><strong>Прошлая тренировка</strong><span>${date}</span><span class="previous-session-arrow" aria-hidden="true">⌄</span></summary>
+          <div class="previous-session-body"><p class="previous-session-units">${units}</p>
           <ol class="previous-set-list">${rows}</ol>
           ${histStats.prText ? `<div class="previous-session-record"><span class="exercise-pr-badge">Рекорд: ${FitnessData.escape(recordText)}</span></div>` : ''}
-        </section>`;
+          </div>
+        </details>`;
       }
 
       // Equipment badge:
@@ -2258,6 +2267,14 @@
         setsContainer.appendChild(row);
       });
 
+      const previousDetails = card.querySelector('details.exercise-prev-row');
+      if (previousDetails) {
+        previousSessionOwners.set(previousDetails, exItem);
+        previousDetails.addEventListener('toggle', () => {
+          if (!previousDetails.isConnected) return;
+          if (previousDetails.open) expandedPreviousSessions.add(exItem); else expandedPreviousSessions.delete(exItem);
+        });
+      }
       activeExercisesList.appendChild(card);
     });
 
@@ -4638,7 +4655,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.3', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.4', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4713,7 +4730,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.3').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.4').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

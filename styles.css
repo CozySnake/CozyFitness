@@ -3143,3 +3143,20 @@ body.has-rest-timer .workout-transfer-notice { bottom: calc(var(--tab-bar-height
 .previous-time-value { grid-column: 2 / 4; }
 .previous-session-record { margin-top: 7px; padding-top: 8px; border-top: 1px solid var(--border-color); }
 .set-num-badge { flex-direction: row; }
+
+/* Native collapsible history with a full-width, keyboard-accessible summary. */
+summary.previous-session-heading { list-style: none; cursor: pointer; min-height: 26px; gap: 8px; }
+summary.previous-session-heading::-webkit-details-marker { display: none; }
+.previous-session-heading > strong { flex: 1; min-width: 0; }
+.previous-session-heading > .previous-session-arrow { font-size: 1rem; line-height: 1; color: var(--accent-gold); transition: transform 0.18s ease; }
+.exercise-prev-row[open] .previous-session-arrow { transform: rotate(180deg); }
+.previous-session-body { padding-top: 4px; }
+summary.previous-session-heading:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 4px; border-radius: 4px; }
+
+/* The cancel action shares the neighbouring buttons' height, with a square hit area. */
+.active-quick-actions { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) 56px; align-items: stretch; gap: 8px; }
+.active-quick-actions > button { min-width: 0; height: 56px; min-height: 56px; padding: 8px; border-radius: 14px; font-size: 0.85rem; line-height: 1.25; }
+#cancelWorkoutBtn { width: 56px; height: 56px; padding: 0; color: var(--accent-red); background: var(--accent-red-light); border: 1px solid rgba(239,68,68,0.28); font-size: 1.35rem; }
+#cancelWorkoutBtn:active { background: rgba(239,68,68,0.24); }
+@media (max-width: 360px) { .active-quick-actions > button:not(#cancelWorkoutBtn) { font-size: 0.78rem; } }
+@media (prefers-reduced-motion: reduce) { .previous-session-arrow { transition: none; } }

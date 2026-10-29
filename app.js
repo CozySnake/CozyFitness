@@ -1015,6 +1015,7 @@
   const activeDot = document.getElementById('activeDot');
 
   function switchView(targetViewId) {
+    cancelWorkoutJourney();
     Object.keys(views).forEach((id) => {
       if (views[id]) {
         if (id === targetViewId) {
@@ -1970,6 +1971,68 @@
     switchView('viewActive');
   }
 
+  let workoutJourney = null;
+  function cancelWorkoutJourney(reconcile = false) {
+    const journey = workoutJourney; if (!journey) return;
+    workoutJourney = null;
+    cancelAnimationFrame(journey.frame); clearTimeout(journey.timeout);
+    journey.animations.forEach(animation => animation.cancel());
+    journey.scroller.removeEventListener('pointerdown', journey.interrupt);
+    journey.scroller.removeEventListener('touchstart', journey.interrupt);
+    journey.scroller.removeEventListener('wheel', journey.interrupt);
+    activeExercisesList.inert = false;
+    activeExercisesList.classList.remove('workout-transfer-busy');
+    document.getElementById('workoutTransferNotice').classList.add('hidden');
+    if (reconcile && journey.phase === 'departing' && activeWorkout === journey.workout && views.viewActive.classList.contains('active')) renderActiveWorkout();
+  }
+
+  function startWorkoutJourney(exercise, result) {
+    const source = activeExercisesList.querySelector(`.exercise-card[data-exercise-index="${result.oldExerciseIndex}"]`);
+    if (!source || !source.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    cancelWorkoutJourney();
+    const scroller = document.querySelector('.main-content');
+    const notice = document.getElementById('workoutTransferNotice');
+    const journey = {workout:activeWorkout, phase:'departing', scroller, startScroll:scroller.scrollTop, animations:[], frame:null, timeout:null, interrupt:null};
+    workoutJourney = journey;
+    journey.interrupt = () => cancelWorkoutJourney(true);
+    scroller.addEventListener('pointerdown', journey.interrupt, {passive:true});
+    scroller.addEventListener('touchstart', journey.interrupt, {passive:true});
+    scroller.addEventListener('wheel', journey.interrupt, {passive:true});
+    activeExercisesList.inert = true; activeExercisesList.classList.add('workout-transfer-busy');
+    notice.textContent = `${exercise.name} → место ${result.exerciseIndex + 1}`;
+    notice.classList.remove('hidden');
+    const depart = source.animate([{opacity:1,transform:'translate3d(0,0,0)'},{opacity:0.3,transform:'translate3d(0,-14px,0)'}], {duration:160,easing:'ease-in',fill:'forwards'});
+    depart.id = 'workout-exercise-depart'; journey.animations.push(depart);
+    depart.finished.then(() => {
+      if (workoutJourney !== journey || activeWorkout !== journey.workout) return;
+      journey.phase = 'scrolling';
+      renderActiveWorkout(true);
+      scroller.scrollTop = journey.startScroll;
+      const card = activeExercisesList.querySelector(`.exercise-card[data-exercise-index="${result.exerciseIndex}"]`);
+      if (!card) { cancelWorkoutJourney(); return; }
+      const from = scroller.scrollTop;
+      const to = Math.max(0, Math.min(scroller.scrollHeight - scroller.clientHeight, from + card.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 12));
+      const duration = Math.min(900, Math.max(420, Math.abs(from - to) * 0.12));
+      let started = null;
+      const tick = now => {
+        if (workoutJourney !== journey) return;
+        if (started === null) started = now;
+        const progress = Math.min(1, (now - started) / duration);
+        const eased = progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+        scroller.scrollTop = from + (to - from) * eased;
+        if (progress < 1) { journey.frame = requestAnimationFrame(tick); return; }
+        journey.phase = 'arriving';
+        activeExercisesList.inert = false; activeExercisesList.classList.remove('workout-transfer-busy');
+        const landing = card.animate([{boxShadow:'0 0 0 2px rgba(245,158,11,0.9)',backgroundColor:'rgba(245,158,11,0.14)'},{boxShadow:getComputedStyle(card).boxShadow,backgroundColor:getComputedStyle(card).backgroundColor}], {duration:480,easing:'ease-out'});
+        landing.id = 'workout-exercise-land'; journey.animations.push(landing);
+        notice.textContent = `${exercise.name} · место ${result.exerciseIndex + 1}`;
+        journey.timeout = setTimeout(() => { if (workoutJourney === journey) cancelWorkoutJourney(); }, 480);
+      };
+      journey.frame = requestAnimationFrame(tick);
+    }).catch(() => {});
+    return true;
+  }
+
   function captureWorkoutPositions() {
     const positions = new Map();
     activeExercisesList.querySelectorAll('.exercise-card').forEach(card => {
@@ -2019,7 +2082,8 @@
     });
   }
 
-  function renderActiveWorkout() {
+  function renderActiveWorkout(keepJourney = false) {
+    if (!keepJourney) cancelWorkoutJourney();
     if (!activeWorkout) {
       switchView('viewWorkoutHub');
       return;
@@ -2345,17 +2409,26 @@
         if (!targetSet.completed && !FitnessData.validSet(exercise, targetSet)) {
           alert('Укажи повторения или время больше нуля, прежде чем отметить подход.'); return;
         }
+        cancelWorkoutJourney(true);
         const oldTop = btn.getBoundingClientRect().top;
         const positions = captureWorkoutPositions();
         const result = FitnessData.toggleSet(activeWorkout, exIdx, setIdx);
+        result.oldExerciseIndex = exIdx;
         saveActiveWorkout();
-        renderActiveWorkout();
-        const movedButton = activeExercisesList.querySelector(`.set-check-btn[data-ex-idx="${result.exerciseIndex}"][data-set-idx="${result.setIndex}"]`);
         const scroller = document.querySelector('.main-content');
-        // Preserve context for a distant exercise move. A local set move keeps
-        // the viewport stationary so its actual path remains visible.
-        if (result.exerciseIndex !== exIdx && movedButton) scroller.scrollTop += movedButton.getBoundingClientRect().top - oldTop;
-        if (result.exerciseIndex !== exIdx || result.setIndex !== setIdx) animateWorkoutReorder(positions, exercise, result.exerciseIndex !== exIdx);
+        const neighbor = activeWorkout.exercises[result.exerciseIndex + 1];
+        const estimatedDistance = neighbor && positions.has(neighbor) ? Math.abs(positions.get(exercise).rect.top - positions.get(neighbor).rect.top) : 0;
+        const distant = result.exerciseIndex !== exIdx && (Math.abs(result.exerciseIndex - exIdx) > 1 || estimatedDistance > scroller.clientHeight * 0.6);
+        if (distant && targetSet.completed) {
+          btn.textContent = '✓'; btn.closest('.set-row').classList.add('completed');
+        }
+        const journeyStarted = distant && startWorkoutJourney(exercise, result);
+        if (!journeyStarted) {
+          renderActiveWorkout();
+          const movedButton = activeExercisesList.querySelector(`.set-check-btn[data-ex-idx="${result.exerciseIndex}"][data-set-idx="${result.setIndex}"]`);
+          if (result.exerciseIndex !== exIdx && movedButton) scroller.scrollTop += movedButton.getBoundingClientRect().top - oldTop;
+          if (result.exerciseIndex !== exIdx || result.setIndex !== setIdx) animateWorkoutReorder(positions, exercise, result.exerciseIndex !== exIdx);
+        }
         if (result.exerciseIndex !== exIdx || result.setIndex !== setIdx) {
           document.getElementById('workoutOrderNotice').textContent = 'Порядок обновлён по выполнению';
         }
@@ -3182,13 +3255,13 @@
       <!-- Quick Action Bar visible immediately without opening Details -->
       <div class="history-card-quick-actions">
         <button class="secondary-btn small-btn repeat-workout-btn" data-id="${item.id}" type="button">
-          🔄 Повторить тренировку
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 2 8M4 4v6h6"/></svg><span>Повторить</span>
         </button>
         <button class="secondary-btn small-btn save-tpl-history-btn" data-id="${item.id}" type="button" title="Сохранить в Мои программы">
-          📌 В программы
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 3 7 7-4 1-4 4-4-4 4-4 1-4ZM10 14l-7 7"/></svg><span>В программы</span>
         </button>
-        <button class="secondary-btn small-btn edit-workout-btn" type="button">✎ Изменить</button>
-        <button class="danger-icon-btn delete-workout-btn" data-id="${item.id}" type="button" title="Удалить из истории">🗑</button>
+        <button class="secondary-btn small-btn edit-workout-btn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5-11 11-6 1 1-6L15 4Zm-9 10 5 5M13 6l5 5"/></svg><span>Изменить</span></button>
+        <button class="danger-icon-btn delete-workout-btn" data-id="${item.id}" type="button" title="Удалить из истории"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg><span>Удалить</span></button>
       </div>
 
       <!-- Expandable Accordion Drill-Down -->
@@ -4118,6 +4191,7 @@
   }
 
   function openModal(modalId) {
+    cancelWorkoutJourney(true);
     const modal = document.getElementById(modalId);
     if (!modal) return;
     const closing = modalClosures.get(modalId);
@@ -4558,7 +4632,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.1', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.2', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4633,7 +4707,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.1').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.2').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

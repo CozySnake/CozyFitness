@@ -3114,3 +3114,13 @@ body.has-rest-timer .main-content { padding-bottom: 88px; }
 #activeExercisesList .exercise-card, #activeExercisesList .set-row { position: relative; }
 
 #viewActive { overflow-anchor: none; }
+
+/* A single action grid for history cards and their detail sheets. */
+.history-card-quick-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; align-items: stretch; }
+.history-card .history-card-quick-actions > button { width: 100%; min-width: 0; height: auto; min-height: 48px; padding: 10px 8px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card-subtle); color: var(--text-main); font-size: 0.82rem; font-weight: 600; line-height: 1.2; gap: 7px; }
+.history-card .history-card-quick-actions > .repeat-workout-btn { background: var(--accent-gold-light); border-color: rgba(245,158,11,0.3); color: var(--accent-gold); }
+.history-card .history-card-quick-actions > .delete-workout-btn { color: var(--accent-red); }
+.history-card-quick-actions svg { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.workout-transfer-busy { pointer-events: none; }
+.workout-transfer-notice { position: absolute; z-index: 110; left: 18px; right: 18px; bottom: calc(var(--tab-bar-height,70px) + 12px); margin: 0 auto; padding: 12px 14px; border: 1px solid var(--accent-gold); border-radius: 12px; background: var(--bg-card); color: var(--accent-gold); box-shadow: var(--shadow-float); font-size: 0.82rem; pointer-events: none; }
+body.has-rest-timer .workout-transfer-notice { bottom: calc(var(--tab-bar-height,70px) + 80px); }

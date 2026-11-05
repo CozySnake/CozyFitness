@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.4.4">
+  <link rel="stylesheet" href="styles.css?v=2.4.5">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -457,7 +457,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.4.4 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.4.5 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
           <details id="layoutDiagnostics" class="layout-diagnostics"><summary>Диагностика экрана</summary><pre id="layoutDiagnosticsText"></pre></details>
         </div>
@@ -558,9 +558,10 @@
       <div class="modal-sheet">
         <div class="sheet-drag-handle"></div>
         <div class="sheet-header">
-          <h3>Добавить упражнение</h3>
+          <h3 id="exerciseSelectorTitle">Добавить упражнение</h3>
           <button class="close-modal-btn" data-close="modalSelectExercise">✕</button>
         </div>
+        <p id="exerciseReplacementNote" class="feature-muted hidden"></p>
         <div class="sheet-search">
           <input type="text" id="modalExerciseSearch" placeholder="Поиск...">
         </div>
@@ -846,10 +847,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.4.4"></script>
-  <script src="fitness-ui.js?v=2.4.4"></script>
-  <script src="workout-editor.js?v=2.4.4"></script>
-  <script src="achievements.js?v=2.4.4"></script>
-  <script src="app.js?v=2.4.4"></script>
+  <script src="fitness-data.js?v=2.4.5"></script>
+  <script src="fitness-ui.js?v=2.4.5"></script>
+  <script src="workout-editor.js?v=2.4.5"></script>
+  <script src="achievements.js?v=2.4.5"></script>
+  <script src="app.js?v=2.4.5"></script>
 </body>
 </html>

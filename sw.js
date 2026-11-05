@@ -1,13 +1,13 @@
-const CACHE_NAME = 'cozy-fitness-v31';
+const CACHE_NAME = 'cozy-fitness-v32';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=2.4.4',
-  './app.js?v=2.4.4',
-  './fitness-data.js?v=2.4.4',
-  './fitness-ui.js?v=2.4.4',
-  './workout-editor.js?v=2.4.4',
-  './achievements.js?v=2.4.4',
+  './styles.css?v=2.4.5',
+  './app.js?v=2.4.5',
+  './fitness-data.js?v=2.4.5',
+  './fitness-ui.js?v=2.4.5',
+  './workout-editor.js?v=2.4.5',
+  './achievements.js?v=2.4.5',
   './manifest.json',
   './icon.svg',
   './icon-192.png',

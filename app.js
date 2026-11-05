@@ -13,6 +13,7 @@
   const DEFAULT_EXERCISES = [
     // Грудь
     { id: 'bench_press', kind: 'strength', name: 'Жим штанги лёжа', muscle: 'Грудь', equip: 'barbell' },
+    { id: 'flat_dumbbell_press', kind: 'strength', name: 'Жим гантелей лёжа на горизонтальной скамье', muscle: 'Грудь', equip: 'dumbbell_2' },
     { id: 'incline_dumbbell_press', kind: 'strength', name: 'Жим гантелей на наклонной', muscle: 'Грудь', equip: 'dumbbell_2' },
     { id: 'dips_chest', kind: 'strength', name: 'Отжимания на брусьях', muscle: 'Грудь', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
     { id: 'cable_crossover', kind: 'strength', name: 'Сведение рук в кроссовере', muscle: 'Грудь', equip: 'machine' },
@@ -46,6 +47,7 @@
 
     // Руки
     { id: 'barbell_curl', kind: 'strength', name: 'Подъем штанги на бицепс', muscle: 'Руки', equip: 'barbell' },
+    { id: 'standing_dumbbell_curl', kind: 'strength', name: 'Сгибание рук с гантелями стоя', muscle: 'Руки', equip: 'dumbbell_2' },
     { id: 'hammer_curls', kind: 'strength', name: 'Молотковые сгибания с гантелями', muscle: 'Руки', equip: 'dumbbell_2' },
     { id: 'french_press', kind: 'strength', name: 'Французский жим лёжа', muscle: 'Руки', equip: 'barbell' },
     { id: 'cable_tricep_pushdown', kind: 'strength', name: 'Разгибания на трицепс на блоке', muscle: 'Руки', equip: 'machine' },
@@ -120,6 +122,18 @@
 
   // Complete Exercise Technique, Anatomical Muscle Map & Photo Knowledge Base (All 37 Built-in Exercises)
   const EXERCISE_GUIDES = {
+    flat_dumbbell_press: {
+      primary: ['chest'], secondary: ['front_delts', 'triceps'],
+      muscles: 'Грудные мышцы, передние дельты и трицепсы.',
+      steps: ['Лягте на горизонтальную скамью и поставьте стопы на пол.', 'Плавно опустите гантели по сторонам груди.', 'Выжмите гантели вверх, сохраняя контроль над движением.'],
+      tips: 'В журнале указывайте вес одной гантели.'
+    },
+    standing_dumbbell_curl: {
+      primary: ['biceps'], secondary: ['forearms'],
+      muscles: 'Бицепсы и мышцы предплечий.',
+      steps: ['Встаньте прямо, держа гантели ладонями вперёд.', 'Согните руки, удерживая локти рядом с корпусом.', 'Подконтрольно опустите гантели.'],
+      tips: 'Записывайте вес одной гантели и количество повторений на руку.'
+    },
     // === ГРУДЬ ===
     bench_press: {
       photoSlug: 'Barbell_Bench_Press_-_Medium_Grip',
@@ -798,8 +812,16 @@
       const act = localStorage.getItem(STORAGE_KEYS.ACTIVE);
       if (act) activeWorkout = JSON.parse(act);
       FitnessData.registerCatalog(customExercises);
+      const catalog = getAllExercises();
+      const historyIdsRestored = FitnessData.restoreExerciseIds(historyData, catalog);
       FitnessData.migrate(historyData);
-      if (activeWorkout) FitnessData.migrate([activeWorkout]);
+      if (historyIdsRestored) saveHistory();
+      if (FitnessData.restoreExerciseIds(customTemplates, catalog)) saveCustomTemplates();
+      if (activeWorkout) {
+        const activeIdsRestored = FitnessData.restoreExerciseIds([activeWorkout], catalog);
+        FitnessData.migrate([activeWorkout]);
+        if (activeIdsRestored) saveActiveWorkout();
+      }
     } catch (e) {
       console.error('Failed to load state from localStorage:', e);
     }
@@ -844,6 +866,8 @@
   function getExerciseDefinition(nameOrId) {
     if (!nameOrId) return null;
     const all = getAllExercises();
+    const byId = all.find(e => e.id === nameOrId);
+    if (byId) return byId;
     const q = normalizeExStr(nameOrId);
     // Prioritize DEFAULT_EXERCISES so built-in IDs and guides are always found first
     const fromDefault = DEFAULT_EXERCISES.find(
@@ -960,8 +984,7 @@
   }
 
   // Returns detailed previous sets and personal record for an exercise
-  function findExerciseHistoryStats(exerciseName) {
-    const target = getExerciseDefinition(exerciseName) || {name:exerciseName};
+  function findExerciseHistoryStats(target) {
     const all = FitnessData.sessions(historyData, target).reverse();
     if (!all.length) return null;
     const latest = all[0].exercise;
@@ -979,12 +1002,6 @@
     }
     const strings = lastSets.map(set => FitnessData.setText(latest,set));
     return {lastExercise:latest, bestSet, lastSets, lastSetsRaw:lastSets, lastSetsStrings:strings, summaryInline:strings.map((text,i)=>`${i+1}) ${text}`).join(' • '), prText, lastDate:sessions[0].date, totalSessions:sessions.length, recentSessions:sessions.slice(0,10), sessions};
-  }
-
-  function findPreviousPerformance(exerciseName) {
-    const stats = findExerciseHistoryStats(exerciseName);
-    if (!stats) return null;
-    return stats.summaryInline;
   }
 
   // Blur any active text input to prevent iOS "Shake to Undo / Undo Typing" popup on lock/unlock
@@ -1412,7 +1429,7 @@
     // Interactive chips: tapping any exercise chip opens its photo & anatomy guide!
     const chipsHtml = exList
       .map((ex) => `
-        <button type="button" class="template-ex-chip interactive-ex-chip" data-ex-name="${ex.name}" data-ex-muscle="${ex.muscle || ''}" title="Нажмите, чтобы посмотреть технику и мышцы">
+        <button type="button" class="template-ex-chip interactive-ex-chip" data-ex-id="${FitnessData.escape(ex.id)}" data-ex-name="${FitnessData.escape(ex.name)}" data-ex-muscle="${ex.muscle || ''}" title="Нажмите, чтобы посмотреть технику и мышцы">
           <span>${ex.name}</span>
           <span class="chip-info-dot">ℹ️</span>
         </button>
@@ -1426,7 +1443,7 @@
         const muscleName = ex.muscle || def.muscle || 'Мышцы';
         const equipInfo = getEquipInfo(Object.assign({}, def, ex));
         const canBW = canExerciseUseBodyweight(ex);
-        const histStats = findExerciseHistoryStats(ex.name);
+        const histStats = findExerciseHistoryStats(ex);
 
         const defaultR = ex.defaultReps || 10;
         const defaultW = canBW ? 0 : (ex.defaultWeight !== undefined ? ex.defaultWeight : 20);
@@ -1449,7 +1466,7 @@
               <div class="tpl-drilldown-title-line">
                 <span class="tpl-drilldown-num">${idx + 1}.</span>
                 <span class="tpl-drilldown-name">${ex.name}</span>
-                <button type="button" class="exercise-info-btn tpl-ex-info-btn" data-ex-name="${ex.name}" data-ex-muscle="${muscleName}" title="Фото и техника выполнения">ℹ️</button>
+                <button type="button" class="exercise-info-btn tpl-ex-info-btn" data-ex-id="${FitnessData.escape(ex.id)}" data-ex-name="${FitnessData.escape(ex.name)}" data-ex-muscle="${muscleName}" title="Фото и техника выполнения">ℹ️</button>
               </div>
               <div class="tpl-drilldown-tags">
                 <span class="exercise-muscle-tag">${muscleName}</span>
@@ -1532,9 +1549,9 @@
       btn.onclick = (e) => {
         e.stopPropagation();
         const exName = btn.dataset.exName;
-        const def = getExerciseDefinition(exName);
+        const def = getExerciseDefinition(btn.dataset.exId || exName);
         const exMuscle = btn.dataset.exMuscle || (def && def.muscle) || 'Мышцы';
-        openExerciseInfoModal(exName, exMuscle);
+        openExerciseInfoModal(exName, exMuscle, btn.dataset.exId);
       };
     });
 
@@ -1654,7 +1671,7 @@
     }
     const canBW = canExerciseUseBodyweight(exMeta);
     const isBW = canBW ? !!exMeta.isBodyweight : false;
-    const stats = findExerciseHistoryStats(exMeta.name);
+    const stats = findExerciseHistoryStats(exMeta);
     const baseW = isBW ? 0 : (exMeta.defaultWeight !== undefined ? exMeta.defaultWeight : defaultWeight);
     const baseR = exMeta.defaultReps || defaultReps;
 
@@ -1684,13 +1701,13 @@
 
   function startWorkoutFromTemplate(tpl) {
     const preloadedExercises = tpl.exercises.map((tplEx) => {
-      const catalogEx = getExerciseMeta(tplEx.name);
+      const catalogEx = getExerciseMeta(tplEx.id || tplEx.name);
       const canBW = canExerciseUseBodyweight(tplEx);
       const isBW = canBW ? !!tplEx.isBodyweight : false;
       const equip = tplEx.equip || (catalogEx && catalogEx.equip) || (isBW ? 'bodyweight' : 'barbell');
 
       return {
-        id: tplEx.id || ('ex_' + Date.now() + Math.random()),
+        id: tplEx.id,
         name: tplEx.name,
         kind: FitnessData.kind(tplEx),
         muscle: tplEx.muscle,
@@ -1718,7 +1735,7 @@
       const isBW = canBW ? !!ex.isBodyweight : false;
       const firstSet = (ex.sets && ex.sets[0]) ? ex.sets[0] : null;
       return {
-        id: ex.id || ('ex_' + Date.now() + Math.random()),
+        id: ex.id,
         name: ex.name,
         kind: FitnessData.kind(ex),
         muscle: ex.muscle || 'Другое',
@@ -2119,7 +2136,7 @@
       const measurementKind = FitnessData.kind(exItem);
       const canBW = canExerciseUseBodyweight(exItem);
       const equipInfo = getEquipInfo(exItem);
-      const histStats = findExerciseHistoryStats(exItem.name);
+      const histStats = findExerciseHistoryStats(exItem);
 
       // Detailed set-by-set previous workout summary + all-time PR badge
       let prevSummaryHtml = '';
@@ -2172,12 +2189,13 @@
         <div class="exercise-header">
           <div class="exercise-title-wrap">
             <div style="display:flex; align-items:center; gap:6px;">
-              <button type="button" class="exercise-name exercise-history-link" data-ex-name="${FitnessData.escape(exItem.name)}" data-ex-muscle="${exItem.muscle}">${FitnessData.escape(exItem.name)}</button>
-              <button type="button" class="exercise-info-btn" data-ex-name="${exItem.name}" data-ex-muscle="${exItem.muscle}" title="Анимация техники и история">ℹ️</button>
+              <button type="button" class="exercise-name exercise-history-link" data-ex-id="${FitnessData.escape(exItem.id)}" data-ex-name="${FitnessData.escape(exItem.name)}" data-ex-muscle="${exItem.muscle}">${FitnessData.escape(exItem.name)}</button>
+              <button type="button" class="exercise-info-btn" data-ex-id="${FitnessData.escape(exItem.id)}" data-ex-name="${FitnessData.escape(exItem.name)}" data-ex-muscle="${exItem.muscle}" title="Анимация техники и история">ℹ️</button>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px;">
               <span class="exercise-muscle-tag">${exItem.muscle}</span>
               ${equipControlHtml}
+              ${exItem.sets.some(set => !set.completed) ? `<button type="button" class="text-link-btn replace-exercise-btn" data-ex-idx="${exIndex}">Заменить</button>` : ''}
             </div>
           </div>
           <button class="remove-exercise-btn" data-ex-idx="${exIndex}" title="Удалить упражнение">✕</button>
@@ -2297,7 +2315,7 @@
       btn.onclick = (e) => {
         e.stopPropagation();
         blurActiveInput();
-        openExerciseInfoModal(btn.dataset.exName, btn.dataset.exMuscle);
+        openExerciseInfoModal(btn.dataset.exName, btn.dataset.exMuscle, btn.dataset.exId);
       };
     });
 
@@ -2478,7 +2496,7 @@
         }
         const nextSetIdx = exercise.sets.length;
         const lastSet = exercise.sets[exercise.sets.length - 1];
-        const histStats = findExerciseHistoryStats(exercise.name);
+        const histStats = findExerciseHistoryStats(exercise);
 
         let newWeight = lastSet ? lastSet.weight : (exercise.isBodyweight ? 0 : 20);
         let newReps = lastSet ? lastSet.reps : 10;
@@ -2514,6 +2532,14 @@
       };
     });
 
+    document.querySelectorAll('.replace-exercise-btn').forEach(button => {
+      button.onclick = () => {
+        blurActiveInput();
+        isSelectingForTemplateBuilder = false;
+        openExerciseSelector(null, activeWorkout.exercises[Number(button.dataset.exIdx)]);
+      };
+    });
+
     // Remove exercise button
     document.querySelectorAll('.remove-exercise-btn').forEach((btn) => {
       btn.onclick = () => {
@@ -2528,7 +2554,7 @@
     });
   }
 
-  function addExerciseToActiveWorkout(exercise) {
+  function addExerciseToActiveWorkout(exercise, original) {
     if (!activeWorkout) return;
 
     const canBW = canExerciseUseBodyweight(exercise);
@@ -2542,11 +2568,18 @@
       muscle: exercise.muscle,
       equip: equip,
       canBodyweight: canBW,
-      isBodyweight: isBW,
-      sets: buildSetsFromPreviousOrDefaults(exercise, isBW ? 0 : 20, 10)
+      isBodyweight: isBW
     };
-    const position = Number(document.getElementById('exerciseInsertPosition').value);
-    FitnessData.insertExercise(activeWorkout, addedExercise, position);
+    if (original) {
+      const previous = FitnessData.sessions(historyData, addedExercise).reverse().find(({exercise: saved}) =>
+        FitnessData.kind(saved) === addedExercise.kind && (saved.equip || equip) === equip && !!saved.isBodyweight === isBW);
+      const sets = previous ? previous.sets.filter(set => FitnessData.validSet(addedExercise, set)) : [];
+      if (!FitnessData.replaceExercise(activeWorkout, original, addedExercise, sets)) return;
+    } else {
+      addedExercise.sets = buildSetsFromPreviousOrDefaults(exercise, isBW ? 0 : 20, 10);
+      const position = Number(document.getElementById('exerciseInsertPosition').value);
+      FitnessData.insertExercise(activeWorkout, addedExercise, position);
+    }
     saveActiveWorkout();
     closeModal('modalSelectExercise');
     renderActiveWorkout();
@@ -2586,8 +2619,7 @@
   };
 
   // Fallback resolver for custom user-created exercises based on name & muscle category
-  function resolveExerciseGuide(name, muscle) {
-    const found = getExerciseMeta(name);
+  function resolveExerciseGuide(name, muscle, found) {
     if (found && EXERCISE_GUIDES[found.id]) {
       return EXERCISE_GUIDES[found.id];
     }
@@ -2909,13 +2941,13 @@
     `;
   }
 
-  function openExerciseInfoModal(name, muscle) {
+  function openExerciseInfoModal(name, muscle, id) {
     infoModalExName.textContent = name;
     infoModalMuscleTag.textContent = muscle || 'Мышцы';
 
-    const found = getExerciseMeta(name);
+    const found = id ? getAllExercises().find(ex => ex.id === id) : getExerciseMeta(name);
     const equipInfo = getEquipInfo(found || { name, muscle });
-    const guide = resolveExerciseGuide(name, muscle);
+    const guide = resolveExerciseGuide(name, muscle, found);
 
     if (infoModalVisual) {
       infoModalVisual.innerHTML = renderExerciseVisualAndAnatomy(name, muscle, equipInfo, guide);
@@ -2972,7 +3004,7 @@
 
     function updateExerciseHistory(group) {
       infoModalProgressBox.classList.remove('hidden');
-      infoModalProgressBox.innerHTML = FitnessUI.history(historyData, found || {name, muscle}, group);
+      infoModalProgressBox.innerHTML = FitnessUI.history(historyData, {id: id || found?.id, name, muscle}, group);
       const selector = document.getElementById('exerciseHistoryGroup');
       if (selector) selector.onchange = () => updateExerciseHistory(selector.value);
     }
@@ -3239,7 +3271,7 @@
       return `
         <div class="drilldown-ex-block">
           <div class="drilldown-ex-title">
-            <button type="button" class="history-exercise-link text-link-btn" data-name="${FitnessData.escape(ex.name)}" data-muscle="${ex.muscle}">${FitnessData.escape(ex.name)}</button>
+            <button type="button" class="history-exercise-link text-link-btn" data-ex-id="${FitnessData.escape(ex.id)}" data-name="${FitnessData.escape(ex.name)}" data-muscle="${ex.muscle}">${FitnessData.escape(ex.name)}</button>
             <span class="exercise-muscle-tag">${ex.muscle}</span>
           </div>
           <div class="drilldown-sets-list">
@@ -3312,7 +3344,7 @@
       if (detailsMode) closeModal('modalHistoryDetails');
       openWorkoutEditor(item);
     };
-    card.querySelectorAll('.history-exercise-link').forEach(button => button.onclick = () => openExerciseInfoModal(button.dataset.name, button.dataset.muscle));
+    card.querySelectorAll('.history-exercise-link').forEach(button => button.onclick = () => openExerciseInfoModal(button.dataset.name, button.dataset.muscle, button.dataset.exId));
 
     // Repeat workout
     card.querySelector('.repeat-workout-btn').onclick = (e) => {
@@ -3887,7 +3919,7 @@
 
     filtered.forEach((ex) => {
       const equipInfo = getEquipInfo(ex);
-      const stats = findExerciseHistoryStats(ex.name);
+      const stats = findExerciseHistoryStats(ex);
       const prLine = (stats && stats.prText) ? ` • 🏆 ${stats.prText}` : '';
       const item = document.createElement('div');
       item.className = 'library-item';
@@ -3895,7 +3927,7 @@
         <div>
           <div style="display:flex; align-items:center; gap:6px;">
             <span class="library-item-title">${ex.name}</span>
-            <button type="button" class="exercise-info-btn" data-ex-name="${ex.name}" data-ex-muscle="${ex.muscle}" title="Анимация и прогресс">ℹ️</button>
+            <button type="button" class="exercise-info-btn" data-ex-id="${FitnessData.escape(ex.id)}" data-ex-name="${FitnessData.escape(ex.name)}" data-ex-muscle="${ex.muscle}" title="Анимация и прогресс">ℹ️</button>
           </div>
           <div class="library-item-muscle">${ex.muscle} • ${equipInfo.badge}${prLine}</div>
         </div>
@@ -3903,11 +3935,11 @@
 
       item.querySelector('.exercise-info-btn').onclick = (e) => {
         e.stopPropagation();
-        openExerciseInfoModal(ex.name, ex.muscle);
+        openExerciseInfoModal(ex.name, ex.muscle, ex.id);
       };
 
       item.onclick = () => {
-        openExerciseInfoModal(ex.name, ex.muscle);
+        openExerciseInfoModal(ex.name, ex.muscle, ex.id);
       };
 
       libraryList.appendChild(item);
@@ -4049,14 +4081,18 @@
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target.result);
-        if (Array.isArray(data.customExercises)) FitnessData.registerCatalog(data.customExercises);
+        const catalog = [...DEFAULT_EXERCISES, ...(Array.isArray(data.customExercises) ? data.customExercises : customExercises)];
+        FitnessData.registerCatalog(catalog);
+        FitnessData.restoreExerciseIds([
+          ...(Array.isArray(data.history) ? data.history : []),
+          ...(Array.isArray(data.customTemplates) ? data.customTemplates : [])
+        ], catalog);
         if (data.history && Array.isArray(data.history)) {
           historyData = FitnessData.migrate(data.history);
           saveHistory();
         }
         if (data.customExercises && Array.isArray(data.customExercises)) {
           customExercises = data.customExercises;
-          FitnessData.registerCatalog(customExercises);
           saveCustomExercises();
         }
         if (data.customTemplates && Array.isArray(data.customTemplates)) {
@@ -4331,6 +4367,7 @@
   const modalExerciseSearch = document.getElementById('modalExerciseSearch');
   const modalMuscleFilters = document.getElementById('modalMuscleFilters');
   let modalSelectedMuscle = 'all';
+  let exerciseToReplace = null;
 
   function renderModalExercises() {
     const query = modalExerciseSearch.value.trim().toLowerCase();
@@ -4339,7 +4376,7 @@
     const filtered = all.filter((ex) => {
       const matchName = ex.name.toLowerCase().includes(query);
       const matchMuscle = modalSelectedMuscle === 'all' || ex.muscle === modalSelectedMuscle;
-      return matchName && matchMuscle;
+      return matchName && matchMuscle && (!exerciseToReplace || !FitnessData.sameExercise(ex, exerciseToReplace));
     });
 
     modalExerciseItems.innerHTML = '';
@@ -4353,7 +4390,7 @@
       const btn = document.createElement('button');
       btn.className = 'sheet-exercise-btn';
       btn.innerHTML = `
-        <span class="sheet-exercise-name">${ex.name}</span>
+        <span class="sheet-exercise-name">${FitnessData.escape(ex.name)}</span>
         <span class="sheet-exercise-tag">${ex.muscle} • ${equipInfo.badge}</span>
       `;
 
@@ -4373,7 +4410,7 @@
           renderTemplateBuilderList();
           openModal('modalCreateTemplate');
         } else {
-          addExerciseToActiveWorkout(ex);
+          addExerciseToActiveWorkout(ex, exerciseToReplace);
         }
       };
 
@@ -4392,9 +4429,16 @@
     };
   });
 
-  function openExerciseSelector(position = null) {
+  function openExerciseSelector(position = null, original = null) {
+    exerciseToReplace = original;
+    document.getElementById('exerciseSelectorTitle').textContent = original ? 'Заменить упражнение' : 'Добавить упражнение';
+    const note = document.getElementById('exerciseReplacementNote');
+    note.classList.toggle('hidden', !original);
+    note.textContent = original?.sets.some(set => set.completed)
+      ? 'Выполненные подходы сохранятся. Новое упражнение займёт место оставшихся.'
+      : 'Новое упражнение займёт то же место в тренировке.';
     const wrapper = document.getElementById('exerciseInsertPositionWrap');
-    wrapper.classList.toggle('hidden', isSelectingForTemplateBuilder);
+    wrapper.classList.toggle('hidden', isSelectingForTemplateBuilder || !!original);
     const positionSelect = document.getElementById('exerciseInsertPosition');
     const exercises = activeWorkout ? activeWorkout.exercises : [];
     positionSelect.innerHTML = '<option value="0">В начало тренировки</option>' + exercises.map((ex,index) => `<option value="${index + 1}">После ${index + 1}. ${FitnessData.escape(ex.name)}</option>`).join('');
@@ -4655,7 +4699,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.4', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.5', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4730,7 +4774,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.4').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.5').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

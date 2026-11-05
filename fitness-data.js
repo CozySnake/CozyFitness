@@ -76,10 +76,52 @@
     if (type === 'cardio') return number(set.durationSec) ? `${Math.round(number(set.durationSec)/60*100)/100} мин · ${number(set.distanceKm)} км` : 'Время и дистанция не записаны';
     return `${ex.equip === 'dumbbell_2' ? '2 × ' : ''}${number(set.weight)} кг × ${number(set.reps)}`;
   }
+  const nameKey = name => String(name || '').trim().toLowerCase().replace(/ё/g, 'е');
+  function sameExercise(a, b) {
+    return a.id && b.id ? a.id === b.id : !!nameKey(a.name) && nameKey(a.name) === nameKey(b.name);
+  }
+  function restoreExerciseIds(workouts, catalog) {
+    const ids = new Map();
+    for (const ex of catalog) {
+      const key = nameKey(ex.name);
+      if (!key || !ex.id) continue;
+      ids.set(key, ids.has(key) && ids.get(key) !== ex.id ? null : ex.id);
+    }
+    let changed = false;
+    for (const workout of workouts) {
+      for (const ex of workout.exercises || []) {
+        const id = ids.get(nameKey(ex.name));
+        // Older versions generated these IDs when copying a row without a catalog ID.
+        if (id && (!ex.id || /^ex_\d+\.\d+$/.test(ex.id))) {
+          ex.id = id;
+          changed = true;
+        }
+      }
+    }
+    return changed;
+  }
+  function replaceExercise(workout, original, replacement, plannedSets) {
+    const index = workout.exercises.indexOf(original);
+    if (index < 0 || sameExercise(original, replacement)) return false;
+    const completed = original.sets.filter(set => set.completed);
+    const count = original.sets.length - completed.length;
+    if (!count) return false;
+    replacement.sets = Array.from({length:count}, (_, i) => ({
+      ...(plannedSets[i] || plannedSets.at(-1) || defaultSet(replacement)),
+      completed:false
+    }));
+    if (completed.length) {
+      original.sets = completed;
+      workout.exercises.splice(index + 1, 0, replacement);
+    } else {
+      workout.exercises[index] = replacement;
+    }
+    return true;
+  }
   function sessions(history, target) {
     const result = [];
     [...history].sort((a,b) => new Date(a.date)-new Date(b.date)).forEach(w => {
-      const exercises = (w.exercises || []).filter(ex => target.id && ex.id ? target.id === ex.id : String(ex.name).toLowerCase() === String(target.name).toLowerCase());
+      const exercises = (w.exercises || []).filter(ex => sameExercise(ex, target));
       const groups = new Map();
       exercises.forEach(ex => {
         const sets = (ex.sets || []).filter(s=>s.completed !== false);
@@ -134,5 +176,5 @@
     }
     return {exercise, set, exerciseIndex:workout.exercises.indexOf(exercise), setIndex:exercise.sets.indexOf(set)};
   }
-  root.FitnessData = {moveItem,insertExercise,toggleSet,registerCatalog,number,escape,kind,fields,defaultSet,validSet,tonnage,summarize,activityText,recalculate,setText,sessions,metric,migrate};
+  root.FitnessData = {moveItem,insertExercise,replaceExercise,sameExercise,restoreExerciseIds,toggleSet,registerCatalog,number,escape,kind,fields,defaultSet,validSet,tonnage,summarize,activityText,recalculate,setText,sessions,metric,migrate};
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -2988,7 +2988,12 @@ body.modal-open .main-content { overflow: hidden; }
 .workout-editor-sheet > .sheet-header, .workout-editor-sheet > .sheet-drag-handle { flex-shrink: 0; }
 .workout-editor-content { overflow-y: auto; min-height: 0; overscroll-behavior: contain; padding-bottom: 8px; }
 .editor-meta { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 10px; }
-.editor-meta input { min-width: 0; width: 100%; }
+.editor-meta .form-label { min-width: 0; margin: 0; }
+.editor-meta input { display: block; min-width: 0; max-width: 100%; width: 100%; }
+@media (max-width: 480px) { .editor-meta { grid-template-columns: 1fr; } }
+.repeat-recent-trigger { display: flex; justify-content: space-between; width: 100%; margin-bottom: 14px; }
+.repeat-recent-row { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.repeat-recent-row small { color: var(--text-muted); }
 .editor-exercise { padding: 14px 0; border-bottom: 1px solid var(--border-color); }
 .editor-exercise-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .editor-exercise-heading h4 { font-size: 0.9rem; }
@@ -3014,8 +3019,8 @@ body.modal-open .main-content { overflow: hidden; }
 .achievement-next-goal { display: flex; gap: 10px; align-items: center; padding: 5px 0; }
 .achievement-next-goal strong { display: block; font-size: 0.78rem; }
 .achievement-next-goal small { display: block; color: var(--text-muted); margin-top: 4px; }
-:is(#modalWorkoutEditor, #modalExerciseInfo) .sheet-header, :is(#modalWorkoutEditor, #modalExerciseInfo) .sheet-drag-handle { touch-action: none; user-select: none; }
-@media (max-width: 360px) { .typed-cardio .set-row { gap: 3px; } .metric-stepper button { width: 20px; min-width: 18px; } .editor-meta { grid-template-columns: 1fr; } }
+:is(#modalWorkoutEditor, #modalExerciseInfo, #modalRepeatRecent, #modalSelectExercise) .sheet-header, :is(#modalWorkoutEditor, #modalExerciseInfo, #modalRepeatRecent, #modalSelectExercise) .sheet-drag-handle { touch-action: none; user-select: none; }
+@media (max-width: 360px) { .typed-cardio .set-row { gap: 3px; } .metric-stepper button { width: 20px; min-width: 18px; } }
 
 .sheet-filter-chips { flex-shrink: 0; min-width: 0; max-width: 100%; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
 
@@ -3062,29 +3067,31 @@ body.has-rest-timer .main-content { padding-bottom: 88px; }
   overflow-y: auto;
   overscroll-behavior-y: contain;
 }
-#finishWorkoutNotes { font-size: max(16px, 1rem); }
+#finishWorkoutNotes, .sheet-search input { font-size: max(16px, 1rem); }
+.keyboard-open .app-container { position: absolute; inset-inline: 0; }
+#modalFinishWorkout {
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+}
+#modalFinishWorkout .celebration-card { max-height: 100%; }
+.keyboard-open #modalFinishWorkout { padding-bottom: 8px; }
+.keyboard-open #modalFinishWorkout .celebration-card { margin-bottom: 0; }
 .keyboard-open .bottom-tab-bar, .keyboard-open .rest-timer-bar { display: none; }
 .keyboard-open body.has-rest-timer .main-content { padding-bottom: 12px; }
 .keyboard-open #modalFinishWorkout::before { backdrop-filter: none; -webkit-backdrop-filter: none; }
 
-.finish-rating { border: 0; margin: 0 0 14px; padding: 0; min-width: 0; text-align: left; }
-.finish-rating legend { margin-bottom: 8px; font-size: 0.88rem; }
-.finish-rating-options { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
-.finish-rating-options label { position: relative; }
-.finish-rating-options input { position: absolute; opacity: 0; }
-.finish-rating-options span {
-  display: grid;
-  place-items: center;
-  min-height: 36px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-main);
-  background: var(--bg-input);
-  cursor: pointer;
-}
-.finish-rating-options input:checked + span { color: var(--accent-gold); border-color: var(--accent-gold); font-weight: 700; }
-.finish-rating-options input:focus-visible + span { outline: 2px solid var(--accent-gold); outline-offset: 1px; }
-.finish-rating-labels { display: flex; justify-content: space-between; gap: 8px; margin-top: 5px; color: var(--text-muted); font-size: 0.72rem; }
+.finish-rating { margin-bottom: 14px; text-align: left; }
+.finish-rating-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 0.88rem; }
+#finishRatingValue { flex-shrink: 0; color: var(--accent-gold); font-weight: 700; }
+#finishWorkoutRating { touch-action: pan-y; appearance: none; -webkit-appearance: none; display: block; width: 100%; height: 36px; margin: 4px 0 0; background: transparent; cursor: pointer; }
+#finishWorkoutRating::-webkit-slider-runnable-track { height: 6px; border-radius: 8px; background: linear-gradient(to right, var(--accent-gold) var(--rating-fill, 0%), var(--border-color) var(--rating-fill, 0%)); }
+#finishWorkoutRating::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border: 2px solid var(--bg-card); border-radius: 50%; background: var(--accent-gold); }
+#finishWorkoutRating::-moz-range-track { height: 6px; border-radius: 8px; background: var(--border-color); }
+#finishWorkoutRating::-moz-range-progress { height: 6px; border-radius: 8px; background: var(--accent-gold); }
+#finishWorkoutRating::-moz-range-thumb { width: 18px; height: 18px; border: 2px solid var(--bg-card); border-radius: 50%; background: var(--accent-gold); }
+.finish-rating-steps { display: flex; justify-content: space-between; padding: 0 5px; color: var(--text-muted); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.finish-rating-steps span { min-width: 12px; text-align: center; }
+.finish-rating-steps .rating-lit { color: var(--accent-gold); font-weight: 700; }
 .history-rating, .history-note { margin-top: 8px; font-size: 0.85rem; color: var(--accent-gold); }
 .history-note { white-space: pre-wrap; overflow-wrap: anywhere; }
 .modal-sheet { padding-bottom: 0; min-height: 0; overflow: hidden; isolation: isolate; animation: sheetSlideUp 0.32s cubic-bezier(0.22,1,0.36,1); }

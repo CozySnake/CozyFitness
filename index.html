@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.4.6">
+  <link rel="stylesheet" href="styles.css?v=2.4.7">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -118,6 +118,10 @@
           <h2>Программы тренировок</h2>
           <p class="hub-subtitle">Выберите готовую программу или начните свободную</p>
         </div>
+
+        <button type="button" id="repeatRecentWorkoutBtn" class="secondary-btn repeat-recent-trigger hidden">
+          <span>↻ Повтор предыдущих</span><span aria-hidden="true">›</span>
+        </button>
 
         <!-- Free / Custom Workout Card -->
         <div class="hub-card free-workout-card">
@@ -457,7 +461,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.4.6 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.4.7 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
           <details id="layoutDiagnostics" class="layout-diagnostics"><summary>Диагностика экрана</summary><pre id="layoutDiagnosticsText"></pre></details>
         </div>
@@ -553,8 +557,19 @@
       </div>
     </div>
 
+    <div id="modalRepeatRecent" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="repeatRecentHeading">
+      <div class="modal-sheet">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-header">
+          <h3 id="repeatRecentHeading">Повтор предыдущих</h3>
+          <button class="close-modal-btn" data-close="modalRepeatRecent" aria-label="Закрыть">✕</button>
+        </div>
+        <div id="repeatRecentWorkoutList" class="sheet-exercise-list"></div>
+      </div>
+    </div>
+
     <!-- MODAL: EXERCISE SELECTOR (Выбор упражнения) -->
-    <div id="modalSelectExercise" class="modal-overlay hidden">
+    <div id="modalSelectExercise" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="exerciseSelectorTitle">
       <div class="modal-sheet">
         <div class="sheet-drag-handle"></div>
         <div class="sheet-header">
@@ -673,24 +688,14 @@
           <button type="button" id="finishSaveTemplateBtn" class="secondary-btn small-btn" style="width:100%; margin-bottom:12px;">
             📌 Сохранить эту тренировку в «Мои программы»
           </button>
-          <form id="finishWorkoutRating">
-            <fieldset class="finish-rating">
-              <legend>Насколько ты доволен тренировкой?</legend>
-              <div class="finish-rating-options">
-                <label><input type="radio" name="rating" value="1"><span>1</span></label>
-                <label><input type="radio" name="rating" value="2"><span>2</span></label>
-                <label><input type="radio" name="rating" value="3"><span>3</span></label>
-                <label><input type="radio" name="rating" value="4"><span>4</span></label>
-                <label><input type="radio" name="rating" value="5"><span>5</span></label>
-                <label><input type="radio" name="rating" value="6"><span>6</span></label>
-                <label><input type="radio" name="rating" value="7"><span>7</span></label>
-                <label><input type="radio" name="rating" value="8"><span>8</span></label>
-                <label><input type="radio" name="rating" value="9"><span>9</span></label>
-                <label><input type="radio" name="rating" value="10"><span>10</span></label>
-              </div>
-              <div class="finish-rating-labels"><span>Совсем не доволен</span><span>Очень доволен</span></div>
-            </fieldset>
-          </form>
+          <div class="finish-rating">
+            <div class="finish-rating-heading">
+              <label for="finishWorkoutRating">Насколько ты доволен тренировкой?</label>
+              <output id="finishRatingValue" for="finishWorkoutRating">Без оценки</output>
+            </div>
+            <input id="finishWorkoutRating" type="range" min="0" max="10" step="1" value="0" aria-valuetext="Без оценки">
+            <div id="finishRatingSteps" class="finish-rating-steps" aria-hidden="true"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+          </div>
           <label class="form-label" for="finishWorkoutNotes">Заметка к тренировке</label>
           <textarea id="finishWorkoutNotes" class="form-textarea" placeholder="Что получилось и что хочется улучшить?"></textarea>
         </div>
@@ -865,10 +870,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.4.6"></script>
-  <script src="fitness-ui.js?v=2.4.6"></script>
-  <script src="workout-editor.js?v=2.4.6"></script>
-  <script src="achievements.js?v=2.4.6"></script>
-  <script src="app.js?v=2.4.6"></script>
+  <script src="fitness-data.js?v=2.4.7"></script>
+  <script src="fitness-ui.js?v=2.4.7"></script>
+  <script src="workout-editor.js?v=2.4.7"></script>
+  <script src="achievements.js?v=2.4.7"></script>
+  <script src="app.js?v=2.4.7"></script>
 </body>
 </html>

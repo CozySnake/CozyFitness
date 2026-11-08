@@ -546,6 +546,7 @@
       tips: 'Не прогибайтесь в пояснице и не поднимайте таз вверх.'
     },
     decline_bench_crunch: {
+      photoSlug: 'Decline_Crunch',
       primary: ['abs'],
       secondary: ['obliques'],
       muscles: 'Прямая и косые мышцы живота.',
@@ -1649,6 +1650,8 @@
     } else {
       hubActiveResumeBanner.classList.add('hidden');
     }
+
+    document.getElementById('repeatRecentWorkoutBtn').classList.toggle('hidden', !historyData.length);
 
     // 1. User's Custom Programs (Мои программы)
     myTemplatesList.innerHTML = '';
@@ -3211,7 +3214,7 @@
 
   // Creates detailed history card with drill-down accordion!
   function openWorkoutEditor(item) {
-    FitnessEditor.mount(item, getAllExercises(), (updated) => {
+    FitnessEditor.mount(item, pick => openExerciseSelector(null, null, pick), (updated) => {
       const next = historyData.map(workout => workout.id === updated.id ? updated : workout);
       localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(next));
       historyData = next;
@@ -3221,6 +3224,42 @@
     });
     openModal('modalWorkoutEditor');
   }
+
+  function repeatSavedWorkout(item, modalId) {
+    if (activeWorkout && !confirm('Сейчас активна другая тренировка. Заменить её этой программой?')) return;
+    const exercises = item.exercises.map(ex => {
+      const canBW = canExerciseUseBodyweight(ex);
+      const isBW = canBW && !!ex.isBodyweight;
+      return {
+        id: ex.id, name: ex.name, kind: FitnessData.kind(ex), muscle: ex.muscle,
+        equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
+        canBodyweight: canBW, isBodyweight: isBW,
+        sets: ex.sets.map(set => ({...set, isBodyweight: isBW, completed: false}))
+      };
+    });
+    if (modalId) closeModal(modalId);
+    startNewWorkout(item.title, exercises, item.sourceTemplate || null);
+  }
+
+  document.getElementById('repeatRecentWorkoutBtn').onclick = () => {
+    const list = document.getElementById('repeatRecentWorkoutList');
+    const recent = [...historyData].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+    list.replaceChildren(...recent.map(workout => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'sheet-exercise-btn repeat-recent-row';
+      const name = document.createElement('strong');
+      name.textContent = workout.title;
+      const date = document.createElement('small');
+      date.textContent = new Date(workout.date).toLocaleString('ru-RU', {
+        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      button.append(name, date);
+      button.onclick = () => repeatSavedWorkout(workout, 'modalRepeatRecent');
+      return button;
+    }));
+    openModal('modalRepeatRecent');
+  };
 
   function createHistoryCardElement(item, detailsMode = false) {
     const card = document.createElement('div');
@@ -3310,7 +3349,7 @@
         ${exercisesSummary || 'Без упражнений'}
       </div>
 
-      ${detailsMode && Number.isInteger(item.rating) && item.rating >= 1 && item.rating <= 10 ? `<p class="history-rating">Оценка тренировки <strong>${item.rating}/10</strong></p>` : ''}
+      ${detailsMode && Number.isInteger(item.rating) && item.rating >= 0 && item.rating <= 10 ? `<p class="history-rating">Оценка тренировки <strong>${item.rating}/10</strong></p>` : ''}
       ${item.notes ? `<div class="history-note">💬 ${FitnessData.escape(item.notes)}</div>` : ''}
 
       <!-- Quick Action Bar visible immediately without opening Details -->
@@ -3358,33 +3397,7 @@
     // Repeat workout
     card.querySelector('.repeat-workout-btn').onclick = (e) => {
       e.stopPropagation();
-      if (activeWorkout) {
-        if (!confirm('Сейчас активна другая тренировка. Заменить её этой программой?')) return;
-      }
-
-      const clonedExercises = item.exercises.map((ex) => {
-        const canBW = canExerciseUseBodyweight(ex);
-        const isBW = canBW ? !!ex.isBodyweight : false;
-        return {
-          id: ex.id,
-          name: ex.name,
-          kind: FitnessData.kind(ex),
-          muscle: ex.muscle,
-          equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
-          canBodyweight: canBW,
-          isBodyweight: isBW,
-          sets: ex.sets.map((s) => ({
-            ...s,
-            weight: s.weight,
-            reps: s.reps,
-            isBodyweight: isBW,
-            completed: false
-          }))
-        };
-      });
-
-      if (detailsMode) closeModal('modalHistoryDetails');
-      startNewWorkout(item.title, clonedExercises, item.sourceTemplate || null);
+      repeatSavedWorkout(item, detailsMode ? 'modalHistoryDetails' : null);
     };
 
     // Fix #7: Save past workout to "My Programs"
@@ -4180,7 +4193,7 @@
     openModal('modalAchievements');
   });
   const sheetOpeners = new Map();
-  ['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo', 'modalExerciseOrder'].forEach((id) => {
+  ['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo', 'modalExerciseOrder', 'modalRepeatRecent', 'modalSelectExercise'].forEach((id) => {
     const overlay = document.getElementById(id);
     const sheet = overlay.querySelector('.modal-sheet');
     installSheetSwipe(overlay, sheet);
@@ -4271,9 +4284,9 @@
       sheet.style.transform = '';
       sheet.style.animation = '';
     }
-    if (['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo', 'modalExerciseOrder'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
+    if (['modalAchievements', 'modalProgramDetails', 'modalHistoryDetails', 'modalWorkoutEditor', 'modalExerciseInfo', 'modalExerciseOrder', 'modalRepeatRecent', 'modalSelectExercise'].includes(modalId)) sheetOpeners.set(modalId, document.activeElement);
     modal.classList.remove('hidden');
-    modal.querySelectorAll('.history-details-content, .program-details-content, .achievements-modal-scroll, .workout-editor-content, .sheet-exercise-list, .exercise-info-body, .exercise-order-list').forEach(content => { content.scrollTop = 0; });
+    modal.querySelectorAll('.history-details-content, .program-details-content, .achievements-modal-scroll, .workout-editor-content, .sheet-exercise-list, .exercise-info-body, .exercise-order-list, .celebration-card').forEach(content => { content.scrollTop = 0; });
     syncModalScrollLock();
     if (sheetOpeners.has(modalId)) modal.querySelector('[data-close]').focus({preventScroll: true});
   }
@@ -4293,7 +4306,8 @@
       if (sheet) { sheet.style.transform = ''; sheet.classList.remove('sheet-dragging'); }
       syncModalScrollLock();
       const opener = sheetOpeners.get(modalId);
-      if (!document.querySelector('.modal-overlay:not(.hidden)') && opener && opener.isConnected) opener.focus({preventScroll: true});
+      const remaining = [...document.querySelectorAll('.modal-overlay:not(.hidden)')].at(-1);
+      if (opener?.isConnected && (!remaining || remaining.contains(opener))) opener.focus({preventScroll: true});
       sheetOpeners.delete(modalId);
     };
     if (!sheet || !sheet.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
@@ -4355,6 +4369,7 @@
       }
       touchX = nextX; touchY = nextY;
       const horizontal = touchAxis === 'x';
+      if (horizontal && event.target.matches('#finishWorkoutRating')) return;
       const delta = horizontal ? dx : dy;
       let target = event.target;
       while (target && target !== overlay) {
@@ -4377,6 +4392,7 @@
   const modalMuscleFilters = document.getElementById('modalMuscleFilters');
   let modalSelectedMuscle = 'all';
   let exerciseToReplace = null;
+  let pickExerciseForEditor = null;
 
   function renderModalExercises() {
     const query = modalExerciseSearch.value.trim().toLowerCase();
@@ -4404,7 +4420,13 @@
       `;
 
       btn.onclick = () => {
-        if (isSelectingForTemplateBuilder) {
+        if (pickExerciseForEditor) {
+          const pick = pickExerciseForEditor;
+          pickExerciseForEditor = null;
+          blurActiveInput();
+          closeModal('modalSelectExercise');
+          pick(ex);
+        } else if (isSelectingForTemplateBuilder) {
           templateBuilderExercises.push({
             id: ex.id,
             name: ex.name,
@@ -4438,8 +4460,9 @@
     };
   });
 
-  function openExerciseSelector(position = null, original = null) {
+  function openExerciseSelector(position = null, original = null, pick = null) {
     exerciseToReplace = original;
+    pickExerciseForEditor = pick;
     document.getElementById('exerciseSelectorTitle').textContent = original ? 'Заменить упражнение' : 'Добавить упражнение';
     const note = document.getElementById('exerciseReplacementNote');
     note.classList.toggle('hidden', !original);
@@ -4447,7 +4470,7 @@
       ? 'Выполненные подходы сохранятся. Новое упражнение займёт место оставшихся.'
       : 'Новое упражнение займёт то же место в тренировке.';
     const wrapper = document.getElementById('exerciseInsertPositionWrap');
-    wrapper.classList.toggle('hidden', isSelectingForTemplateBuilder || !!original);
+    wrapper.classList.toggle('hidden', isSelectingForTemplateBuilder || !!original || !!pick);
     const positionSelect = document.getElementById('exerciseInsertPosition');
     const exercises = activeWorkout ? activeWorkout.exercises : [];
     positionSelect.innerHTML = '<option value="0">В начало тренировки</option>' + exercises.map((ex,index) => `<option value="${index + 1}">После ${index + 1}. ${FitnessData.escape(ex.name)}</option>`).join('');
@@ -4505,6 +4528,24 @@
   });
 
   // Finish Workout Modal (triggered from top OR bottom finish button)
+  const finishRating = document.getElementById('finishWorkoutRating');
+  const ratingSteps = document.querySelectorAll('#finishRatingSteps span');
+  const ratingValue = document.getElementById('finishRatingValue');
+  let finishRatingSelected = false;
+  function updateFinishRating(selected) {
+    finishRatingSelected = selected;
+    const value = finishRating.valueAsNumber;
+    ratingValue.textContent = selected ? `${value}/10` : 'Без оценки';
+    finishRating.setAttribute('aria-valuetext', ratingValue.textContent);
+    finishRating.style.setProperty('--rating-fill', `${value * 10}%`);
+    ratingSteps.forEach((step, index) => step.classList.toggle('rating-lit', selected && index <= value));
+  }
+  finishRating.addEventListener('input', () => updateFinishRating(true));
+  finishRating.addEventListener('click', () => updateFinishRating(true));
+  finishRating.addEventListener('keydown', event => {
+    if (event.key === 'Home') updateFinishRating(true);
+  });
+
   function triggerFinishWorkoutModal() {
     blurActiveInput();
     if (!activeWorkout || activeWorkout.exercises.length === 0) {
@@ -4532,8 +4573,8 @@
     activityBox.innerHTML = (activities.cardio ? `<div class="finish-activity-row"><span>Кардио</span><strong>${activities.cardio}</strong></div>` : '') + (activities.timed ? `<div class="finish-activity-row"><span>Удержания</span><strong>${activities.timed}</strong></div>` : '');
     activityBox.classList.toggle('hidden', !activities.cardio && !activities.timed);
     document.getElementById('finishWorkoutNotes').value = '';
-    document.getElementById('finishWorkoutRating').reset();
-    document.querySelector('#modalFinishWorkout .celebration-card').scrollTop = 0;
+    finishRating.value = '0';
+    updateFinishRating(false);
 
     openModal('modalFinishWorkout');
   }
@@ -4595,9 +4636,9 @@
       })
       .filter((ex) => ex.sets.length > 0);
 
-    const rating = Number(new FormData(document.getElementById('finishWorkoutRating')).get('rating'));
+    const rating = finishRatingSelected ? finishRating.valueAsNumber : null;
     const finishedRecord = {
-      ...(rating ? {rating} : {}),
+      ...(rating !== null ? {rating} : {}),
       id: activeWorkout.id,
       sourceTemplate: activeWorkout.sourceTemplate || null,
       title: activeWorkout.title,
@@ -4676,7 +4717,7 @@
   }
 
   function calculateAppViewport(metrics) {
-    const {innerWidth, innerHeight, screenWidth, screenHeight, visualHeight, visualTop, scale, standalone, ios, editable} = metrics;
+    const {innerWidth, innerHeight, screenWidth, screenHeight, visualHeight, visualTop, scrollY = 0, scale, standalone, ios, editable} = metrics;
     const landscape = innerWidth > Math.max(screenWidth, screenHeight) * 0.8;
     const fullWidth = landscape ? Math.max(screenWidth, screenHeight) : Math.min(screenWidth, screenHeight);
     const fullHeight = landscape ? Math.min(screenWidth, screenHeight) : Math.max(screenWidth, screenHeight);
@@ -4685,7 +4726,8 @@
     const fullscreenIOS = ios && standalone && Math.abs(innerWidth - fullWidth) <= 2 && scale <= 1.01;
     const baseline = fullscreenIOS ? Math.max(innerHeight, fullHeight) : innerHeight;
     const keyboard = editable && scale <= 1.01 && baseline - visualHeight > 120;
-    const top = keyboard ? Math.max(0, visualTop) : 0;
+    // The shell is positioned in document coordinates, including native iOS page panning.
+    const top = keyboard ? Math.max(0, visualTop + scrollY) : 0;
     const height = keyboard ? visualHeight : baseline;
     return {height: Math.round(height), top: Math.round(top), baseline, fullscreenIOS, keyboard, expectedBottom: top + height};
   }
@@ -4697,7 +4739,7 @@
       innerWidth: window.innerWidth, innerHeight: window.innerHeight,
       screenWidth: window.screen.width, screenHeight: window.screen.height,
       visualHeight: viewport ? viewport.height : window.innerHeight,
-      visualTop: viewport ? viewport.offsetTop : 0, scale: viewport ? viewport.scale : 1,
+      visualTop: viewport ? viewport.offsetTop : 0, scrollY: window.scrollY, scale: viewport ? viewport.scale : 1,
       standalone: window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches,
       ios: /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
       editable: !!(active && (active.isContentEditable ||
@@ -4707,8 +4749,8 @@
 
   function revealFocusedField() {
     const field = document.activeElement;
-    if (!field?.matches('.set-input, .metric-input, #finishWorkoutNotes')) return;
-    const scroller = field.closest('.celebration-card, .main-content');
+    if (!field?.matches('.set-input, .metric-input, #finishWorkoutNotes, #workoutEditorContent input, #editWorkoutNotes')) return;
+    const scroller = field.closest('.celebration-card, .workout-editor-content, .main-content');
     if (!scroller) return;
     const bounds = scroller.getBoundingClientRect();
     const rect = field.getBoundingClientRect();
@@ -4734,12 +4776,13 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.6', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.7', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
     syncAppViewport();
     window.addEventListener('resize', syncAppViewport);
+    window.addEventListener('scroll', syncAppViewport, {passive: true});
     window.addEventListener('orientationchange', () => { syncAppViewport(); setTimeout(syncAppViewport, 250); });
     window.addEventListener('pageshow', syncAppViewport);
     if (window.visualViewport) {
@@ -4809,7 +4852,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.6').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.7').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

@@ -54,6 +54,7 @@
     { id: 'preacher_curl', kind: 'strength', name: 'Сгибания на скамье Скотта', muscle: 'Руки', equip: 'barbell' },
 
     // Пресс
+    { id: 'decline_bench_crunch', kind: 'strength', name: 'Скручивания на наклонной скамье', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
     { id: 'plank', kind: 'timed', name: 'Планка', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
     { id: 'crunches', kind: 'strength', name: 'Скручивания на коврике', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
     { id: 'hanging_leg_raises', kind: 'strength', name: 'Подъемы ног в висе', muscle: 'Пресс', isBodyweight: true, canBodyweight: true, equip: 'bodyweight' },
@@ -543,6 +544,13 @@
         'Подтяните живот и сожмите ягодицы, удерживая позицию с ровным дыханием.'
       ],
       tips: 'Не прогибайтесь в пояснице и не поднимайте таз вверх.'
+    },
+    decline_bench_crunch: {
+      primary: ['abs'],
+      secondary: ['obliques'],
+      muscles: 'Прямая и косые мышцы живота.',
+      steps: ['Лягте на наклонную скамью и закрепите стопы под валиками.', 'На выдохе приподнимите плечи и лопатки, приближая рёбра к тазу.', 'Плавно опуститесь в исходное положение.'],
+      tips: 'Держите движение коротким и не тяните себя за шею.'
     },
     crunches: {
       photoSlug: 'Crunches',
@@ -3302,7 +3310,8 @@
         ${exercisesSummary || 'Без упражнений'}
       </div>
 
-      ${item.notes ? `<div style="margin-top:8px; font-size:0.85rem; color:var(--accent-gold);">💬 ${item.notes}</div>` : ''}
+      ${detailsMode && Number.isInteger(item.rating) && item.rating >= 1 && item.rating <= 10 ? `<p class="history-rating">Оценка тренировки <strong>${item.rating}/10</strong></p>` : ''}
+      ${item.notes ? `<div class="history-note">💬 ${FitnessData.escape(item.notes)}</div>` : ''}
 
       <!-- Quick Action Bar visible immediately without opening Details -->
       <div class="history-card-quick-actions">
@@ -4523,6 +4532,8 @@
     activityBox.innerHTML = (activities.cardio ? `<div class="finish-activity-row"><span>Кардио</span><strong>${activities.cardio}</strong></div>` : '') + (activities.timed ? `<div class="finish-activity-row"><span>Удержания</span><strong>${activities.timed}</strong></div>` : '');
     activityBox.classList.toggle('hidden', !activities.cardio && !activities.timed);
     document.getElementById('finishWorkoutNotes').value = '';
+    document.getElementById('finishWorkoutRating').reset();
+    document.querySelector('#modalFinishWorkout .celebration-card').scrollTop = 0;
 
     openModal('modalFinishWorkout');
   }
@@ -4584,7 +4595,9 @@
       })
       .filter((ex) => ex.sets.length > 0);
 
+    const rating = Number(new FormData(document.getElementById('finishWorkoutRating')).get('rating'));
     const finishedRecord = {
+      ...(rating ? {rating} : {}),
       id: activeWorkout.id,
       sourceTemplate: activeWorkout.sourceTemplate || null,
       title: activeWorkout.title,
@@ -4671,9 +4684,10 @@
     // Browser tabs, desktop windows and iPad split views keep their own viewport.
     const fullscreenIOS = ios && standalone && Math.abs(innerWidth - fullWidth) <= 2 && scale <= 1.01;
     const baseline = fullscreenIOS ? Math.max(innerHeight, fullHeight) : innerHeight;
-    const visibleBottom = visualHeight + visualTop;
-    const keyboard = editable && scale <= 1.01 && baseline - visibleBottom > 160;
-    return {height: Math.round(keyboard ? visibleBottom : baseline), fullscreenIOS, keyboard, expectedBottom: keyboard ? visibleBottom : baseline};
+    const keyboard = editable && scale <= 1.01 && baseline - visualHeight > 120;
+    const top = keyboard ? Math.max(0, visualTop) : 0;
+    const height = keyboard ? visualHeight : baseline;
+    return {height: Math.round(height), top: Math.round(top), baseline, fullscreenIOS, keyboard, expectedBottom: top + height};
   }
 
   function getAppViewportMetrics() {
@@ -4686,20 +4700,41 @@
       visualTop: viewport ? viewport.offsetTop : 0, scale: viewport ? viewport.scale : 1,
       standalone: window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches,
       ios: /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
-      editable: !!(active && (active.isContentEditable || active.matches('input:not([type="checkbox"]):not([type="button"]), textarea, select')))
+      editable: !!(active && (active.isContentEditable ||
+        active.matches('textarea, input:is([type="text"], [type="search"], [type="number"], [type="email"], [type="tel"], [type="password"], [type="url"], :not([type]))')))
     };
   }
 
+  function revealFocusedField() {
+    const field = document.activeElement;
+    if (!field?.matches('.set-input, .metric-input, #finishWorkoutNotes')) return;
+    const scroller = field.closest('.celebration-card, .main-content');
+    if (!scroller) return;
+    const bounds = scroller.getBoundingClientRect();
+    const rect = field.getBoundingClientRect();
+    const margin = 12;
+    // Scroll only the local pane. scrollIntoView can also pan the iOS page.
+    if (rect.bottom > bounds.bottom - margin) scroller.scrollTop += rect.bottom - bounds.bottom + margin;
+    else if (rect.top < bounds.top + margin) scroller.scrollTop += rect.top - bounds.top - margin;
+  }
+
+  let revealFieldFrame;
   function syncAppViewport() {
     const layout = calculateAppViewport(getAppViewportMetrics());
-    document.documentElement.style.setProperty('--app-layout-height', `${layout.height}px`);
+    const root = document.documentElement;
+    root.style.setProperty('--app-layout-height', `${layout.height}px`);
+    root.style.setProperty('--app-root-height', `${layout.baseline}px`);
+    root.style.setProperty('--app-layout-top', `${layout.top}px`);
+    root.classList.toggle('keyboard-open', layout.keyboard);
+    cancelAnimationFrame(revealFieldFrame);
+    revealFieldFrame = requestAnimationFrame(revealFocusedField);
   }
 
   function getLayoutDiagnostics() {
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.5', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.6', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4774,7 +4809,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.5').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.6').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

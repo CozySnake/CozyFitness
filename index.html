@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.4.7">
+  <link rel="stylesheet" href="styles.css?v=2.4.8">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -119,9 +119,18 @@
           <p class="hub-subtitle">Выберите готовую программу или начните свободную</p>
         </div>
 
-        <button type="button" id="repeatRecentWorkoutBtn" class="secondary-btn repeat-recent-trigger hidden">
-          <span>↻ Повтор предыдущих</span><span aria-hidden="true">›</span>
-        </button>
+        <div id="repeatRecentWorkoutCard" class="hub-card hidden">
+          <div class="hub-card-body">
+            <div class="hub-card-icon" aria-hidden="true">↻</div>
+            <div class="hub-card-text">
+              <h3>Повтор предыдущих</h3>
+              <p>Выберите одну из последних завершённых тренировок, чтобы повторить её.</p>
+            </div>
+          </div>
+          <button type="button" id="repeatRecentWorkoutBtn" class="primary-btn hub-start-btn">
+            <span>Выбрать тренировку</span><span aria-hidden="true">➔</span>
+          </button>
+        </div>
 
         <!-- Free / Custom Workout Card -->
         <div class="hub-card free-workout-card">
@@ -461,7 +470,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.4.7 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.4.8 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
           <details id="layoutDiagnostics" class="layout-diagnostics"><summary>Диагностика экрана</summary><pre id="layoutDiagnosticsText"></pre></details>
         </div>
@@ -688,14 +697,7 @@
           <button type="button" id="finishSaveTemplateBtn" class="secondary-btn small-btn" style="width:100%; margin-bottom:12px;">
             📌 Сохранить эту тренировку в «Мои программы»
           </button>
-          <div class="finish-rating">
-            <div class="finish-rating-heading">
-              <label for="finishWorkoutRating">Насколько ты доволен тренировкой?</label>
-              <output id="finishRatingValue" for="finishWorkoutRating">Без оценки</output>
-            </div>
-            <input id="finishWorkoutRating" type="range" min="0" max="10" step="1" value="0" aria-valuetext="Без оценки">
-            <div id="finishRatingSteps" class="finish-rating-steps" aria-hidden="true"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-          </div>
+          <div id="finishRatingHost"></div>
           <label class="form-label" for="finishWorkoutNotes">Заметка к тренировке</label>
           <textarea id="finishWorkoutNotes" class="form-textarea" placeholder="Что получилось и что хочется улучшить?"></textarea>
         </div>
@@ -870,10 +872,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.4.7"></script>
-  <script src="fitness-ui.js?v=2.4.7"></script>
-  <script src="workout-editor.js?v=2.4.7"></script>
-  <script src="achievements.js?v=2.4.7"></script>
-  <script src="app.js?v=2.4.7"></script>
+  <script src="fitness-data.js?v=2.4.8"></script>
+  <script src="fitness-ui.js?v=2.4.8"></script>
+  <script src="workout-editor.js?v=2.4.8"></script>
+  <script src="achievements.js?v=2.4.8"></script>
+  <script src="app.js?v=2.4.8"></script>
 </body>
 </html>

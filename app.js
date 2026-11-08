@@ -1651,7 +1651,7 @@
       hubActiveResumeBanner.classList.add('hidden');
     }
 
-    document.getElementById('repeatRecentWorkoutBtn').classList.toggle('hidden', !historyData.length);
+    document.getElementById('repeatRecentWorkoutCard').classList.toggle('hidden', !historyData.length);
 
     // 1. User's Custom Programs (Мои программы)
     myTemplatesList.innerHTML = '';
@@ -3349,7 +3349,7 @@
         ${exercisesSummary || 'Без упражнений'}
       </div>
 
-      ${detailsMode && Number.isInteger(item.rating) && item.rating >= 0 && item.rating <= 10 ? `<p class="history-rating">Оценка тренировки <strong>${item.rating}/10</strong></p>` : ''}
+      ${detailsMode && Number.isInteger(item.rating) && item.rating >= 0 && item.rating <= 10 ? FitnessUI.ratingScale(item.rating) : ''}
       ${item.notes ? `<div class="history-note">💬 ${FitnessData.escape(item.notes)}</div>` : ''}
 
       <!-- Quick Action Bar visible immediately without opening Details -->
@@ -4369,7 +4369,7 @@
       }
       touchX = nextX; touchY = nextY;
       const horizontal = touchAxis === 'x';
-      if (horizontal && event.target.matches('#finishWorkoutRating')) return;
+      if (horizontal && event.target.matches('.workout-rating-input')) return;
       const delta = horizontal ? dx : dy;
       let target = event.target;
       while (target && target !== overlay) {
@@ -4528,23 +4528,9 @@
   });
 
   // Finish Workout Modal (triggered from top OR bottom finish button)
-  const finishRating = document.getElementById('finishWorkoutRating');
-  const ratingSteps = document.querySelectorAll('#finishRatingSteps span');
-  const ratingValue = document.getElementById('finishRatingValue');
-  let finishRatingSelected = false;
-  function updateFinishRating(selected) {
-    finishRatingSelected = selected;
-    const value = finishRating.valueAsNumber;
-    ratingValue.textContent = selected ? `${value}/10` : 'Без оценки';
-    finishRating.setAttribute('aria-valuetext', ratingValue.textContent);
-    finishRating.style.setProperty('--rating-fill', `${value * 10}%`);
-    ratingSteps.forEach((step, index) => step.classList.toggle('rating-lit', selected && index <= value));
-  }
-  finishRating.addEventListener('input', () => updateFinishRating(true));
-  finishRating.addEventListener('click', () => updateFinishRating(true));
-  finishRating.addEventListener('keydown', event => {
-    if (event.key === 'Home') updateFinishRating(true);
-  });
+  document.getElementById('finishRatingHost').innerHTML = FitnessUI.ratingScale(null, 'finishWorkoutRating', 'Насколько ты доволен тренировкой?');
+  let finishRating = null;
+  const resetFinishRating = FitnessUI.bindRating(document.getElementById('finishWorkoutRating'), value => { finishRating = value; });
 
   function triggerFinishWorkoutModal() {
     blurActiveInput();
@@ -4573,8 +4559,7 @@
     activityBox.innerHTML = (activities.cardio ? `<div class="finish-activity-row"><span>Кардио</span><strong>${activities.cardio}</strong></div>` : '') + (activities.timed ? `<div class="finish-activity-row"><span>Удержания</span><strong>${activities.timed}</strong></div>` : '');
     activityBox.classList.toggle('hidden', !activities.cardio && !activities.timed);
     document.getElementById('finishWorkoutNotes').value = '';
-    finishRating.value = '0';
-    updateFinishRating(false);
+    resetFinishRating();
 
     openModal('modalFinishWorkout');
   }
@@ -4636,9 +4621,8 @@
       })
       .filter((ex) => ex.sets.length > 0);
 
-    const rating = finishRatingSelected ? finishRating.valueAsNumber : null;
     const finishedRecord = {
-      ...(rating !== null ? {rating} : {}),
+      ...(finishRating !== null ? {rating: finishRating} : {}),
       id: activeWorkout.id,
       sourceTemplate: activeWorkout.sourceTemplate || null,
       title: activeWorkout.title,
@@ -4717,7 +4701,7 @@
   }
 
   function calculateAppViewport(metrics) {
-    const {innerWidth, innerHeight, screenWidth, screenHeight, visualHeight, visualTop, scrollY = 0, scale, standalone, ios, editable} = metrics;
+    const {innerWidth, innerHeight, screenWidth, screenHeight, visualHeight, visualTop, scale, standalone, ios, editable} = metrics;
     const landscape = innerWidth > Math.max(screenWidth, screenHeight) * 0.8;
     const fullWidth = landscape ? Math.max(screenWidth, screenHeight) : Math.min(screenWidth, screenHeight);
     const fullHeight = landscape ? Math.min(screenWidth, screenHeight) : Math.max(screenWidth, screenHeight);
@@ -4726,8 +4710,8 @@
     const fullscreenIOS = ios && standalone && Math.abs(innerWidth - fullWidth) <= 2 && scale <= 1.01;
     const baseline = fullscreenIOS ? Math.max(innerHeight, fullHeight) : innerHeight;
     const keyboard = editable && scale <= 1.01 && baseline - visualHeight > 120;
-    // The shell is positioned in document coordinates, including native iOS page panning.
-    const top = keyboard ? Math.max(0, visualTop + scrollY) : 0;
+    // A fixed shell is positioned in layout-viewport coordinates. Page scroll is already outside that coordinate space.
+    const top = keyboard ? Math.max(0, visualTop) : 0;
     const height = keyboard ? visualHeight : baseline;
     return {height: Math.round(height), top: Math.round(top), baseline, fullscreenIOS, keyboard, expectedBottom: top + height};
   }
@@ -4762,12 +4746,16 @@
 
   let revealFieldFrame;
   function syncAppViewport() {
-    const layout = calculateAppViewport(getAppViewportMetrics());
+    const metrics = getAppViewportMetrics();
+    const layout = calculateAppViewport(metrics);
     const root = document.documentElement;
     root.style.setProperty('--app-layout-height', `${layout.height}px`);
     root.style.setProperty('--app-root-height', `${layout.baseline}px`);
     root.style.setProperty('--app-layout-top', `${layout.top}px`);
     root.classList.toggle('keyboard-open', layout.keyboard);
+    // Move the note up as soon as it gains focus on iOS, before WebKit tries to pan it into view.
+    root.classList.toggle('editing-finish-note', (layout.keyboard || metrics.ios) && document.activeElement?.id === 'finishWorkoutNotes');
+    if (layout.fullscreenIOS && !metrics.editable && metrics.scrollY) window.scrollTo(0, 0);
     cancelAnimationFrame(revealFieldFrame);
     revealFieldFrame = requestAnimationFrame(revealFocusedField);
   }
@@ -4776,13 +4764,12 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.7', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.8', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
     syncAppViewport();
     window.addEventListener('resize', syncAppViewport);
-    window.addEventListener('scroll', syncAppViewport, {passive: true});
     window.addEventListener('orientationchange', () => { syncAppViewport(); setTimeout(syncAppViewport, 250); });
     window.addEventListener('pageshow', syncAppViewport);
     if (window.visualViewport) {
@@ -4852,7 +4839,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.7').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.8').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

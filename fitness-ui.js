@@ -26,5 +26,43 @@
     const equipment={barbell:'Штанга',dumbbell_2:'Две гантели (вес одной)',dumbbell_1:'Одна гантель',machine:'Тренажёр',bodyweight:'Свой вес',unknown:'Снаряд не указан'};
     return `<div class="info-progress-header"><strong>История · ${filtered.length} трен.</strong></div>${groups.length>1?`<label class="feature-muted">Сравнивать записи одного типа и снаряда<select id="exerciseHistoryGroup" class="form-input">${groups.map(g=>`<option value="${e(g)}" ${g===group?'selected':''}>${e(({strength:'Силовое',timed:'Удержание',cardio:'Кардио'})[g.split('|')[0]])} · ${e(equipment[g.split('|')[1]]||g.split('|')[1])}</option>`).join('')}</select></label>`:''}<p class="history-record">Личный рекорд: <strong>${e(record)}</strong></p>${chart(points,label)}<div class="info-progress-list">${filtered.slice(-10).reverse().map(s=>`<div class="info-progress-row"><span class="info-progress-date">${e(new Date(s.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'}))}</span><span class="info-progress-sets">${s.sets.map(t=>e(D.setText(s.exercise,t))).join(' · ')}${s.exercise.legacyMetrics?'<small class="feature-muted">Старая запись: время можно уточнить в редакторе тренировки.</small>':''}</span></div>`).join('')}</div>`;
   }
-  root.FitnessUI={badge,chart,history};
+  const validRating = value => Number.isInteger(value) && value >= 0 && value <= 10;
+
+  function ratingScale(value, id, label = 'Оценка тренировки') {
+    const selected = validRating(value);
+    const rating = selected ? value : 0;
+    const text = selected ? `${rating}/10` : 'Без оценки';
+    return `<div class="finish-rating ${id ? '' : 'history-rating'}">
+      <div class="finish-rating-heading">
+        ${id ? `<label for="${id}">${e(label)}</label>` : `<span>${e(label)}</span>`}
+        <output class="rating-value">${text}</output>
+      </div>
+      <input ${id ? `id="${id}"` : 'disabled'} class="workout-rating-input" type="range" min="0" max="10" step="1"
+        value="${rating}" aria-label="${e(label)}" aria-valuetext="${text}" style="--rating-fill: ${rating * 10}%">
+      <div class="finish-rating-steps" aria-hidden="true">${Array.from({length:11}, (_, index) =>
+        `<span${selected && index <= rating ? ' class="rating-lit"' : ''}>${index}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  function bindRating(input, onSelect) {
+    const scale = input.closest('.finish-rating');
+    const output = scale.querySelector('.rating-value');
+    const steps = scale.querySelectorAll('.finish-rating-steps span');
+    const update = (selected) => {
+      const value = input.valueAsNumber;
+      output.textContent = selected ? `${value}/10` : 'Без оценки';
+      input.setAttribute('aria-valuetext', output.textContent);
+      input.style.setProperty('--rating-fill', `${value * 10}%`);
+      steps.forEach((step, index) => step.classList.toggle('rating-lit', selected && index <= value));
+      onSelect(selected ? value : null);
+    };
+    input.addEventListener('input', () => update(true));
+    input.addEventListener('click', () => update(true));
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Home' && input.valueAsNumber === 0) update(true);
+    });
+    return () => { input.value = '0'; update(false); };
+  }
+
+  root.FitnessUI={badge,chart,history,ratingScale,bindRating};
 })(typeof window!=='undefined'?window:globalThis);

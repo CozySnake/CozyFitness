@@ -3254,7 +3254,31 @@
       date.textContent = new Date(workout.date).toLocaleString('ru-RU', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
-      button.append(name, date);
+      const summary = FitnessData.summarize(workout);
+      const stats = document.createElement('span');
+      stats.className = 'repeat-recent-stats';
+      const metrics = [
+        `⏱ ${formatTime(workout.durationSec || 0)}`,
+        `⚡ ${summary.strengthSets} силовых подх.`,
+        `🏋 ${summary.tonnage.toLocaleString('ru-RU')} кг`
+      ];
+      if (Number.isInteger(workout.rating) && workout.rating >= 0 && workout.rating <= 10) {
+        metrics.push(`Оценка ${workout.rating}/10`);
+      }
+      for (const metric of metrics) {
+        const chip = document.createElement('span');
+        chip.className = 'history-stat-chip';
+        chip.textContent = metric;
+        stats.append(chip);
+      }
+      button.append(name, date, stats);
+      const notes = typeof workout.notes === 'string' ? workout.notes.trim() : '';
+      if (notes) {
+        const note = document.createElement('span');
+        note.className = 'repeat-recent-note';
+        note.textContent = notes;
+        button.append(note);
+      }
       button.onclick = () => repeatSavedWorkout(workout, 'modalRepeatRecent');
       return button;
     }));
@@ -4350,7 +4374,10 @@
     });
     overlay.addEventListener('pointercancel', () => { ignoreBackdropClickUntil = performance.now() + 500; });
     overlay.addEventListener('click', (event) => {
-      if (event.target === overlay && performance.now() >= ignoreBackdropClickUntil) closeModal(overlay.id);
+      const startedOnBackdrop = !!backdropPointer;
+      backdropPointer = null;
+      if (event.target === overlay && (overlay.id !== 'modalFinishWorkout' || startedOnBackdrop) &&
+          performance.now() >= ignoreBackdropClickUntil) closeModal(overlay.id);
     });
     overlay.addEventListener('touchstart', (event) => {
       if (event.touches.length === 1) {
@@ -4753,8 +4780,6 @@
     root.style.setProperty('--app-root-height', `${layout.baseline}px`);
     root.style.setProperty('--app-layout-top', `${layout.top}px`);
     root.classList.toggle('keyboard-open', layout.keyboard);
-    // Move the note up as soon as it gains focus on iOS, before WebKit tries to pan it into view.
-    root.classList.toggle('editing-finish-note', (layout.keyboard || metrics.ios) && document.activeElement?.id === 'finishWorkoutNotes');
     if (layout.fullscreenIOS && !metrics.editable && metrics.scrollY) window.scrollTo(0, 0);
     cancelAnimationFrame(revealFieldFrame);
     revealFieldFrame = requestAnimationFrame(revealFocusedField);
@@ -4764,7 +4789,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.8', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.9', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4839,7 +4864,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.8').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.9').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

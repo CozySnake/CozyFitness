@@ -2528,46 +2528,6 @@ input[type="checkbox"]:checked::after {
   50% { opacity: 0.4; transform: scale(0.8); }
 }
 
-/* 2. Dynamic Live Calendar Icon in Bottom Tab Bar (replaces static JUL 17) */
-.live-cal-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-color);
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.live-cal-month {
-  width: 100%;
-  background: #ef4444;
-  color: #ffffff;
-  font-size: 0.42rem;
-  font-weight: 800;
-  line-height: 1;
-  padding: 2px 0 1px 0;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.live-cal-day {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--text-main);
-  line-height: 1.15;
-  padding-bottom: 1px;
-}
-
-.tab-item.active .live-cal-icon {
-  border-color: var(--accent-gold);
-}
-
 /* 3. Bottom Finish Workout Actions in Active Workout */
 .active-bottom-finish-bar {
   margin-top: 16px;
@@ -3198,3 +3158,76 @@ summary.previous-session-heading:focus-visible { outline: 2px solid var(--accent
 #cancelWorkoutBtn:active { background: rgba(239,68,68,0.24); }
 @media (max-width: 360px) { .active-quick-actions > button:not(#cancelWorkoutBtn) { font-size: 0.78rem; } }
 @media (prefers-reduced-motion: reduce) { .previous-session-arrow { transition: none; } }
+
+/* Shared navigation and home styling from the CozyFitness visual mockup. */
+body.dark-theme {
+  --bg-main: #131419;
+  --bg-card: #1d1f25;
+  --bg-card-subtle: #24262e;
+  --bg-input: #292c36;
+  --border-color: rgba(194, 202, 222, 0.17);
+  --text-muted: #a8adba;
+  --accent-gold: #f5a313;
+  --accent-gold-hover: #df8908;
+  --tab-bar-bg: #191b21;
+  --header-bg: #131419;
+}
+
+.header-actions, .top-header .brand, .top-header .brand-text { min-width: 0; }
+.top-header { column-gap: 8px; }
+.top-header .brand { flex: 1 1 0; gap: 7px; }
+.top-header .brand-icon { flex-shrink: 0; }
+.brand-title { font-weight: 800; }
+.brand-subtitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.header-actions { flex: 0 0 auto; gap: clamp(4px, 1.4vw, 10px); }
+.header-actions .icon-btn {
+  flex: 0 0 auto;
+  width: clamp(38px, 10.5vw, 44px);
+  height: clamp(38px, 10.5vw, 44px);
+  padding: 0;
+}
+.header-actions svg, svg.tab-icon, .tab-calendar-icon svg, .stat-icon,
+.achievements-title svg, .hero-arrow {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.header-actions svg { width: 21px; height: 21px; }
+.header-actions .theme-sun { color: var(--accent-gold); }
+.header-actions .theme-moon, .light-theme .header-actions .theme-sun { display: none; }
+.light-theme .header-actions .theme-moon { display: block; }
+.header-actions .icon-btn[aria-current="page"] { color: var(--accent-gold); border-color: var(--accent-gold); }
+@media (max-width: 350px) {
+  .top-header { padding-inline: 12px; }
+  .brand-title { font-size: 1.05rem; }
+  .brand-icon { font-size: 1.25rem; }
+}
+
+.bottom-tab-bar { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tab-item { color: var(--text-muted); min-width: 0; }
+.tab-item.active { color: var(--accent-gold); }
+.tab-item.active[data-target="viewHome"] svg { fill: currentColor; }
+.tab-calendar-icon { position: relative; display: grid; place-items: center; width: 24px; height: 24px; }
+.tab-calendar-day { position: absolute; top: 10px; font-size: 0.55rem; font-weight: 800; line-height: 1; }
+.tab-calendar-month { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+.cozy-banner { background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; overflow: visible; margin-bottom: 16px; }
+.cozy-banner::before { content: none; }
+.banner-content h2 { font-size: clamp(1.5rem, 5.4vw, 2rem); line-height: 1.15; font-weight: 800; }
+.banner-content p { font-size: 0.85rem; margin-bottom: 14px; }
+.hero-action-btn { position: relative; min-height: 50px; padding-inline: 32px; }
+.hero-arrow { width: 19px; height: 19px; position: absolute; right: 14px; }
+.stats-grid { gap: 9px; margin-bottom: 16px; }
+.stat-card { align-items: flex-start; gap: 3px; padding: 9px 8px; text-align: left; box-shadow: none; }
+.stat-icon { color: var(--accent-gold); width: 18px; height: 18px; margin-bottom: 2px; }
+.stat-label { min-height: 0; margin: 0; text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+.stat-value { color: var(--text-main); justify-content: flex-start; }
+.achievements-summary { border-radius: var(--radius-lg); margin-bottom: 18px; }
+.achievements-title { display: inline-flex; align-items: center; gap: 8px; }
+.achievements-title svg { width: 20px; height: 20px; color: var(--accent-gold); }
+#viewHome .history-card { box-shadow: none; }

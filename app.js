@@ -1047,11 +1047,14 @@
     viewActive: document.getElementById('viewActive'),
     viewHistory: document.getElementById('viewHistory'),
     viewExercises: document.getElementById('viewExercises'),
-    viewProfile: document.getElementById('viewProfile')
+    viewProfile: document.getElementById('viewProfile'),
+    viewSettings: document.getElementById('viewSettings')
   };
 
   const tabButtons = document.querySelectorAll('.bottom-tab-bar .tab-item');
   const activeDot = document.getElementById('activeDot');
+  const headerProfileBtn = document.getElementById('headerProfileBtn');
+  headerProfileBtn.onclick = () => switchView('viewProfile');
 
   function switchView(targetViewId) {
     cancelWorkoutJourney();
@@ -1073,6 +1076,9 @@
         tab.classList.remove('active');
       }
     });
+
+    if (targetViewId === 'viewProfile') headerProfileBtn.setAttribute('aria-current', 'page');
+    else headerProfileBtn.removeAttribute('aria-current');
 
     const mainContentEl = document.querySelector('.main-content');
     if (mainContentEl) {
@@ -3508,11 +3514,11 @@
     if (greetingTitle) {
       const cleanName = (profileData.name || '').trim();
       if (cleanName) {
-        greetingTitle.textContent = `Привет, ${cleanName}! 💪`;
+        greetingTitle.textContent = `Привет, ${cleanName}!`;
       } else if (profileData.gender === 'female') {
-        greetingTitle.textContent = 'Привет, чемпионка! 💪';
+        greetingTitle.textContent = 'Привет, чемпионка!';
       } else {
-        greetingTitle.textContent = 'Привет, чемпион! 💪';
+        greetingTitle.textContent = 'Привет, чемпион!';
       }
     }
   }
@@ -4035,7 +4041,6 @@
   const settingAutoRestToggle = document.getElementById('settingAutoRestToggle');
   const testSoundBtn = document.getElementById('testSoundBtn');
   const themeToggleBtn = document.getElementById('themeToggleBtn');
-  const themeIcon = document.getElementById('themeIcon');
   const exportDataBtn = document.getElementById('exportDataBtn');
   const importDataBtn = document.getElementById('importDataBtn');
   const importFileInput = document.getElementById('importFileInput');
@@ -4063,11 +4068,9 @@
     if (settings.theme === 'light') {
       document.body.classList.remove('dark-theme');
       document.body.classList.add('light-theme');
-      themeIcon.textContent = '🌙';
     } else {
       document.body.classList.remove('light-theme');
       document.body.classList.add('dark-theme');
-      themeIcon.textContent = '☀️';
     }
   }
 
@@ -4810,7 +4813,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.10', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.11', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4885,7 +4888,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.10').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.11').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

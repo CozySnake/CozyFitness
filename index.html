@@ -16,7 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.4.10">
+  <link rel="stylesheet" href="styles.css?v=2.4.11">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
@@ -32,10 +32,13 @@
       </div>
       <div class="header-actions">
         <button id="themeToggleBtn" class="icon-btn" title="Сменить тему" aria-label="Сменить тему">
-          <span id="themeIcon">☀️</span>
+          <svg class="theme-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><svg class="theme-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.7 15.1A9 9 0 0 1 8.9 3.3a9 9 0 1 0 11.8 11.8Z"/></svg>
         </button>
-        <button id="installHelpBtn" class="icon-btn badge-btn" title="Как открыть на телефоне" aria-label="Открыть на телефоне">
-          <span>📲</span>
+        <button id="installHelpBtn" class="icon-btn" title="Как открыть на телефоне" aria-label="Открыть на телефоне">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="11" height="18" rx="2"/><path d="M8 18h1m8-8 2.5 2.5L22 10"/></svg>
+        </button>
+        <button type="button" id="headerProfileBtn" class="icon-btn" title="Профиль" aria-label="Профиль" aria-controls="viewProfile">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="7" r="3.5"/><path d="M4.5 20v-2a5 5 0 0 1 5-5h5a5 5 0 0 1 5 5v2Z"/></svg>
         </button>
       </div>
       <button id="headerWorkoutTimerChip" class="header-timer-chip hidden" title="Перейти к активной тренировке">
@@ -53,33 +56,36 @@
       <section id="viewHome" class="view-section active">
         <div class="cozy-banner">
           <div class="banner-content">
-            <h2 id="greetingTitle">Привет, чемпион! 💪</h2>
+            <h2 id="greetingTitle">Привет, чемпион!</h2>
             <p id="greetingText">Готов к хорошей тренировке сегодня?</p>
           </div>
           <button id="startWorkoutBtn" class="primary-btn hero-action-btn">
-            <span class="btn-icon">⚡</span>
             <span class="btn-text" id="startBtnText">Выбрать тренировку</span>
+            <svg class="hero-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg>
           </button>
         </div>
 
         <!-- Mini Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card">
-            <span class="stat-label">Тренировок всего</span>
+            <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 12h10M2 12h2m16 0h2"/><rect x="4" y="6" width="3" height="12" rx="1"/><rect x="17" y="6" width="3" height="12" rx="1"/></svg>
             <span class="stat-value" id="statTotalWorkouts">0</span>
+            <span class="stat-label">Тренировок всего</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">На этой неделе</span>
+            <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
             <span class="stat-value" id="statWeekWorkouts">0</span>
+            <span class="stat-label">На этой неделе</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">Поднятый тоннаж</span>
+            <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 8a4 4 0 0 1 8 0m-9 0h10l4 12H3Z"/><path d="M10 14h4"/></svg>
             <span class="stat-value" id="statTotalTonnage">0 <small>кг</small></span>
+            <span class="stat-label">Поднятый тоннаж</span>
           </div>
         </div>
 
         <button type="button" id="homeAchievementsBtn" class="achievements-summary" aria-haspopup="dialog" aria-controls="modalAchievements">
-          <span class="achievements-summary-heading"><span>🏆 Достижения</span><span id="homeAchievementsCount" class="achievement-count">0 / 11</span></span>
+          <span class="achievements-summary-heading"><span class="achievements-title"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 3h8v7a4 4 0 1 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 3v5m-4 2h8"/></svg> Достижения</span><span id="homeAchievementsCount" class="achievement-count">0 / 11</span></span>
           <span id="homeAchievementsProgressText" class="achievements-summary-caption">Получено 0 из 11 (0%)</span>
           <progress id="homeAchievementsProgress" max="11" value="0" aria-label="Общий прогресс достижений"></progress>
           <span id="homeAchievementBadges" class="achievement-badge-groups"></span>
@@ -310,7 +316,7 @@
         </div>
       </section>
 
-      <!-- VIEW: PROFILE (Профиль атлета и настройки) -->
+      <!-- VIEW: PROFILE (Профиль атлета) -->
       <section id="viewProfile" class="view-section">
         <div class="section-title-row">
           <h2>Профиль атлета</h2>
@@ -383,8 +389,11 @@
         </div>
 
 
-        <div class="section-title-row" style="margin-top: 24px;">
-          <h3>Настройки приложения</h3>
+      </section>
+
+      <section id="viewSettings" class="view-section" aria-labelledby="settingsHeading">
+        <div class="section-title-row">
+          <h3 id="settingsHeading">Настройки приложения</h3>
         </div>
 
         <div class="settings-group">
@@ -470,7 +479,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.4.10 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.4.11 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
           <details id="layoutDiagnostics" class="layout-diagnostics"><summary>Диагностика экрана</summary><pre id="layoutDiagnosticsText"></pre></details>
         </div>
@@ -502,28 +511,29 @@
     <!-- BOTTOM TAB NAVIGATION (iOS Style) -->
     <nav class="bottom-tab-bar">
       <button class="tab-item active" data-target="viewHome">
-        <span class="tab-icon">🏠</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
         <span class="tab-label">Главная</span>
       </button>
       <button class="tab-item" data-target="viewWorkoutHub" id="tabActiveWorkout">
-        <span class="tab-icon">🏋️</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 12h10M2 12h2m16 0h2"/><rect x="4" y="6" width="3" height="12" rx="1"/><rect x="17" y="6" width="3" height="12" rx="1"/></svg>
         <span class="tab-label">Тренировка</span>
         <span class="tab-active-dot hidden" id="activeDot"></span>
       </button>
       <button class="tab-item" data-target="viewHistory" id="tabHistoryCalendar">
-        <span class="tab-icon live-cal-icon" aria-hidden="true">
-          <span class="live-cal-month" id="tabCalMonth">ОКТ</span>
-          <span class="live-cal-day" id="tabCalDay">23</span>
+        <span class="tab-icon tab-calendar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18"/></svg>
+          <span class="tab-calendar-month" id="tabCalMonth">ОКТ</span>
+          <span class="tab-calendar-day" id="tabCalDay">23</span>
         </span>
         <span class="tab-label">Календарь</span>
       </button>
       <button class="tab-item" data-target="viewExercises">
-        <span class="tab-icon">📚</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 4h14l-4 5H4a2 2 0 0 1 0-4l3-1ZM4 9a2 2 0 0 0 0 4h13l4-4m-17 4a2 2 0 0 0 0 4h13l4-4m-17 4a2 2 0 0 0 0 4h13l4-4"/></svg>
         <span class="tab-label">Упражнения</span>
       </button>
-      <button class="tab-item" data-target="viewProfile" id="tabProfile">
-        <span class="tab-icon">👤</span>
-        <span class="tab-label">Профиль</span>
+      <button class="tab-item" data-target="viewSettings" id="tabSettings">
+        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="m10 3-.6 2.2-1.7.7-2-.9-2 2 .9 2-.7 1.7L2 11.3v2.4l2.2.6.7 1.7-.9 2 2 2 2-.9 1.7.7.6 2.2h2.4l.6-2.2 1.7-.7 2 .9 2-2-.9-2 .7-1.7 2.2-.6v-2.4l-2.2-.6-.7-1.7.9-2-2-2-2 .9-1.7-.7L12.7 3Z" transform="translate(.65 -.5)"/></svg>
+        <span class="tab-label">Настройки</span>
       </button>
     </nav>
 
@@ -872,10 +882,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.4.10"></script>
-  <script src="fitness-ui.js?v=2.4.10"></script>
-  <script src="workout-editor.js?v=2.4.10"></script>
-  <script src="achievements.js?v=2.4.10"></script>
-  <script src="app.js?v=2.4.10"></script>
+  <script src="fitness-data.js?v=2.4.11"></script>
+  <script src="fitness-ui.js?v=2.4.11"></script>
+  <script src="workout-editor.js?v=2.4.11"></script>
+  <script src="achievements.js?v=2.4.11"></script>
+  <script src="app.js?v=2.4.11"></script>
 </body>
 </html>

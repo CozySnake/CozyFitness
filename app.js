@@ -891,8 +891,20 @@
   // Alias so both names work everywhere
   const getExerciseMeta = getExerciseDefinition;
 
+  function fixedEquipment(exercise) {
+    const definition = getExerciseDefinition(exercise.id || exercise.name);
+    if (definition?.equip) return definition.equip;
+    const name = normalizeExStr(exercise.name);
+    if (/блок|тренаж[её]р|кроссовер/.test(name)) return 'machine';
+    if (/штанг/.test(name)) return 'barbell';
+    if (/гантел/.test(name)) return /одной рук|гантел[ьию] (в одной|одной) рук|с гантелью/.test(name) ? 'dumbbell_1' : 'dumbbell_2';
+    return null;
+  }
+
   function canExerciseUseBodyweight(exItem) {
     if (!exItem) return false;
+    const equipment = exItem.equip || fixedEquipment(exItem);
+    if (equipment) return equipment === 'bodyweight';
     if (exItem.canBodyweight === true) return true;
     const def = getExerciseDefinition(exItem.id || exItem.name);
     if (def && def.canBodyweight === true) return true;
@@ -925,8 +937,7 @@
       };
     }
 
-    const def = getExerciseDefinition(exItem && (exItem.id || exItem.name));
-    let equip = (exItem && exItem.equip) || (def && def.equip) || '';
+    let equip = (exItem && (exItem.equip || fixedEquipment(exItem))) || '';
 
     // Auto-detect equipment from exercise name if not explicitly stored
     if (!equip || equip === 'bodyweight') {
@@ -994,10 +1005,11 @@
 
   // Returns detailed previous sets and personal record for an exercise
   function findExerciseHistoryStats(target) {
-    const all = FitnessData.sessions(historyData, target).reverse();
-    if (!all.length) return null;
-    const latest = all[0].exercise;
-    const sessions = all.filter(session => FitnessData.kind(session.exercise) === FitnessData.kind(latest) && session.exercise.equip === latest.equip);
+    const targetEquip = getEquipInfo(target).type;
+    const sessions = FitnessData.sessions(historyData, target).reverse().filter(({exercise}) =>
+      FitnessData.kind(exercise) === FitnessData.kind(target) && getEquipInfo(exercise).type === targetEquip);
+    if (!sessions.length) return null;
+    const latest = sessions[0].exercise;
     const lastSets = sessions[0].sets;
     const usable = sessions.flatMap(session => session.sets).filter(set => FitnessData.validSet(latest, set));
     let prText = '', bestSet = null;
@@ -1450,12 +1462,13 @@
       .map((ex, idx) => {
         const def = getExerciseDefinition(ex.id || ex.name) || ex;
         const muscleName = ex.muscle || def.muscle || 'Мышцы';
-        const equipInfo = getEquipInfo(Object.assign({}, def, ex));
-        const canBW = canExerciseUseBodyweight(ex);
-        const histStats = findExerciseHistoryStats(ex);
+        const planned = {...def, ...ex, equip: fixedEquipment(ex) || getEquipInfo(ex).type};
+        const equipInfo = getEquipInfo(planned);
+        const canBW = canExerciseUseBodyweight(planned);
+        const histStats = findExerciseHistoryStats(planned);
 
         const defaultR = ex.defaultReps || 10;
-        const defaultW = canBW ? 0 : (ex.defaultWeight !== undefined ? ex.defaultWeight : 20);
+        const defaultW = canBW ? 0 : ((!ex.equip || ex.equip === planned.equip) ? (ex.defaultWeight ?? 20) : 20);
 
         let planLine = '';
         if (histStats && histStats.summaryInline) {
@@ -1691,7 +1704,8 @@
       const resultSets = [];
       for (let i = 0; i < count; i++) {
         const prevSet = stats.lastSets[i] || stats.lastSets[stats.lastSets.length - 1];
-        const wVal = isBW ? (parseFloat(prevSet.weight) || 0) : (parseFloat(prevSet.weight) || baseW);
+        const weight = parseFloat(prevSet.weight);
+        const wVal = Number.isFinite(weight) ? Math.max(0, weight) : baseW;
         const rVal = parseInt(prevSet.reps, 10) || baseR;
         resultSets.push({
           weight: wVal,
@@ -1712,10 +1726,10 @@
 
   function startWorkoutFromTemplate(tpl) {
     const preloadedExercises = tpl.exercises.map((tplEx) => {
-      const catalogEx = getExerciseMeta(tplEx.id || tplEx.name);
-      const canBW = canExerciseUseBodyweight(tplEx);
-      const isBW = canBW ? !!tplEx.isBodyweight : false;
-      const equip = tplEx.equip || (catalogEx && catalogEx.equip) || (isBW ? 'bodyweight' : 'barbell');
+      const equip = fixedEquipment(tplEx) || getEquipInfo(tplEx).type;
+      const canBW = equip === 'bodyweight';
+      const isBW = canBW && !!tplEx.isBodyweight;
+      const compatibleWeight = !tplEx.equip || tplEx.equip === equip ? tplEx.defaultWeight : undefined;
 
       return {
         id: tplEx.id,
@@ -1725,7 +1739,7 @@
         equip: equip,
         canBodyweight: canBW,
         isBodyweight: isBW,
-        sets: buildSetsFromPreviousOrDefaults(tplEx, tplEx.defaultWeight || 20, tplEx.defaultReps || 10)
+        sets: buildSetsFromPreviousOrDefaults({...tplEx, equip, defaultWeight: compatibleWeight}, 20, tplEx.defaultReps || 10)
       };
     });
 
@@ -2183,12 +2197,12 @@
 
       // Equipment badge:
       // - Bodyweight-capable exercises show a simple note ("⚡ 0 кг = свой вес (можно +доп. вес)") without any mode toggle
-      // - Weighted exercises show a clickable equipment selector ("🏋️ Штанга" / "🏋️ 2 гантели (вес 1 шт)" / "🏋️ 1 гантель" / "⚙️ Тренажёр")
       const equipControlHtml = measurementKind !== 'strength' ? '' : canBW
         ? `<span class="exercise-muscle-tag" style="background:rgba(16,185,129,0.12); color:var(--accent-green); border-color:rgba(16,185,129,0.28);">
              ${equipInfo.badge}
            </span>`
-        : `<button type="button" class="equip-badge-btn" data-ex-idx="${exIndex}" title="Нажмите, чтобы уточнить снаряд (Штанга / 2 гантели / 1 гантель / Тренажёр)">
+        : fixedEquipment(exItem) ? `<span class="equip-badge">${equipInfo.badge}</span>`
+        : `<button type="button" class="equip-badge equip-badge-btn" data-ex-idx="${exIndex}" title="Нажмите, чтобы уточнить снаряд (Штанга / 2 гантели / 1 гантель / Тренажёр)">
              ${equipInfo.badge} ▾
            </button>`;
 
@@ -2568,9 +2582,9 @@
   function addExerciseToActiveWorkout(exercise, original) {
     if (!activeWorkout) return;
 
-    const canBW = canExerciseUseBodyweight(exercise);
-    const isBW = canBW ? !!exercise.isBodyweight : false;
-    const equip = exercise.equip || (isBW ? 'bodyweight' : 'barbell');
+    const equip = fixedEquipment(exercise) || getEquipInfo(exercise).type;
+    const canBW = equip === 'bodyweight';
+    const isBW = canBW && !!exercise.isBodyweight;
 
     const addedExercise = {
       id: exercise.id,
@@ -2587,7 +2601,7 @@
       const sets = previous ? previous.sets.filter(set => FitnessData.validSet(addedExercise, set)) : [];
       if (!FitnessData.replaceExercise(activeWorkout, original, addedExercise, sets)) return;
     } else {
-      addedExercise.sets = buildSetsFromPreviousOrDefaults(exercise, isBW ? 0 : 20, 10);
+      addedExercise.sets = buildSetsFromPreviousOrDefaults(addedExercise, isBW ? 0 : 20, 10);
       const position = Number(document.getElementById('exerciseInsertPosition').value);
       FitnessData.insertExercise(activeWorkout, addedExercise, position);
     }
@@ -3214,7 +3228,9 @@
 
   // Creates detailed history card with drill-down accordion!
   function openWorkoutEditor(item) {
-    FitnessEditor.mount(item, pick => openExerciseSelector(null, null, pick), (updated) => {
+    FitnessEditor.mount(item, pick => openExerciseSelector(null, null, ex => {
+      pick({...ex, equip: fixedEquipment(ex) || getEquipInfo(ex).type});
+    }), (updated) => {
       const next = historyData.map(workout => workout.id === updated.id ? updated : workout);
       localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(next));
       historyData = next;
@@ -3228,13 +3244,18 @@
   function repeatSavedWorkout(item, modalId) {
     if (activeWorkout && !confirm('Сейчас активна другая тренировка. Заменить её этой программой?')) return;
     const exercises = item.exercises.map(ex => {
-      const canBW = canExerciseUseBodyweight(ex);
+      const equip = fixedEquipment(ex) || getEquipInfo(ex).type;
+      const kind = FitnessData.kind(ex);
+      const canBW = equip === 'bodyweight';
       const isBW = canBW && !!ex.isBodyweight;
+      const compatible = !ex.equip || ex.equip === equip || kind !== 'strength';
+      const sets = compatible ? ex.sets : buildSetsFromPreviousOrDefaults({...ex, equip, isBodyweight: isBW});
       return {
-        id: ex.id, name: ex.name, kind: FitnessData.kind(ex), muscle: ex.muscle,
-        equip: ex.equip || (isBW ? 'bodyweight' : 'barbell'),
+        id: ex.id, name: ex.name, kind, muscle: ex.muscle, equip,
         canBodyweight: canBW, isBodyweight: isBW,
-        sets: ex.sets.map(set => ({...set, isBodyweight: isBW, completed: false}))
+        sets: ex.sets.map((_, index) => ({
+          ...(sets[index] || sets.at(-1)), isBodyweight: isBW, completed: false
+        }))
       };
     });
     if (modalId) closeModal(modalId);
@@ -4459,7 +4480,7 @@
             name: ex.name,
             kind: FitnessData.kind(ex),
             muscle: ex.muscle,
-            equip: ex.equip || (ex.isBodyweight ? 'bodyweight' : 'barbell'),
+            equip: fixedEquipment(ex) || getEquipInfo(ex).type,
             canBodyweight: canExerciseUseBodyweight(ex),
             isBodyweight: canExerciseUseBodyweight(ex) && !!ex.isBodyweight
           });
@@ -4789,7 +4810,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.9', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.10', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4864,7 +4885,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.9').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.10').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

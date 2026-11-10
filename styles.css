@@ -2630,7 +2630,7 @@ input[type="checkbox"]:checked::after {
 
 
 
-.equip-badge-btn {
+.equip-badge {
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-main);
@@ -2638,14 +2638,9 @@ input[type="checkbox"]:checked::after {
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
-  cursor: pointer;
 }
 
-.equip-badge-btn.is-bw-mode {
-  background: var(--accent-gold-light);
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
-}
+.equip-badge-btn { cursor: pointer; }
 
 /* 5. Realistic Exercise Photo + Anatomical Muscle Map & Progress Box inside Info Modal */
 .info-visual-box {

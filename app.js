@@ -3312,7 +3312,7 @@
     openModal('modalRepeatRecent');
   };
 
-  function createHistoryCardElement(item, detailsMode = false) {
+  function createHistoryCardElement(item, detailsMode = false, homePreview = false) {
     const card = document.createElement('div');
     card.className = 'history-card';
 
@@ -3382,8 +3382,9 @@
     card.innerHTML = `
       <div class="history-card-header">
         <div class="history-card-top-row">
-          <div>
-            <div class="history-title">${item.title}</div>
+          ${homePreview ? `<span class="history-workout-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="icon-dumbbell-bar" d="M8 12h8M2.5 12H4m16 0h1.5"/><rect class="icon-dumbbell-plate" x="4" y="5" width="4" height="14" rx="2"/><rect class="icon-dumbbell-plate" x="16" y="5" width="4" height="14" rx="2"/></svg></span>` : ''}
+          <div class="history-heading-copy">
+            <div class="history-title">${FitnessData.escape(item.title)}</div>
             <div class="history-date">${dateFormatted}</div>
           </div>
         </div>
@@ -3949,7 +3950,7 @@
     }
 
     historyData.slice(0, 3).forEach((item) => {
-      recentList.appendChild(createHistoryCardElement(item));
+      recentList.appendChild(createHistoryCardElement(item, false, true));
     });
   }
 
@@ -4813,7 +4814,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.11', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.12', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4888,7 +4889,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.11').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.12').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

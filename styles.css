@@ -3227,10 +3227,17 @@ body.dark-theme {
 .is-locked .emblem-laurel { opacity: .45; }
 
 body.dark-theme {
-  --dashboard-surface: linear-gradient(115deg, #1b1e23, #1a1c22);
-  --dashboard-outline: #333640;
-  --tab-bar-bg: #17191e;
-  --accent-gold: #f8a10b;
+  --bg-main: #111216;
+  --bg-card: #1b1e23;
+  --text-muted: #adb0ba;
+  --dashboard-surface: linear-gradient(115deg, #1c1f24, #1a1d22);
+  --dashboard-outline: #373b43;
+  --tab-bar-bg: #181b20;
+  --header-bg: rgba(17, 18, 22, .94);
+  --accent-gold: #ffa90b;
+  --accent-gold-hover: #ee9808;
+  --accent-gold-light: rgba(255, 169, 11, .16);
+  --border-focus: #ffa90b;
 }
 #viewHome .stat-card, .achievements-summary, #recentWorkoutsList .history-card {
   background: var(--dashboard-surface, var(--bg-card));
@@ -3271,3 +3278,11 @@ body.dark-theme {
 }
 .dark-theme .history-workout-icon { background: linear-gradient(145deg, #51401e, #433518); }
 .history-workout-icon svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-linecap: round; }
+
+/* Reference artwork: warm orange controls, open silhouettes and soft graphite. */
+.dark-theme .hero-action-btn { background: linear-gradient(110deg, #f9a30d, #f5a00b); box-shadow: none; }
+.header-actions .theme-sun { color: var(--accent-gold); }
+.header-actions .theme-sun circle { fill: currentColor; stroke: none; }
+.bottom-tab-bar svg { stroke-linecap: round; stroke-linejoin: round; }
+.stat-icon { width: 26px; height: 26px; }
+.achievement-emblem:not(.is-locked) { filter: drop-shadow(0 1px 1px rgba(236, 155, 26, .15)); }

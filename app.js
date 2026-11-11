@@ -4815,7 +4815,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.13', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.14', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4890,7 +4890,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.13').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.14').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

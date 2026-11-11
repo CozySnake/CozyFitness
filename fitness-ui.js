@@ -15,7 +15,7 @@
       <path class="emblem-rim" d="M22.2 2.1a3.6 3.6 0 0 1 3.6 0l17 9.8a4 4 0 0 1 2 3.5v20.3a4 4 0 0 1-2 3.5L26 49a4 4 0 0 1-4 0L5.2 39.2a4 4 0 0 1-2-3.5V15.4a4 4 0 0 1 2-3.5Z" fill="url(#medal-rim)"/>
       <path class="emblem-face" d="m24 5.5 17 9.9v20.3L24 45.5 7 35.7V15.4Z" fill="url(#medal-enamel)"/>
       <path class="emblem-edge" d="m7.7 15.8 16.3-9.5 16.3 9.5v19.5L24 44.6 7.7 35.3Z"/>
-      <g class="emblem-laurel">
+      <g class="emblem-laurel" transform="translate(3.36 1.6) scale(.86)">
         <use href="#medal-laurel"/>
         <use href="#medal-laurel" transform="translate(48) scale(-1 1)"/>
       </g>

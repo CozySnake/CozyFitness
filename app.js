@@ -12,100 +12,79 @@
 
   const HOME_MEDIA = {
   "home_knee_pushups": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-knee-push-up-f8e1b84622335034.gif?alt=media&token=b84b62bb-b26d-4ec7-bc9e-ea54a6fe9516",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-knee-push-up-f0323cf70d10eb4d.png?alt=media&token=0f368ccc-b777-4e67-a9b4-6ddec871daf2",
-      "source": "https://www.trainaiapp.com/exercises/knee-push-up/",
-      "credit": "TrainAI"
-    }
+    "photos": [
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/13-1.jpg",
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/13-3.jpg"
+    ],
+    "mediaSource": "https://www.acefitness.org/resources/everyone/exercise-library/13/bent-knee-push-up/",
+    "mediaCredit": "ACE Fitness"
   },
   "home_reverse_lunge": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-reverse-lunge-9b065fa76abfcf8c.gif?alt=media&token=5c1c6058-bccb-4a0a-8b84-4bedad5ed786",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-reverse-lunge-89ed9f76549e4a33.png?alt=media&token=c0556bf0-2890-42bd-baea-3a22925c275b",
-      "source": "https://www.trainaiapp.com/exercises/reverse-lunge/",
-      "credit": "TrainAI"
-    }
+    "video": "https://storage.googleapis.com/sworkit-assets/video/ios/rear-lunge.mp4",
+    "mediaSource": "https://sworkit.com/exercise/rear-lunges",
+    "mediaCredit": "Sworkit"
   },
   "home_clamshell": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-clamshell-2a8b0c971016abd7.gif?alt=media&token=cebd9bdf-e1e2-4eaa-bfc6-1d715eb0a67c",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-clamshell-ace6ea8a4a09a84a.png?alt=media&token=bf6d2849-98ad-4e2b-884a-881dc96560a5",
-      "source": "https://www.trainaiapp.com/exercises/clamshell/",
-      "credit": "TrainAI"
-    }
+    "video": "https://storage.googleapis.com/sworkit-assets/video/ios/clam-shells-left.mp4",
+    "mediaSource": "https://sworkit.com/exercise/clam-shells-left",
+    "mediaCredit": "Sworkit"
   },
   "home_bird_dog": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-bird-dog-6f8a94d442daab42.gif?alt=media&token=1a195498-13b9-49ef-b2d0-2a70452ee899",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-bird-dog-f4bade85d9734516.png?alt=media&token=6300647f-0d7d-4c42-8eca-9c3b0882ec7a",
-      "source": "https://www.trainaiapp.com/exercises/bird-dog/",
-      "credit": "TrainAI"
-    }
+    "video": "https://storage.googleapis.com/sworkit-assets/video/ios/birddog-sequence.mp4",
+    "mediaSource": "https://sworkit.com/exercise/birddog-sequence",
+    "mediaCredit": "Sworkit"
   },
   "home_prone_w": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-prone-w-raise-13d20f61f12599df.gif?alt=media&token=632f9d77-a516-4863-8462-496d93d574b8",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-prone-w-raise-7a21090a1ccb4ceb.png?alt=media&token=08d353df-c7ad-4620-8d3c-0df108164afa",
-      "source": "https://www.trainaiapp.com/exercises/prone-w-raise/",
-      "credit": "TrainAI"
-    }
+    "embed": "https://player.vimeo.com/video/73424946?autoplay=1&muted=1&loop=1&playsinline=1",
+    "mediaSource": "https://vimeo.com/73424946",
+    "mediaCredit": "HEP2go"
   },
   "home_side_plank_knees": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-knee-side-plank-e4e486ba83be887d.gif?alt=media&token=5d8f9624-0eee-4b64-b33f-c6a9131082d1",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-knee-side-plank-6dcd2eda351a9bb5.png?alt=media&token=5d97b55f-4cfa-4ddb-a991-afb200363150",
-      "source": "https://www.trainaiapp.com/exercises/knee-side-plank/",
-      "credit": "TrainAI"
-    }
+    "photos": [
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/100-1.jpg",
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/100-2.jpg"
+    ],
+    "mediaSource": "https://www.acefitness.org/resources/everyone/exercise-library/100/side-plank-modified/",
+    "mediaCredit": "ACE Fitness"
   },
   "home_shoulder_taps": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-plank-shoulder-tap-514b7de5a56900c5.gif?alt=media&token=e5f3c4ca-13ee-45ff-9945-516c20b007d6",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-plank-shoulder-tap-c761ad3ea957897a.png?alt=media&token=bdd8cc30-9226-45be-8d93-851d0c242fd1",
-      "source": "https://www.trainaiapp.com/exercises/plank-shoulder-tap/",
-      "credit": "TrainAI"
-    }
+    "video": "https://media.physitrack.com/exercises/5ce0444c-c5b5-4b1f-b514-3d4121749e4f/en/video_1280x720.mp4",
+    "mediaSource": "https://ca.physitrack.com/home-exercise-video/shoulder-taps-in-plank",
+    "mediaCredit": "Physitrack"
   },
   "home_march": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-march-in-place-d2a1ea8773bfaa57.gif?alt=media&token=6711863b-f97b-4ad0-995a-0bcce74b756f",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-march-in-place-864f25f34a93980b.png?alt=media&token=5f8c6d1a-7da5-444b-aa3e-cd963057ab71",
-      "source": "https://www.trainaiapp.com/exercises/march-in-place/",
-      "credit": "TrainAI"
-    }
+    "video": "https://storage.googleapis.com/sworkit-assets/video/ios/march-in-place.mp4",
+    "mediaSource": "https://sworkit.com/exercise/march-in-place",
+    "mediaCredit": "Sworkit"
   },
   "home_step_jacks": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-step-jack-b758d4be3b6cc745.gif?alt=media&token=f9b3a2fe-0985-47ce-b4b1-46c0dbd80686",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-step-jack-71c52d61a0f7f92a.png?alt=media&token=d0d7f687-e7d0-4063-9657-0822403af40e",
-      "source": "https://www.trainaiapp.com/exercises/step-jack/",
-      "credit": "TrainAI"
-    }
+    "photos": [
+      "https://d1ghrtdbdq2gkr.cloudfront.net/blog-content/instructionals-content/step-jacks-1.jpg",
+      "https://d1ghrtdbdq2gkr.cloudfront.net/blog-content/instructionals-content/step-jacks-2.jpg"
+    ],
+    "mediaSource": "https://www.warriormade.com/content/exercise/perfect-form-step-jacks/",
+    "mediaCredit": "Warrior Made"
   },
   "home_side_leg_raise": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-side-lying-hip-abduction-0a707faa864932d6.gif?alt=media&token=01f54614-67c3-49c2-8a1a-1fb8a8db2999",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-side-lying-hip-abduction-6fdf657d8b0f137c.png?alt=media&token=7f75fc55-65c2-4fde-9b6b-4db2b4eb49de",
-      "source": "https://www.trainaiapp.com/exercises/side-lying-hip-abduction/",
-      "credit": "TrainAI"
-    }
+    "photos": [
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/38-1.jpg",
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/38-2.jpg"
+    ],
+    "mediaSource": "https://www.acefitness.org/resources/everyone/exercise-library/38/side-lying-hip-abduction/",
+    "mediaCredit": "ACE Fitness"
   },
   "home_dead_bug": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-dead-bug-d5e0c8140cb57b6a.gif?alt=media&token=b2ea9529-d3c4-4a1a-ba41-74698c8322de",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-dead-bug-d731666b40206ea7.png?alt=media&token=f31f1dd9-a45f-4f21-830d-ec960af2b3cb",
-      "source": "https://www.trainaiapp.com/exercises/dead-bug/",
-      "credit": "TrainAI"
-    }
+    "video": "https://storage.googleapis.com/sworkit-assets/video/ios/dead-bug.mp4",
+    "mediaSource": "https://sworkit.com/exercise/dead-bug",
+    "mediaCredit": "Sworkit"
   },
   "home_side_plank": {
-    "demo": {
-      "animation": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-side-plank-6f9839464a5efba9.gif?alt=media&token=d305db31-a365-4dc8-86ef-ccaec24af1c1",
-      "poster": "https://firebasestorage.googleapis.com/v0/b/personalfinanceai-cursor.appspot.com/o/trainai%2Fcreator-media%2F2026-10-07%2Ftrainai-side-plank-b3189478d3196a8f.png?alt=media&token=46e52dab-24d7-43b6-8bad-154ed0c871f1",
-      "source": "https://www.trainaiapp.com/exercises/side-plank/",
-      "credit": "TrainAI"
-    }
+    "photos": [
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/101-1.jpg",
+      "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/101-2.jpg"
+    ],
+    "mediaSource": "https://www.acefitness.org/resources/everyone/exercise-library/101/side-plank-with-straight-leg/",
+    "mediaCredit": "ACE Fitness"
   },
   "home_squat": {
     "photoSlug": "Bodyweight_Squat"
@@ -124,11 +103,27 @@
   },
   "home_heel_taps": {
     "photoSlug": "Alternate_Heel_Touchers"
+  },
+  "home_jumping_jacks": {
+    "video": "https://storage.googleapis.com/sworkit-assets/video/ios/jumping-jack.mp4",
+    "mediaSource": "https://sworkit.com/exercise/jumping-jacks",
+    "mediaCredit": "Sworkit"
+  },
+  "home_high_knees": {
+    "video": "https://storage.googleapis.com/sworkit-assets/video/ios/high-knee.mp4",
+    "mediaSource": "https://sworkit.com/exercise/high-knees",
+    "mediaCredit": "Sworkit"
+  },
+  "home_mountain_climbers": {
+    "photoSlug": "Mountain_Climbers"
   }
 };
 
   // No equipment or furniture required. Unilateral reps are counted in total.
   const HOME_EXERCISES = [
+    {id:'home_jumping_jacks', name:'Прыжки Jumping Jacks', kind:'cardio', muscle:'Кардио', primary:['quads','calves'], secondary:['glutes','side_delts'], steps:['Встаньте прямо, стопы вместе, руки вдоль тела.', 'Невысоким прыжком разведите ноги и поднимите руки через стороны.', 'Мягко приземлитесь, затем прыжком вернитесь в исходное положение.'], tips:'Учитывайте время в минутах, дистанция — 0. Вариант без прыжков: шаги в стороны с подъёмом рук.'},
+    {id:'home_high_knees', name:'Бег на месте с высоким подниманием колен', kind:'cardio', muscle:'Кардио', primary:['quads','calves'], secondary:['abs','glutes'], steps:['Встаньте прямо, согните руки в локтях.', 'Поочерёдно поднимайте колени в удобной амплитуде, переходя на лёгкий бег на месте.', 'Приземляйтесь мягко, сохраняйте устойчивый корпус и контролируемый темп.'], tips:'Записывайте минуты, дистанция — 0. Для снижения нагрузки перейдите на ходьбу на месте.'},
+    {id:'home_mountain_climbers', name:'Скалолаз — Mountain Climbers', kind:'cardio', muscle:'Кардио', primary:['abs'], secondary:['front_delts','quads'], steps:['Примите упор на прямых руках, ладони под плечами.', 'Подтяните одно колено к груди, не поднимая таз.', 'Верните ногу и смените сторону, постепенно подбирая удобный темп.'], tips:'Учитывайте время в минутах, дистанция — 0. Начинайте с медленного чередования ног без прыжков.'},
     {id:'home_knee_pushups', name:'Отжимания с колен', muscle:'Грудь', primary:['chest'], secondary:['triceps','front_delts'], steps:['Встаньте в упор на ладонях и коленях, выстройте прямую линию от головы до коленей.', 'Согните локти и плавно приблизьте грудь к полу.', 'Оттолкнитесь ладонями и вернитесь в исходное положение.'], tips:'Не оставляйте таз позади плеч. Сократите глубину, если трудно сохранять положение корпуса.'},
     {id:'home_squat', name:'Приседания без оборудования', muscle:'Ноги', primary:['quads','glutes'], secondary:['hamstrings'], steps:['Поставьте стопы примерно на ширине плеч.', 'Согните колени и отведите таз назад, сохраняя опору на всю стопу.', 'Встаньте без рывка.'], tips:'Выбирайте глубину, при которой пятки остаются на полу, а колени направлены вдоль стоп.'},
     {id:'home_reverse_lunge', name:'Выпады назад без оборудования', muscle:'Ноги', primary:['quads','glutes'], secondary:['hamstrings'], steps:['Встаньте прямо и сделайте одной ногой шаг назад.', 'Плавно согните обе ноги, сохраняя равновесие.', 'Вернитесь в стойку и смените ногу.'], tips:'Считайте повторения суммарно: выпад левой и правой ногой — два повторения.'},
@@ -3083,14 +3078,14 @@
 
     const anatomySvg = buildAnatomicalMuscleMapSvg(primary, secondary);
 
-    const photoUrl0 = photoSlug
+    const photoUrl0 = guide?.photos?.[0] || (photoSlug
       ? `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photoSlug}/0.jpg`
-      : '';
-    const photoUrl1 = photoSlug
+      : '');
+    const photoUrl1 = guide?.photos?.[1] || (photoSlug
       ? `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photoSlug}/1.jpg`
-      : '';
+      : '');
 
-    const photoSectionHtml = photoSlug ? `
+    const photoSectionHtml = photoUrl0 && photoUrl1 ? `
       <div class="ex-photo-showcase" id="exPhotoShowcase">
         <div class="ex-photo-frame-wrap" id="exPhotoTapArea" title="Нажмите для переключения фазы движения">
           <img id="exRealPhoto0" src="${photoUrl0}" alt="${name} — Фаза 1" class="ex-real-photo active-frame" loading="eager">
@@ -3103,11 +3098,9 @@
     return `
       <div class="ex-rich-visual-card">
         ${photoSectionHtml}
-        ${guide?.demo ? `<figure class="exercise-demo">
-          <img id="exerciseDemoImage" src="${FitnessData.escape(guide.demo.poster)}" alt="${FitnessData.escape(name)} — демонстрация движения" referrerpolicy="no-referrer">
-          <button type="button" id="exerciseDemoToggle" class="secondary-btn" aria-pressed="false">▶ Показать движение</button>
-          <figcaption><a href="${FitnessData.escape(guide.demo.source)}" target="_blank" rel="noopener noreferrer">Демонстрация: ${FitnessData.escape(guide.demo.credit)} ↗</a><span id="exerciseDemoError" class="hidden">Не удалось загрузить изображение. Откройте источник или используйте описание ниже.</span></figcaption>
-        </figure>` : ''}
+        ${guide?.video ? `<video id="exerciseDemoVideo" class="exercise-demo-video" src="${FitnessData.escape(guide.video)}" autoplay muted loop playsinline controls preload="auto" aria-label="${FitnessData.escape(name)} — демонстрация движения"></video><p id="exerciseDemoError" class="feature-muted hidden">Видео недоступно. Откройте источник или используйте описание ниже.</p>` : ''}
+        ${guide?.embed ? `<iframe id="exerciseDemoEmbed" class="exercise-demo-video" data-src="${FitnessData.escape(guide.embed)}" title="${FitnessData.escape(name)} — демонстрация движения" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>` : ''}
+        ${guide?.mediaSource ? `<p class="exercise-media-credit"><a href="${FitnessData.escape(guide.mediaSource)}" target="_blank" rel="noopener noreferrer">Источник: ${FitnessData.escape(guide.mediaCredit)} ↗</a></p>` : ''}
         <div class="anatomy-map-container">
           <div class="anatomy-map-header">
             <span class="anatomy-map-title">🧬 Карта работающих мышц</span>
@@ -3125,25 +3118,18 @@
 
   function openExerciseInfoModal(name, muscle, id) {
     infoModalExName.textContent = name;
-    infoModalMuscleTag.textContent = muscle || 'Мышцы';
 
     const found = id ? getAllExercises().find(ex => ex.id === id) : getExerciseMeta(name);
+    infoModalMuscleTag.textContent = exerciseMuscleGroups(found || {muscle}).join(' · ') || 'Мышцы';
     const equipInfo = getEquipInfo(found || { name, muscle });
     const guide = resolveExerciseGuide(name, muscle, found);
 
     if (infoModalVisual) {
       infoModalVisual.innerHTML = renderExerciseVisualAndAnatomy(name, muscle, equipInfo, guide);
-      if (guide?.demo) {
-        const image = document.getElementById('exerciseDemoImage');
-        const toggle = document.getElementById('exerciseDemoToggle');
-        image.onerror = () => { document.getElementById('exerciseDemoError').classList.remove('hidden'); };
-        image.onload = () => { document.getElementById('exerciseDemoError').classList.add('hidden'); };
-        toggle.onclick = () => {
-          const playing = toggle.getAttribute('aria-pressed') !== 'true';
-          image.src = playing ? guide.demo.animation : guide.demo.poster;
-          toggle.setAttribute('aria-pressed', String(playing));
-          toggle.textContent = playing ? '■ Остановить движение' : '▶ Показать движение';
-        };
+      const demoVideo = document.getElementById('exerciseDemoVideo');
+      if (demoVideo) {
+        demoVideo.muted = true;
+        demoVideo.onerror = () => document.getElementById('exerciseDemoError').classList.remove('hidden');
       }
 
       // Set up 2-frame real exercise photo animation + offline graceful fallback
@@ -3211,6 +3197,11 @@
     }
 
     openModal('modalExerciseInfo');
+    // Start only once visible: iOS may suspend autoplay in hidden sheets.
+    const video = document.getElementById('exerciseDemoVideo');
+    if (video) video.play().catch(() => { /* Native controls remain available if the browser blocks autoplay. */ });
+    const embed = document.getElementById('exerciseDemoEmbed');
+    if (embed) embed.src = embed.dataset.src;
   }
 
   // ==========================================================================
@@ -4142,6 +4133,13 @@
   function isNoEquipmentExercise(ex) {
     return ex.atHome === true || ['pushups','plank','crunches'].includes(ex.id);
   }
+  function exerciseMuscleGroups(ex) {
+    // Cardio remains a training category; other exercises include assisting muscles.
+    if (ex.muscle === 'Кардио') return ['Кардио'];
+    const guide = EXERCISE_GUIDES[ex.id];
+    const group = {chest:'Грудь',front_delts:'Плечи',side_delts:'Плечи',rear_delts:'Плечи',traps:'Спина',lats:'Спина',lower_back:'Спина',biceps:'Руки',triceps:'Руки',forearms:'Руки',abs:'Пресс',obliques:'Пресс',quads:'Ноги',hamstrings:'Ноги',glutes:'Ноги',calves:'Ноги'};
+    return [...new Set([ex.muscle, ...(guide ? [...guide.primary, ...guide.secondary].map(id=>group[id]) : [])].filter(Boolean))];
+  }
   libraryHomeFilter.onclick = () => {
     const selected = libraryHomeFilter.getAttribute('aria-pressed') !== 'true';
     libraryHomeFilter.setAttribute('aria-pressed', String(selected));
@@ -4155,7 +4153,7 @@
 
     const filtered = all.filter((ex) => {
       const matchName = (ex.name + (ex.atHome ? ' дома домашние коврик без оборудования' : '')).toLowerCase().includes(query);
-      const matchMuscle = librarySelectedMuscle === 'all' || ex.muscle === librarySelectedMuscle;
+      const matchMuscle = librarySelectedMuscle === 'all' || exerciseMuscleGroups(ex).includes(librarySelectedMuscle);
       return matchName && matchMuscle && (libraryHomeFilter.getAttribute('aria-pressed') !== 'true' || isNoEquipmentExercise(ex));
     });
 
@@ -4177,7 +4175,7 @@
             <span class="library-item-title">${ex.name}</span>
             <button type="button" class="exercise-info-btn" data-ex-id="${FitnessData.escape(ex.id)}" data-ex-name="${FitnessData.escape(ex.name)}" data-ex-muscle="${ex.muscle}" title="Анимация и прогресс">ℹ️</button>
           </div>
-          <div class="library-item-muscle">${ex.muscle} • ${equipInfo.badge}${prLine}</div>
+          <div class="library-item-muscle">${exerciseMuscleGroups(ex).join(' · ')} • ${equipInfo.badge}${prLine}</div>
         </div>
       `;
 
@@ -4515,6 +4513,11 @@
   }
 
   function closeModal(modalId) {
+    if (modalId === 'modalExerciseInfo') {
+      document.getElementById('exerciseDemoVideo')?.pause();
+      document.getElementById('exerciseDemoEmbed')?.remove();
+      if (photoFrameInterval) { clearInterval(photoFrameInterval); photoFrameInterval = null; }
+    }
     if (modalId === 'modalExerciseOrder') cancelExerciseOrderDrag();
     if (modalId === 'modalWorkoutEditor' && FitnessEditor.dirty()) {
       if (!confirm('Закрыть без сохранения изменений?')) return;
@@ -4633,7 +4636,7 @@
 
     const filtered = all.filter((ex) => {
       const matchName = (ex.name + (ex.atHome ? ' дома домашние коврик без оборудования' : '')).toLowerCase().includes(query);
-      const matchMuscle = modalSelectedMuscle === 'all' || ex.muscle === modalSelectedMuscle;
+      const matchMuscle = modalSelectedMuscle === 'all' || exerciseMuscleGroups(ex).includes(modalSelectedMuscle);
       return matchName && matchMuscle && (modalHomeFilter.getAttribute('aria-pressed') !== 'true' || isNoEquipmentExercise(ex)) && (!exerciseToReplace || !FitnessData.sameExercise(ex, exerciseToReplace));
     });
 
@@ -4649,7 +4652,7 @@
       btn.className = 'sheet-exercise-btn';
       btn.innerHTML = `
         <span class="sheet-exercise-name">${FitnessData.escape(ex.name)}</span>
-        <span class="sheet-exercise-tag">${ex.muscle} • ${equipInfo.badge}</span>
+        <span class="sheet-exercise-tag">${exerciseMuscleGroups(ex).join(' · ')} • ${equipInfo.badge}</span>
       `;
 
       btn.onclick = () => {
@@ -4995,7 +4998,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.17', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.18', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -5070,7 +5073,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.17').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.18').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

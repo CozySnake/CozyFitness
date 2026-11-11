@@ -1599,9 +1599,10 @@ input[type="checkbox"]:checked::after {
 }
 
 .tab-label {
-  font-size: 0.68rem;
+  font-size: clamp(0.56rem, 2.65vw, 0.68rem);
   font-weight: 600;
   letter-spacing: -0.2px;
+  white-space: nowrap;
 }
 
 .tab-item.active {
@@ -3190,7 +3191,10 @@ body.dark-theme {
   .brand-icon { font-size: 1.25rem; }
 }
 
-.bottom-tab-bar { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.bottom-tab-bar {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding-inline: max(12px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+}
 .tab-item { color: var(--text-muted); min-width: 0; }
 .tab-item.active { color: var(--accent-gold); }
 .tab-item.active[data-target="viewHome"] svg { fill: currentColor; }

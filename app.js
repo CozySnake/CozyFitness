@@ -3382,7 +3382,7 @@
     card.innerHTML = `
       <div class="history-card-header">
         <div class="history-card-top-row">
-          ${homePreview ? `<span class="history-workout-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="icon-dumbbell-bar" d="M8 12h8M2.5 12H4m16 0h1.5"/><rect class="icon-dumbbell-plate" x="4" y="5" width="4" height="14" rx="2"/><rect class="icon-dumbbell-plate" x="16" y="5" width="4" height="14" rx="2"/></svg></span>` : ''}
+          ${homePreview ? `<span class="history-workout-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#cozy-dumbbell"/></svg></span>` : ''}
           <div class="history-heading-copy">
             <div class="history-title">${FitnessData.escape(item.title)}</div>
             <div class="history-date">${dateFormatted}</div>
@@ -3689,25 +3689,26 @@
     document.getElementById('achievementsCount').textContent = `${achievements.filter((a) => a.unlocked).length} / ${achievements.length}`;
     const earned = achievements.filter((a) => a.unlocked);
     const locked = achievements.filter((a) => !a.unlocked);
-    const percent = Math.round(earned.length / achievements.length * 100);
-    document.getElementById('homeAchievementsCount').textContent = `${earned.length} / ${achievements.length}`;
-    document.getElementById('homeAchievementsProgressText').textContent = `Получено ${earned.length} из ${achievements.length} (${percent}%)`;
-    ['homeAchievementsProgress', 'achievementsModalProgress'].forEach((id) => {
-      const progress = document.getElementById(id);
-      progress.max = achievements.length;
-      progress.value = earned.length;
-    });
-    const badgeRow = (items, label) => {
-      if (!items.length) return '';
-      return `<span class="achievement-badge-group"><span class="achievement-badge-label">${label}</span><span class="achievement-badges">${items.slice(0, 5).map((a) => {
-        const title = a.hidden && !a.unlocked ? 'Скрытое достижение' : a.title;
-        const icon = FitnessUI.badge(a.hidden && !a.unlocked ? 'hidden' : a.id, !a.unlocked);
-        return `<span class="achievement-badge ${a.unlocked ? 'earned' : 'locked'}" title="${title}" role="img" aria-label="${title}: ${a.unlocked ? 'получено' : 'не получено'}">${icon}</span>`;
-      }).join('')}${items.length > 5 ? `<span class="achievement-badge-more">+${items.length - 5}</span>` : ''}</span></span>`;
+    const progress = document.getElementById('achievementsModalProgress');
+    progress.max = achievements.length;
+    progress.value = earned.length;
+
+    const nearest = locked.filter(a => !a.hidden).sort((a, b) => b.value / b.target - a.value / a.target);
+    const showcase = [...earned, ...nearest].slice(0, 3);
+    const labels = {
+      first: 'дебют в зале', rhythm: 'недели подряд', ten: 'тренировок',
+      record: 'личный рекорд', architect: 'своя программа', titan: 'кг поднято',
+      tireless: 'дней подряд', return: 'снова в зале', stability: 'недели подряд',
+      hundred: 'тренировок', marathon: 'долгая сессия'
     };
-    document.getElementById('homeAchievementBadges').innerHTML = badgeRow(earned, 'Получены') + badgeRow(locked, 'Впереди');
-    const nearest = locked.filter(a => !a.hidden).sort((a,b) => b.value / b.target - a.value / a.target).slice(0,3);
-    document.getElementById('achievementNextGoals').innerHTML = nearest.length ? '<h4>На подходе</h4>' + nearest.map(a => `<div class="achievement-next-goal"><span>${FitnessUI.badge(a.id, true)}</span><div><strong>${a.title}</strong><small>${Math.min(a.value,a.target).toLocaleString('ru-RU')} / ${a.target.toLocaleString('ru-RU')} ${a.unit}</small></div></div>`).join('') : '<p class="feature-muted">Всё собрано. Полка просит пощады.</p>';
+    document.getElementById('homeAchievementBadges').innerHTML = showcase.map(a => {
+      const number = a.target.toLocaleString('ru-RU');
+      return `<span class="showcase-achievement ${a.unlocked ? 'earned' : 'locked'}" title="${FitnessData.escape(a.title)}">
+        ${FitnessUI.badge(a.id, !a.unlocked)}
+        <span class="showcase-achievement-copy"><strong>${number}</strong><span>${labels[a.id] || a.unit}</span></span>
+      </span>`;
+    }).join('');
+    document.getElementById('achievementNextGoals').innerHTML = nearest.length ? '<h4>На подходе</h4>' + nearest.slice(0, 3).map(a => `<div class="achievement-next-goal"><span>${FitnessUI.badge(a.id, true)}</span><div><strong>${a.title}</strong><small>${Math.min(a.value,a.target).toLocaleString('ru-RU')} / ${a.target.toLocaleString('ru-RU')} ${a.unit}</small></div></div>`).join('') : '<p class="feature-muted">Всё собрано. Полка просит пощады.</p>';
     container.innerHTML = [...earned, ...locked].map((a) => {
       if (a.hidden && !a.unlocked) return `<article class="achievement-card locked"><span class="achievement-icon" aria-hidden="true">${FitnessUI.badge('hidden', true)}</span><div><h4>Скрытое достижение</h4><p>Откроется, когда придёт время.</p></div></article>`;
       const value = Math.min(a.target, a.value);
@@ -4814,7 +4815,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.12', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.13', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4889,7 +4890,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.12').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.13').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);

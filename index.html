@@ -16,17 +16,22 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#121316">
   
-  <link rel="stylesheet" href="styles.css?v=2.4.12">
+  <link rel="stylesheet" href="styles.css?v=2.4.13">
 </head>
 <body class="dark-theme">
   <div id="app" class="app-container">
     <svg class="achievement-paints" aria-hidden="true" focusable="false" width="0" height="0">
       <defs>
+        <symbol id="cozy-dumbbell" viewBox="0 0 24 24"><path class="icon-dumbbell-bar" d="M7 12h10"/><path class="icon-dumbbell-plate" d="M2.9 7.6a1.15 1.15 0 0 1 2.3 0v8.8a1.15 1.15 0 1 1-2.3 0Zm3.5-2a1.4 1.4 0 0 1 2.8 0v12.8a1.4 1.4 0 0 1-2.8 0Zm8.4 0a1.4 1.4 0 0 1 2.8 0v12.8a1.4 1.4 0 0 1-2.8 0Zm4 2a1.15 1.15 0 0 1 2.3 0v8.8a1.15 1.15 0 1 1-2.3 0Z"/></symbol>
+        <g id="medal-laurel" fill="currentColor">
+          <path d="M10 31c.9 4.5 5.9 8.7 13.3 10.7l-.4 1c-7.4-2.1-12.6-6.5-13.8-11.4Z"/>
+          <path d="M10.4 34.2c-2-1.2-2.5-3.2-1.8-5.1 2.1 1 2.5 3.1 1.8 5.1Zm2.7 3.2c-2.2.1-4-1.1-4.7-2.8 2.1-.4 4.2.7 4.7 2.8Zm.6-.4c-1.6-1.9-1.4-4.1-.2-5.4 1.7 1.7 1.4 3.9.2 5.4Zm3.8 3.2c-2.4 1-4.5.4-5.7-1.3 2.1-1 4.6-.5 5.7 1.3Zm.3-.6c-1.3-2.1-.9-4.4.7-5.5 1.4 2 1.1 4.3-.7 5.5Zm4.7 2.1c-1.7-1.5-1.8-3.9-.6-5.3 1.8 1.4 2.1 3.9.6 5.3Z"/>
+        </g>
         <linearGradient id="medal-rim" x2="0.85" y2="1">
-          <stop stop-color="#fff1a3"/><stop offset=".34" stop-color="#f2c855"/><stop offset=".72" stop-color="#ad6e13"/><stop offset="1" stop-color="#f5cb61"/>
+          <stop stop-color="#ffeb78"/><stop offset=".35" stop-color="#fbd851"/><stop offset=".72" stop-color="#e9ad23"/><stop offset="1" stop-color="#a9660b"/>
         </linearGradient>
         <linearGradient id="medal-enamel" x2="0.75" y2="1">
-          <stop stop-color="#8b5a13"/><stop offset=".55" stop-color="#624013"/><stop offset="1" stop-color="#3d250d"/>
+          <stop stop-color="#96610e"/><stop offset=".42" stop-color="#81520c"/><stop offset="1" stop-color="#573705"/>
         </linearGradient>
       </defs>
     </svg>
@@ -78,28 +83,31 @@
         <!-- Mini Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card">
-            <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="icon-dumbbell-bar" d="M8 12h8M2.5 12H4m16 0h1.5"/><rect class="icon-dumbbell-plate" x="4" y="5" width="4" height="14" rx="2"/><rect class="icon-dumbbell-plate" x="16" y="5" width="4" height="14" rx="2"/></svg>
+            <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#cozy-dumbbell"/></svg>
             <span class="stat-value" id="statTotalWorkouts">0</span>
             <span class="stat-label">Тренировок всего</span>
-          </div>
-          <div class="stat-card">
-            <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l3.8 2.2"/></svg>
-            <span class="stat-value" id="statWeekWorkouts">0</span>
-            <span class="stat-label">На этой неделе</span>
           </div>
           <div class="stat-card">
             <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2c1 5 7 7 7 13a8 8 0 1 1-16 0c0-3 2-6 4-8-.2 2 .5 3.6 1.4 4.2C12.7 9.2 14 6.3 13 2Z"/></svg>
             <span class="stat-value" id="statTotalTonnage">0 <small>кг</small></span>
             <span class="stat-label">Поднятый тоннаж</span>
           </div>
+          <div class="stat-card">
+            <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l3.8 2.2"/></svg>
+            <span class="stat-value" id="statWeekWorkouts">0</span>
+            <span class="stat-label">На этой неделе</span>
+          </div>
         </div>
 
         <button type="button" id="homeAchievementsBtn" class="achievements-summary" aria-haspopup="dialog" aria-controls="modalAchievements">
-          <span class="achievements-summary-heading"><span class="achievements-title"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 3h8v7a4 4 0 1 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 3v5m-4 2h8"/></svg> Достижения</span><span id="homeAchievementsCount" class="achievement-count">0 / 11</span></span>
-          <span id="homeAchievementsProgressText" class="achievements-summary-caption">Получено 0 из 11 (0%)</span>
-          <progress id="homeAchievementsProgress" max="11" value="0" aria-label="Общий прогресс достижений"></progress>
-          <span id="homeAchievementBadges" class="achievement-badge-groups"></span>
-          <span class="achievements-summary-link">Все достижения <span aria-hidden="true">›</span></span>
+          <span class="achievements-summary-heading">
+            <span class="achievements-title">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 3h8v7a4 4 0 1 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 3v5m-4 2h8"/></svg>
+              <span><strong>Достижения</strong><span class="achievements-summary-caption">Твои результаты и награды</span></span>
+            </span>
+            <svg class="achievements-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg>
+          </span>
+          <span id="homeAchievementBadges" class="achievement-showcase"></span>
         </button>
 
         <!-- Recent Workouts Header -->
@@ -489,7 +497,7 @@
         </div>
 
         <div class="cozy-footer-note">
-          <p>🌿 CozyFitness v2.4.12 • Сделано с любовью к спорту и комфорту</p>
+          <p>🌿 CozyFitness v2.4.13 • Сделано с любовью к спорту и комфорту</p>
           <p>Все данные хранятся локально на вашем устройстве.</p>
           <details id="layoutDiagnostics" class="layout-diagnostics"><summary>Диагностика экрана</summary><pre id="layoutDiagnosticsText"></pre></details>
         </div>
@@ -525,7 +533,7 @@
         <span class="tab-label">Главная</span>
       </button>
       <button class="tab-item" data-target="viewWorkoutHub" id="tabActiveWorkout">
-        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="icon-dumbbell-bar" d="M8 12h8M2.5 12H4m16 0h1.5"/><rect class="icon-dumbbell-plate" x="4" y="5" width="4" height="14" rx="2"/><rect class="icon-dumbbell-plate" x="16" y="5" width="4" height="14" rx="2"/></svg>
+        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#cozy-dumbbell"/></svg>
         <span class="tab-label">Тренировка</span>
         <span class="tab-active-dot hidden" id="activeDot"></span>
       </button>
@@ -538,7 +546,7 @@
         <span class="tab-label">Календарь</span>
       </button>
       <button class="tab-item" data-target="viewExercises">
-        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 8.8 7.8 4H20a1 1 0 0 1 .7 1.7l-4.3 4.2H5a2 2 0 0 0 0 4h11.4L21 9.5M5 14a2 2 0 0 0 0 4h11.4l4.6-4.5M5 18a2 2 0 0 0 0 4h11.4l4.6-4.5"/></svg>
+        <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2.7 8.8 8 4.5h12.9a.6.6 0 0 1 .4 1.1L16 10H4.6a2 2 0 0 0 0 4H16l5.1-4.2M4.6 14a2 2 0 0 0 0 4H16l5.1-4.2m-2.5-6v2.5m0 1.6v2.4"/></svg>
         <span class="tab-label">Упражнения</span>
       </button>
       <button class="tab-item" data-target="viewSettings" id="tabSettings">
@@ -892,10 +900,10 @@
   </div>
 
   <div id="achievementNotice" class="achievement-notice hidden" role="status"></div>
-  <script src="fitness-data.js?v=2.4.12"></script>
-  <script src="fitness-ui.js?v=2.4.12"></script>
-  <script src="workout-editor.js?v=2.4.12"></script>
-  <script src="achievements.js?v=2.4.12"></script>
-  <script src="app.js?v=2.4.12"></script>
+  <script src="fitness-data.js?v=2.4.13"></script>
+  <script src="fitness-ui.js?v=2.4.13"></script>
+  <script src="workout-editor.js?v=2.4.13"></script>
+  <script src="achievements.js?v=2.4.13"></script>
+  <script src="app.js?v=2.4.13"></script>
 </body>
 </html>

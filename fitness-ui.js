@@ -3,16 +3,23 @@
   const D=root.FitnessData, e=D.escape;
   const paths={first:'M12 20V10m0 4C3 14 4 5 12 10m0 1c0-7 8-8 8-3-1 4-5 6-8 6',rhythm:'M4 15h3l2-8 4 13 3-9h4',ten:'M5 8h3v10M13 8h5v10h-5z',record:'M4 19V5m0 14h17M7 15l4-5 4 2 5-7',architect:'M4 20l4-8 4 4-8 4m6-14 4-4 8 8-4 4z',titan:'M4 10v7m3-10v13m10-13v13m3-10v7M7 13h10',tireless:'M12 3c2 5 8 7 6 13-2 7-13 5-12-2 0-4 4-6 6-11z',return:'M5 12a7 7 0 1 1 2 6M5 5v7h7',stability:'M12 3l8 4v6c0 5-8 8-8 8s-8-3-8-8V7zM8 12l3 3 5-6',hundred:'M4 8h2v10m4-10h4v10h-4zm8 0h4v10h-4z',marathon:'M7 3h10M7 21h10M8 3c0 7 8 11 8 18M16 3c0 7-8 11-8 18'};
   function badge(id, locked = false) {
-    const symbol = paths[id] || (locked ? 'M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z' : paths.first);
+    const path = paths[id] || (locked ? 'M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z' : paths.first);
+    const symbol = id === 'ten' || id === 'titan'
+      ? `<use href="#cozy-dumbbell" x="12" y="9" width="24" height="24"/>`
+      : id === 'rhythm'
+        ? `<path fill="currentColor" d="M25 10c-.7 5.3-7.7 7.4-7.7 14a7.3 7.3 0 0 0 5.1 7c-1.7-3.8 1.3-5.3 2-8.2 2.7 2.8 3.5 4.9 2 8.2a7.6 7.6 0 0 0 5-7.1c0-3.7-2.4-6.3-6.4-13.9Z"/>`
+        : id === 'tireless'
+          ? `<path class="emblem-symbol" d="M17 13h14a2 2 0 0 1 2 2v14H15V15a2 2 0 0 1 2-2Zm2-3v6m10-6v6m-14 3h18"/>`
+          : `<path class="emblem-symbol" d="${path}" transform="translate(13.2 9) scale(.9)"/>`;
     return `<svg class="achievement-emblem ${locked ? 'is-locked' : ''}" viewBox="0 0 48 52" aria-hidden="true" focusable="false">
-      <path class="emblem-rim" d="M21.8 2.6a4.4 4.4 0 0 1 4.4 0l15.6 9a4.4 4.4 0 0 1 2.2 3.8v19.2a4.4 4.4 0 0 1-2.2 3.8l-15.6 9a4.4 4.4 0 0 1-4.4 0l-15.6-9A4.4 4.4 0 0 1 4 34.6V15.4a4.4 4.4 0 0 1 2.2-3.8Z" fill="url(#medal-rim)"/>
-      <path class="emblem-face" d="m24 6 16 9.3v19.4L24 44 8 34.7V15.3Z" fill="url(#medal-enamel)"/>
-      <path class="emblem-edge" d="m10.5 16.8 13.5-7.9 13.5 7.9v16.4L24 41.1l-13.5-7.9Z"/>
-      <g class="emblem-laurel" fill="currentColor">
-        <path d="M22 40c-5-.3-9-2.6-11-7.8 2.3.6 3.6 2.2 4 4.2-.2-2 .5-3.2 1.5-4.1 1.3 1.3 1.4 3.1.7 5 1.6.9 3.2 1.4 5 1.7ZM10.2 28.7c2.5.7 3.7 2 3.7 4.5-2.5-.6-3.7-2.1-3.7-4.5Z"/>
-        <path transform="translate(48) scale(-1 1)" d="M22 40c-5-.3-9-2.6-11-7.8 2.3.6 3.6 2.2 4 4.2-.2-2 .5-3.2 1.5-4.1 1.3 1.3 1.4 3.1.7 5 1.6.9 3.2 1.4 5 1.7ZM10.2 28.7c2.5.7 3.7 2 3.7 4.5-2.5-.6-3.7-2.1-3.7-4.5Z"/>
+      <path class="emblem-rim" d="M22.2 2.1a3.6 3.6 0 0 1 3.6 0l17 9.8a4 4 0 0 1 2 3.5v20.3a4 4 0 0 1-2 3.5L26 49a4 4 0 0 1-4 0L5.2 39.2a4 4 0 0 1-2-3.5V15.4a4 4 0 0 1 2-3.5Z" fill="url(#medal-rim)"/>
+      <path class="emblem-face" d="m24 5.5 17 9.9v20.3L24 45.5 7 35.7V15.4Z" fill="url(#medal-enamel)"/>
+      <path class="emblem-edge" d="m7.7 15.8 16.3-9.5 16.3 9.5v19.5L24 44.6 7.7 35.3Z"/>
+      <g class="emblem-laurel">
+        <use href="#medal-laurel"/>
+        <use href="#medal-laurel" transform="translate(48) scale(-1 1)"/>
       </g>
-      <path class="emblem-symbol" d="${symbol}" transform="translate(13.2 10.1) scale(.9)"/>
+      ${symbol}
     </svg>`;
   }
   function chart(points,label){

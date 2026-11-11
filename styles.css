@@ -3283,6 +3283,13 @@ body.dark-theme {
 .dark-theme .hero-action-btn { background: linear-gradient(110deg, #f9a30d, #f5a00b); box-shadow: none; }
 .header-actions .theme-sun { color: var(--accent-gold); }
 .header-actions .theme-sun circle { fill: currentColor; stroke: none; }
+.equipment-filter-row { flex-shrink: 0; margin-bottom: 10px; }
+.exercise-demo { margin: 0 0 16px; }
+.exercise-demo img { display: block; width: 100%; max-height: 340px; object-fit: contain; background: #fff; border-radius: 12px; }
+.exercise-demo button { width: 100%; margin-top: 8px; }
+.exercise-demo figcaption { margin-top: 8px; font-size: .75rem; line-height: 1.5; }
+.exercise-demo a { color: var(--accent-gold); }
+.exercise-demo figcaption span { display: block; color: var(--text-muted); }
 .bottom-tab-bar svg { stroke-linecap: round; stroke-linejoin: round; }
 .stat-icon { width: 26px; height: 26px; }
 .achievement-emblem:not(.is-locked) { filter: drop-shadow(0 1px 1px rgba(236, 155, 26, .15)); }

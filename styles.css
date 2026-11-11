@@ -3265,7 +3265,7 @@ body.dark-theme {
 .bottom-tab-bar svg { width: 26px; height: 26px; stroke-width: 1.7; }
 .tab-calendar-icon { width: 26px; height: 26px; }
 .tab-calendar-day { top: 12px; }
-#recentWorkoutsList .history-card-top-row { justify-content: flex-start; gap: 11px; }
+.history-card-top-row { justify-content: flex-start; gap: 11px; }
 .history-heading-copy { min-width: 0; overflow-wrap: anywhere; }
 .history-workout-icon {
   flex: 0 0 42px;

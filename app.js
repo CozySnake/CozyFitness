@@ -10,7 +10,30 @@
   // 1. Initial State, Exercise Database & Workout Templates
   // ==========================================================================
 
+  // No equipment or furniture required. Unilateral reps are counted in total.
+  const HOME_EXERCISES = [
+    {id:'home_knee_pushups', name:'Отжимания с колен', muscle:'Грудь', primary:['chest'], secondary:['triceps','front_delts'], steps:['Встаньте в упор на ладонях и коленях, выстройте прямую линию от головы до коленей.', 'Согните локти и плавно приблизьте грудь к полу.', 'Оттолкнитесь ладонями и вернитесь в исходное положение.'], tips:'Не оставляйте таз позади плеч. Сократите глубину, если трудно сохранять положение корпуса.'},
+    {id:'home_squat', name:'Приседания без оборудования', muscle:'Ноги', primary:['quads','glutes'], secondary:['hamstrings'], steps:['Поставьте стопы примерно на ширине плеч.', 'Согните колени и отведите таз назад, сохраняя опору на всю стопу.', 'Встаньте без рывка.'], tips:'Выбирайте глубину, при которой пятки остаются на полу, а колени направлены вдоль стоп.'},
+    {id:'home_reverse_lunge', name:'Выпады назад без оборудования', muscle:'Ноги', primary:['quads','glutes'], secondary:['hamstrings'], steps:['Встаньте прямо и сделайте одной ногой шаг назад.', 'Плавно согните обе ноги, сохраняя равновесие.', 'Вернитесь в стойку и смените ногу.'], tips:'Считайте повторения суммарно: выпад левой и правой ногой — два повторения.'},
+    {id:'home_glute_bridge', name:'Ягодичный мостик на коврике', muscle:'Ноги', primary:['glutes'], secondary:['hamstrings','abs'], steps:['Лягте на спину, согните колени и поставьте стопы на пол.', 'Поднимите таз до линии плечи — таз — колени.', 'Плавно опустите таз.'], tips:'Поднимайте таз за счёт ягодиц, без сильного прогиба в пояснице.'},
+    {id:'home_single_bridge', name:'Ягодичный мостик на одной ноге', muscle:'Ноги', primary:['glutes'], secondary:['hamstrings','abs'], steps:['Лягте на спину, одну стопу оставьте на полу, другую ногу приподнимите.', 'Поднимите таз, удерживая его без перекоса.', 'Опуститесь и выполните упражнение другой ногой.'], tips:'Записывайте сумму повторений обеих сторон. При потере контроля используйте мостик на двух ногах.'},
+    {id:'home_clamshell', name:'Ракушка лёжа на боку', muscle:'Ноги', primary:['glutes'], secondary:[], steps:['Лягте на бок, согните колени, стопы держите вместе.', 'Поднимите верхнее колено, не разворачивая таз назад.', 'Опустите колено; затем выполните на другом боку.'], tips:'Двигайтесь в небольшой контролируемой амплитуде. В подход записывайте сумму повторений с двух сторон.'},
+    {id:'home_side_leg_raise', name:'Подъём ноги лёжа на боку', muscle:'Ноги', primary:['glutes'], secondary:['abs'], steps:['Лягте на бок, нижнюю ногу можно слегка согнуть для опоры.', 'Поднимите прямую верхнюю ногу, сохраняя таз неподвижным.', 'Плавно опустите и повторите на другой стороне.'], tips:'Не разворачивайте носок к потолку. Указывайте суммарные повторения обеих сторон.'},
+    {id:'home_donkey_kick', name:'Отведение согнутой ноги назад на четвереньках', muscle:'Ноги', primary:['glutes'], secondary:['abs'], steps:['Встаньте на четвереньки: ладони под плечами, колени под тазом.', 'Поднимите одну согнутую ногу назад, не прогибая поясницу.', 'Верните колено и смените сторону.'], tips:'Высота подъёма вторична: таз должен оставаться ровным. Считайте повторения обеих ног суммарно.'},
+    {id:'home_bird_dog', name:'Птица-собака: рука и нога на четвереньках', muscle:'Спина', primary:['lower_back','abs'], secondary:['glutes'], steps:['Встаньте на четвереньки и удерживайте спину в нейтральном положении.', 'Вытяните противоположные руку и ногу, не поворачивая таз.', 'Вернитесь и смените сторону.'], tips:'Один выход руки и противоположной ноги — одно повторение. Считайте обе стороны суммарно.'},
+    {id:'home_prone_w', name:'Подъёмы рук буквой W лёжа на животе', muscle:'Спина', primary:['traps','rear_delts'], secondary:['lower_back'], steps:['Лягте на живот, согните руки в локтях в форме буквы W.', 'Слегка поднимите руки, мягко сближая лопатки.', 'Плавно опустите руки на коврик.'], tips:'Смотрите в пол, не запрокидывайте голову и не стремитесь высоко поднять грудь.'},
+    {id:'home_dead_bug', name:'Мёртвый жук', muscle:'Пресс', primary:['abs'], secondary:['obliques'], steps:['Лягте на спину, поднимите руки и согнутые под прямым углом ноги.', 'Медленно опустите противоположные руку и ногу, удерживая поясницу стабильной.', 'Вернитесь и смените сторону.'], tips:'Сократите амплитуду, если поясница начинает прогибаться. Каждая сторона считается одним повторением.'},
+    {id:'home_reverse_crunch', name:'Обратные скручивания на коврике', muscle:'Пресс', primary:['abs'], secondary:['obliques'], steps:['Лягте на спину, согните ноги и поднимите колени над тазом.', 'Мягко подкрутите таз, немного отрывая его от коврика.', 'Медленно опустите таз без раскачивания ног.'], tips:'Движение небольшое; не забрасывайте ноги за голову.'},
+    {id:'home_heel_taps', name:'Касания пяток лёжа', muscle:'Пресс', primary:['obliques','abs'], secondary:[], steps:['Лягте на спину, согните колени, стопы на полу.', 'Слегка приподнимите плечи и потянитесь рукой к одноимённой пятке.', 'Чередуйте стороны без рывков.'], tips:'Одно касание — одно повторение. Не тяните подбородок к груди.'},
+    {id:'home_side_plank_knees', name:'Боковая планка с колен', kind:'timed', muscle:'Пресс', primary:['obliques'], secondary:['abs','glutes'], steps:['Лягте на бок, согните колени, поставьте локоть под плечом.', 'Поднимите таз, выстроив линию от головы до коленей.', 'Удерживайте положение, затем смените сторону.'], tips:'Записывайте каждую сторону отдельным подходом в секундах. Дышите свободно.'},
+    {id:'home_side_plank', name:'Боковая планка', kind:'timed', muscle:'Пресс', primary:['obliques'], secondary:['abs','glutes'], steps:['Расположитесь на боку с опорой на предплечье и стопы, локоть под плечом.', 'Поднимите таз и удерживайте корпус на одной линии.', 'Опуститесь и повторите на другой стороне.'], tips:'Каждая сторона — отдельный подход в секундах. Облегчённый вариант — боковая планка с колен.'},
+    {id:'home_shoulder_taps', name:'Касания плеч в упоре лёжа', muscle:'Плечи', primary:['front_delts','abs'], secondary:['triceps','obliques'], steps:['Примите упор на прямых руках, поставив стопы немного шире таза.', 'Коснитесь ладонью противоположного плеча, удерживая таз неподвижным.', 'Верните руку и смените сторону.'], tips:'Одно касание — одно повторение. Можно выполнять с опорой на колени.'},
+    {id:'home_march', name:'Ходьба на месте без прыжков', kind:'cardio', muscle:'Кардио', primary:['quads'], secondary:['glutes','calves'], steps:['Встаньте прямо, оставив вокруг свободное место.', 'Поочерёдно поднимайте стопы, помогая себе движениями рук.', 'Продолжайте в комфортном ритме.'], tips:'Записывайте время в минутах; дистанцию оставляйте равной нулю.'},
+    {id:'home_step_jacks', name:'Шаги в стороны с подъёмом рук без прыжков', kind:'cardio', muscle:'Кардио', primary:['quads','glutes'], secondary:['side_delts','calves'], steps:['Встаньте, расположив руки вдоль тела.', 'Шагните одной ногой в сторону и поднимите руки в комфортной амплитуде.', 'Вернитесь и повторите в другую сторону, без прыжка.'], tips:'Записывайте время в минутах; дистанция для этого упражнения — ноль.'}
+  ];
+
   const DEFAULT_EXERCISES = [
+    ...HOME_EXERCISES.map(({id, name, muscle, kind = 'strength'}) => ({id, name, muscle, kind, equip:'bodyweight', isBodyweight:true, canBodyweight:true, atHome:true})),
     // Грудь
     { id: 'bench_press', kind: 'strength', name: 'Жим штанги лёжа', muscle: 'Грудь', equip: 'barbell' },
     { id: 'flat_dumbbell_press', kind: 'strength', name: 'Жим гантелей лёжа на горизонтальной скамье', muscle: 'Грудь', equip: 'dumbbell_2' },
@@ -123,6 +146,9 @@
 
   // Complete Exercise Technique, Anatomical Muscle Map & Photo Knowledge Base (All 37 Built-in Exercises)
   const EXERCISE_GUIDES = {
+    ...Object.fromEntries(HOME_EXERCISES.map(ex => [ex.id, {
+      primary:ex.primary, secondary:ex.secondary, muscles:ex.muscle + ' · без оборудования, дома на коврике.', steps:ex.steps, tips:ex.tips
+    }])),
     flat_dumbbell_press: {
       primary: ['chest'], secondary: ['front_delts', 'triceps'],
       muscles: 'Грудные мышцы, передние дельты и трицепсы.',
@@ -3382,7 +3408,7 @@
     card.innerHTML = `
       <div class="history-card-header">
         <div class="history-card-top-row">
-          ${homePreview ? `<span class="history-workout-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#cozy-dumbbell"/></svg></span>` : ''}
+          <span class="history-workout-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#cozy-dumbbell"/></svg></span>
           <div class="history-heading-copy">
             <div class="history-title">${FitnessData.escape(item.title)}</div>
             <div class="history-date">${dateFormatted}</div>
@@ -3981,7 +4007,7 @@
     const all = getAllExercises();
 
     const filtered = all.filter((ex) => {
-      const matchName = ex.name.toLowerCase().includes(query);
+      const matchName = (ex.name + (ex.atHome ? ' дома домашние коврик без оборудования' : '')).toLowerCase().includes(query);
       const matchMuscle = librarySelectedMuscle === 'all' || ex.muscle === librarySelectedMuscle;
       return matchName && matchMuscle;
     });
@@ -4452,7 +4478,7 @@
     const all = getAllExercises();
 
     const filtered = all.filter((ex) => {
-      const matchName = ex.name.toLowerCase().includes(query);
+      const matchName = (ex.name + (ex.atHome ? ' дома домашние коврик без оборудования' : '')).toLowerCase().includes(query);
       const matchMuscle = modalSelectedMuscle === 'all' || ex.muscle === modalSelectedMuscle;
       return matchName && matchMuscle && (!exerciseToReplace || !FitnessData.sameExercise(ex, exerciseToReplace));
     });
@@ -4815,7 +4841,7 @@
     const metrics = getAppViewportMetrics(), layout = calculateAppViewport(metrics);
     const bounds = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return {top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height)}; };
     const footer = bounds('.bottom-tab-bar');
-    return {version:'2.4.14', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
+    return {version:'2.4.16', ...metrics, ...layout, app:bounds('#app'), footer, gapToExpectedBottom:layout.keyboard ? null : Math.round(layout.expectedBottom-footer.bottom)};
   }
 
   function initApp() {
@@ -4890,7 +4916,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4.14').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4.16').then((reg) => {
           if (reg && reg.update) reg.update();
         }).catch((err) => {
           console.warn('Service Worker registration skipped or failed:', err);
